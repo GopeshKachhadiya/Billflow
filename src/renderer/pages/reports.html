@@ -1,0 +1,218 @@
+<div class="reports-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <h1>Reports & Analytics</h1>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+  <!-- Tab navigation -->
+  <div class="tab-nav" style="display: flex; border-bottom: 1px solid var(--color-border); background: #F9FAFB;">
+    <button class="tab-link active" onclick="switchReportsTab(event, 'tab-revenue')" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;">Revenue Report</button>
+    <button class="tab-link" onclick="switchReportsTab(event, 'tab-gst')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">GST Tax Collected</button>
+    <button class="tab-link" onclick="switchReportsTab(event, 'tab-ledger')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Customer Ledger</button>
+    <button class="tab-link" onclick="switchReportsTab(event, 'tab-overdue')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Overdue & Ageing</button>
+  </div>
+
+  <!-- Tab Content Container -->
+  <div class="tab-content-container" style="padding: 24px;">
+    
+    <!-- Tab 1: Revenue Report -->
+    <div id="tab-revenue" class="reports-tab-pane" style="display: block;">
+      <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-end; flex-wrap: wrap;">
+        <div class="form-group" style="margin-bottom: 0; width: 150px;">
+          <label>From Date</label>
+          <input type="date" id="rev-from">
+        </div>
+        <div class="form-group" style="margin-bottom: 0; width: 150px;">
+          <label>To Date</label>
+          <input type="date" id="rev-to">
+        </div>
+        <button id="btn-rev-filter" class="btn btn-primary">Run Report</button>
+        <button id="btn-rev-csv" class="btn">Export CSV</button>
+      </div>
+
+      <!-- Stats Summary -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Invoices Count</div>
+          <div id="rev-stat-count" style="font-size: 20px; font-weight: 700;">0</div>
+        </div>
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Billed</div>
+          <div id="rev-stat-total" style="font-size: 20px; font-weight: 700; color: var(--color-primary);">₹0.00</div>
+        </div>
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Paid</div>
+          <div id="rev-stat-paid" style="font-size: 20px; font-weight: 700; color: var(--color-success);">₹0.00</div>
+        </div>
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Outstanding</div>
+          <div id="rev-stat-unpaid" style="font-size: 20px; font-weight: 700; color: var(--color-warning);">₹0.00</div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Bill No</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th style="text-align: right;">Amount</th>
+              <th style="text-align: right;">Paid</th>
+              <th style="text-align: right;">Outstanding</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="rev-tbody">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 2: GST Tax Collected -->
+    <div id="tab-gst" class="reports-tab-pane" style="display: none;">
+      <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-end; flex-wrap: wrap;">
+        <div class="form-group" style="margin-bottom: 0; width: 120px;">
+          <label>Select Year</label>
+          <select id="gst-year">
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0; width: 120px;">
+          <label>Select Month</label>
+          <select id="gst-month">
+            <option value="01">January</option>
+            <option value="02">February</option>
+            <option value="03">March</option>
+            <option value="04">April</option>
+            <option value="05">May</option>
+            <option value="06" selected>June</option>
+            <option value="07">July</option>
+            <option value="08">August</option>
+            <option value="09">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+        </div>
+        <button id="btn-gst-filter" class="btn btn-primary">Run Report</button>
+        <button id="btn-gst-gstr1" class="btn btn-success">Export GSTR-1 JSON</button>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>GST Rate</th>
+              <th style="text-align: right;">Taxable Amount</th>
+              <th style="text-align: right;">CGST</th>
+              <th style="text-align: right;">SGST</th>
+              <th style="text-align: right;">IGST</th>
+              <th style="text-align: right;">Total Tax</th>
+            </tr>
+          </thead>
+          <tbody id="gst-tbody">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 3: Customer Ledger -->
+    <div id="tab-ledger" class="reports-tab-pane" style="display: none;">
+      <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-end; flex-wrap: wrap;">
+        <div class="form-group" style="margin-bottom: 0; width: 250px;">
+          <label>Select Customer</label>
+          <select id="ledger-customer">
+            <option value="">Choose Customer...</option>
+          </select>
+        </div>
+        <button id="btn-ledger-filter" class="btn btn-primary">Run Ledger</button>
+        <button id="btn-ledger-csv" class="btn">Export CSV</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Billed</div>
+          <div id="ledger-stat-billed" style="font-size: 20px; font-weight: 700;">₹0.00</div>
+        </div>
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Paid</div>
+          <div id="ledger-stat-paid" style="font-size: 20px; font-weight: 700; color: var(--color-success);">₹0.00</div>
+        </div>
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Outstanding</div>
+          <div id="ledger-stat-due" style="font-size: 20px; font-weight: 700; color: var(--color-warning);">₹0.00</div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Bill No</th>
+              <th>Bill Date</th>
+              <th>Due Date</th>
+              <th style="text-align: right;">Billed Amount</th>
+              <th style="text-align: right;">Paid Amount</th>
+              <th style="text-align: right;">Due Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-tbody">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 4: Overdue & Ageing -->
+    <div id="tab-overdue" class="reports-tab-pane" style="display: none;">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+        <button id="btn-overdue-csv" class="btn">Export CSV</button>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Bill No</th>
+              <th>Customer</th>
+              <th>Due Date</th>
+              <th style="text-align: right;">Total Amount</th>
+              <th style="text-align: right;">Balance Due</th>
+              <th>Ageing Bucket</th>
+            </tr>
+          </thead>
+          <tbody id="overdue-tbody">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function switchReportsTab(evt, tabId) {
+  var tabPanes = document.getElementsByClassName("reports-tab-pane");
+  for (var i = 0; i < tabPanes.length; i++) {
+    tabPanes[i].style.display = "none";
+  }
+  var tabLinks = document.getElementsByClassName("tab-link");
+  for (var i = 0; i < tabLinks.length; i++) {
+    tabLinks[i].classList.remove("active");
+    tabLinks[i].style.color = "var(--color-text-muted)";
+    tabLinks[i].style.borderBottom = "none";
+    tabLinks[i].style.fontWeight = "500";
+  }
+  document.getElementById(tabId).style.display = "block";
+  evt.currentTarget.classList.add("active");
+  evt.currentTarget.style.color = "var(--color-primary)";
+  evt.currentTarget.style.borderBottom = "2px solid var(--color-primary)";
+  evt.currentTarget.style.fontWeight = "600";
+}
+</script>

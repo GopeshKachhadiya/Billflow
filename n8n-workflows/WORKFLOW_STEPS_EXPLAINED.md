@@ -1,0 +1,576 @@
+# BillFlow Automations Explained
+
+This document explains what every step in the 22 automated workflows is responsible for.
+
+## WF-01
+- **WF-01: Webhook: Bill Created** 
+  - *Type*: `n8n-nodes-base.webhook`
+  - *Purpose*: Executes the Webhook: Bill Created operation.
+- **WF-01: Extract Variables** 
+  - *Type*: `n8n-nodes-base.set`
+  - *Purpose*: Executes the Extract Variables operation.
+- **WF-01: Supabase Upsert Bill** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase Upsert Bill operation.
+- **WF-01: Supabase Upsert Customer** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase Upsert Customer operation.
+- **WF-01: Supabase Upsert Tax Record** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase Upsert Tax Record operation.
+- **WF-01: Bill Status = Sent?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Bill Status = Sent? operation.
+- **WF-01: Respond 200 OK** 
+  - *Type*: `n8n-nodes-base.respondToWebhook`
+  - *Purpose*: Executes the Respond 200 OK operation.
+
+## WF-02
+- **WF-02: Webhook: Bill Send** 
+  - *Type*: `n8n-nodes-base.webhook`
+  - *Purpose*: Executes the Webhook: Bill Send operation.
+- **WF-02: Set Variables** 
+  - *Type*: `n8n-nodes-base.set`
+  - *Purpose*: Executes the Set Variables operation.
+- **WF-02: Supabase: Mark Sent** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Mark Sent operation.
+- **WF-02: Send Email?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Send Email? operation.
+- **WF-02: Email: Invoice to Customer** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Invoice to Customer operation.
+- **WF-02: Send WhatsApp?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Send WhatsApp? operation.
+- **WF-02: WATI: Invoice Sent WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: Invoice Sent WA operation.
+- **WF-02: Send SMS?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Send SMS? operation.
+- **WF-02: MSG91: Bill Sent SMS** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the MSG91: Bill Sent SMS operation.
+- **WF-02: Email: Owner Copy** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Owner Copy operation.
+- **WF-02: Respond 200 OK** 
+  - *Type*: `n8n-nodes-base.respondToWebhook`
+  - *Purpose*: Executes the Respond 200 OK operation.
+
+## WF-03
+- **WF-03: Webhook: Bill Paid** 
+  - *Type*: `n8n-nodes-base.webhook`
+  - *Purpose*: Executes the Webhook: Bill Paid operation.
+- **WF-03: Set Variables** 
+  - *Type*: `n8n-nodes-base.set`
+  - *Purpose*: Executes the Set Variables operation.
+- **WF-03: Supabase: Mark Paid** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Mark Paid operation.
+- **WF-03: Supabase: Log Payment** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Log Payment operation.
+- **WF-03: Email: Receipt to Customer** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Receipt to Customer operation.
+- **WF-03: Owner WA Enabled?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Owner WA Enabled? operation.
+- **WF-03: WATI: Payment Received WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: Payment Received WA operation.
+- **WF-03: Email: Owner Notification** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Owner Notification operation.
+- **WF-03: Respond 200 OK** 
+  - *Type*: `n8n-nodes-base.respondToWebhook`
+  - *Purpose*: Executes the Respond 200 OK operation.
+
+## WF-04
+- **WF-04: Webhook: Bill Cancelled** 
+  - *Type*: `n8n-nodes-base.webhook`
+  - *Purpose*: Executes the Webhook: Bill Cancelled operation.
+- **WF-04: Set Variables** 
+  - *Type*: `n8n-nodes-base.set`
+  - *Purpose*: Executes the Set Variables operation.
+- **WF-04: Supabase: Mark Cancelled** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Mark Cancelled operation.
+- **WF-04: Was Previously Sent?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Was Previously Sent? operation.
+- **WF-04: Email: Cancellation Notice** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Cancellation Notice operation.
+- **WF-04: WATI: Cancellation WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: Cancellation WA operation.
+- **WF-04: Respond 200 OK** 
+  - *Type*: `n8n-nodes-base.respondToWebhook`
+  - *Purpose*: Executes the Respond 200 OK operation.
+
+## WF-05
+- **WF-05: Webhook: Customer Saved** 
+  - *Type*: `n8n-nodes-base.webhook`
+  - *Purpose*: Executes the Webhook: Customer Saved operation.
+- **WF-05: Route: Insert or Update** 
+  - *Type*: `n8n-nodes-base.switch`
+  - *Purpose*: Executes the Route: Insert or Update operation.
+- **WF-05: Supabase: Insert Customer** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Insert Customer operation.
+- **WF-05: Has Email?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Has Email? operation.
+- **WF-05: Email: Welcome New Customer** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Welcome New Customer operation.
+- **WF-05: Supabase: Update Customer** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Update Customer operation.
+- **WF-05: Respond 200 OK** 
+  - *Type*: `n8n-nodes-base.respondToWebhook`
+  - *Purpose*: Executes the Respond 200 OK operation.
+
+## WF-06
+- **WF-06: Webhook: Item Saved** 
+  - *Type*: `n8n-nodes-base.webhook`
+  - *Purpose*: Executes the Webhook: Item Saved operation.
+- **WF-06: Route: Operation Type** 
+  - *Type*: `n8n-nodes-base.switch`
+  - *Purpose*: Executes the Route: Operation Type operation.
+- **WF-06: Supabase: Insert Item** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Insert Item operation.
+- **WF-06: Supabase: Update Item** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Update Item operation.
+- **WF-06: Supabase: Soft Delete Item** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Soft Delete Item operation.
+- **WF-06: Respond 200 OK** 
+  - *Type*: `n8n-nodes-base.respondToWebhook`
+  - *Purpose*: Executes the Respond 200 OK operation.
+
+## WF-07
+- **WF-07: Webhook: Sync Push** 
+  - *Type*: `n8n-nodes-base.webhook`
+  - *Purpose*: Executes the Webhook: Sync Push operation.
+- **WF-07: Split In Batches** 
+  - *Type*: `n8n-nodes-base.splitInBatches`
+  - *Purpose*: Executes the Split In Batches operation.
+- **WF-07: Route by Table+Operation** 
+  - *Type*: `n8n-nodes-base.switch`
+  - *Purpose*: Executes the Route by Table+Operation operation.
+- **WF-07: Supabase: Upsert Record** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Upsert Record operation.
+- **WF-07: Supabase: Patch Record** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Patch Record operation.
+- **WF-07: Respond with Summary** 
+  - *Type*: `n8n-nodes-base.respondToWebhook`
+  - *Purpose*: Executes the Respond with Summary operation.
+
+## WF-08
+- **WF-08: Webhook: Report Request** 
+  - *Type*: `n8n-nodes-base.webhook`
+  - *Purpose*: Executes the Webhook: Report Request operation.
+- **WF-08: Route by Report Type** 
+  - *Type*: `n8n-nodes-base.switch`
+  - *Purpose*: Executes the Route by Report Type operation.
+- **WF-08: Fetch: GST Tax Records** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: GST Tax Records operation.
+- **WF-08: Build GST Report HTML** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Build GST Report HTML operation.
+- **WF-08: Email: GST Report** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: GST Report operation.
+- **WF-08: Fetch: Revenue Bills** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Revenue Bills operation.
+- **WF-08: Build Revenue Report** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Build Revenue Report operation.
+- **WF-08: Email: Revenue Report** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Revenue Report operation.
+- **WF-08: Fetch: Overdue Bills** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Overdue Bills operation.
+- **WF-08: Build Overdue Report** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Build Overdue Report operation.
+- **WF-08: Email: Overdue Report** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Overdue Report operation.
+- **WF-08: Respond 200 OK** 
+  - *Type*: `n8n-nodes-base.respondToWebhook`
+  - *Purpose*: Executes the Respond 200 OK operation.
+
+## WF-09
+- **WF-09: Webhook: Settings Updated** 
+  - *Type*: `n8n-nodes-base.webhook`
+  - *Purpose*: Executes the Webhook: Settings Updated operation.
+- **WF-09: Supabase: Update Profile** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Update Profile operation.
+- **WF-09: Respond 200 OK** 
+  - *Type*: `n8n-nodes-base.respondToWebhook`
+  - *Purpose*: Executes the Respond 200 OK operation.
+
+## WF-10
+- **WF-10: Cron: 8 AM Daily** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: 8 AM Daily operation.
+- **WF-10: Fetch: Overdue Bills** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Overdue Bills operation.
+- **WF-10: Fetch: Bills Due Today** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Bills Due Today operation.
+- **WF-10: Fetch: Month Revenue** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Month Revenue operation.
+- **WF-10: Build Daily Summary** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Build Daily Summary operation.
+- **WF-10: Summary Enabled?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Summary Enabled? operation.
+- **WF-10: Email: Daily Summary to Owner** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Daily Summary to Owner operation.
+- **WF-10: Owner WA Enabled?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Owner WA Enabled? operation.
+- **WF-10: WATI: Daily Summary WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: Daily Summary WA operation.
+
+## WF-11
+- **WF-11: Cron: 9 AM Monthly** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: 9 AM Monthly operation.
+- **WF-11: Calculate: Due Date +7** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Calculate: Due Date +7 operation.
+- **WF-11: Fetch: Bills Due in 7 Days** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Bills Due in 7 Days operation.
+- **WF-11: Any Bills Found?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Any Bills Found? operation.
+- **WF-11: Process Each Bill** 
+  - *Type*: `n8n-nodes-base.splitInBatches`
+  - *Purpose*: Executes the Process Each Bill operation.
+- **WF-11: Fetch: Customer Details** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Customer Details operation.
+- **WF-11: Email: 7-Day Reminder** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: 7-Day Reminder operation.
+- **WF-11: Has Phone?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Has Phone? operation.
+- **WF-11: WATI: 7-Day Reminder WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: 7-Day Reminder WA operation.
+
+## WF-12
+- **WF-12: Cron: 9 AM Monthly** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: 9 AM Monthly operation.
+- **WF-12: Calculate: Due Date +3** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Calculate: Due Date +3 operation.
+- **WF-12: Fetch: Bills Due in 3 Days** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Bills Due in 3 Days operation.
+- **WF-12: Any Bills Found?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Any Bills Found? operation.
+- **WF-12: Process Each Bill** 
+  - *Type*: `n8n-nodes-base.splitInBatches`
+  - *Purpose*: Executes the Process Each Bill operation.
+- **WF-12: Fetch: Customer Details** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Customer Details operation.
+- **WF-12: Email: 3-Day Reminder** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: 3-Day Reminder operation.
+- **WF-12: Has Phone?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Has Phone? operation.
+- **WF-12: WATI: 3-Day Reminder WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: 3-Day Reminder WA operation.
+- **WF-12: MSG91: 3-Day Reminder SMS** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the MSG91: 3-Day Reminder SMS operation.
+
+## WF-13
+- **WF-13: Cron: 9 AM Monthly** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: 9 AM Monthly operation.
+- **WF-13: Calculate: Due Date +1** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Calculate: Due Date +1 operation.
+- **WF-13: Fetch: Bills Due Tomorrow** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Bills Due Tomorrow operation.
+- **WF-13: Any Bills Found?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Any Bills Found? operation.
+- **WF-13: Process Each Bill** 
+  - *Type*: `n8n-nodes-base.splitInBatches`
+  - *Purpose*: Executes the Process Each Bill operation.
+- **WF-13: Fetch: Customer Details** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Customer Details operation.
+- **WF-13: Email: 1-Day Final Reminder** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: 1-Day Final Reminder operation.
+- **WF-13: WATI: 1-Day Reminder WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: 1-Day Reminder WA operation.
+- **WF-13: Build Owner Alert** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Build Owner Alert operation.
+- **WF-13: Email: Owner Alert** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Owner Alert operation.
+
+## WF-14
+- **WF-14: Cron: 10 AM Monthly** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: 10 AM Monthly operation.
+- **WF-14: Calculate: Yesterday** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Calculate: Yesterday operation.
+- **WF-14: Fetch: Newly Overdue Bills** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Newly Overdue Bills operation.
+- **WF-14: Any Overdue?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Any Overdue? operation.
+- **WF-14: Process Each Bill** 
+  - *Type*: `n8n-nodes-base.splitInBatches`
+  - *Purpose*: Executes the Process Each Bill operation.
+- **WF-14: Supabase: Flag Overdue** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Flag Overdue operation.
+- **WF-14: Fetch: Customer Details** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Customer Details operation.
+- **WF-14: Email: Overdue Notice Day-1** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Overdue Notice Day-1 operation.
+- **WF-14: WATI: Overdue Notice WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: Overdue Notice WA operation.
+- **WF-14: MSG91: Overdue SMS** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the MSG91: Overdue SMS operation.
+- **WF-14: Email: Owner Overdue Alert** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Owner Overdue Alert operation.
+
+## WF-15
+- **WF-15: Cron: 10 AM Monthly** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: 10 AM Monthly operation.
+- **WF-15: Calculate: 7 Days Ago** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Calculate: 7 Days Ago operation.
+- **WF-15: Fetch: 7-Day Overdue Bills** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: 7-Day Overdue Bills operation.
+- **WF-15: Any Found?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Any Found? operation.
+- **WF-15: Process Each Bill** 
+  - *Type*: `n8n-nodes-base.splitInBatches`
+  - *Purpose*: Executes the Process Each Bill operation.
+- **WF-15: Fetch: Customer Details** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Customer Details operation.
+- **WF-15: Email: Day-7 Follow-Up** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Day-7 Follow-Up operation.
+- **WF-15: Has Phone?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Has Phone? operation.
+- **WF-15: WATI: Day-7 WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: Day-7 WA operation.
+- **WF-15: Log: Communication** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Log: Communication operation.
+
+## WF-16
+- **WF-16: Cron: 10 AM Monthly** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: 10 AM Monthly operation.
+- **WF-16: Calculate: 30 Days Ago** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Calculate: 30 Days Ago operation.
+- **WF-16: Fetch: 30-Day Overdue Bills** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: 30-Day Overdue Bills operation.
+- **WF-16: Any Found?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Any Found? operation.
+- **WF-16: Process Each Bill** 
+  - *Type*: `n8n-nodes-base.splitInBatches`
+  - *Purpose*: Executes the Process Each Bill operation.
+- **WF-16: Supabase: Flag Escalated** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Flag Escalated operation.
+- **WF-16: Fetch: Customer Details** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Customer Details operation.
+- **WF-16: Email: Escalation Formal** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Escalation Formal operation.
+- **WF-16: MSG91: Escalation SMS** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the MSG91: Escalation SMS operation.
+- **WF-16: Email: Owner Escalation Alert** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Owner Escalation Alert operation.
+
+## WF-17
+- **WF-17: Cron: Monday 9 AM** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: Monday 9 AM operation.
+- **WF-17: Fetch: All Overdue Bills** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: All Overdue Bills operation.
+- **WF-17: Build: Ageing Report** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Build: Ageing Report operation.
+- **WF-17: Weekly Report Enabled?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Weekly Report Enabled? operation.
+- **WF-17: Email: Weekly Overdue Report** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Weekly Overdue Report operation.
+- **WF-17: Owner WA Enabled?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Owner WA Enabled? operation.
+- **WF-17: WATI: Weekly Summary WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: Weekly Summary WA operation.
+
+## WF-18
+- **WF-18: Cron: 1st of Month** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: 1st of Month operation.
+- **WF-18: Calculate: Previous Month** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Calculate: Previous Month operation.
+- **WF-18: Fetch: Tax Records** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Tax Records operation.
+- **WF-18: Build: GST Report** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Build: GST Report operation.
+- **WF-18: GST Report Enabled?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the GST Report Enabled? operation.
+- **WF-18: Email: GST Report to Owner+CA** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: GST Report to Owner+CA operation.
+- **WF-18: Owner WA Enabled?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Owner WA Enabled? operation.
+- **WF-18: WATI: GST Summary WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: GST Summary WA operation.
+- **WF-18: Supabase: Log Report** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Log Report operation.
+
+## WF-19
+- **WF-19: Cron: 15th of Mar/Jun/Sep/Dec** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: 15th of Mar/Jun/Sep/Dec operation.
+- **WF-19: Calculate: Quarter Info** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Calculate: Quarter Info operation.
+- **WF-19: Email: GST Filing Reminder** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: GST Filing Reminder operation.
+- **WF-19: Owner WA Enabled?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Owner WA Enabled? operation.
+- **WF-19: WATI: Filing Reminder WA** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the WATI: Filing Reminder WA operation.
+
+## WF-20
+- **WF-20: Cron: Monday 9 AM** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: Monday 9 AM operation.
+- **WF-20: Calculate: Week Dates** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Calculate: Week Dates operation.
+- **WF-20: Fetch: Last Week Paid Bills** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Last Week Paid Bills operation.
+- **WF-20: Fetch: Month Revenue So Far** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Month Revenue So Far operation.
+- **WF-20: Build: Weekly Revenue Report** 
+  - *Type*: `n8n-nodes-base.code`
+  - *Purpose*: Executes the Build: Weekly Revenue Report operation.
+- **WF-20: Weekly Report Enabled?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Weekly Report Enabled? operation.
+- **WF-20: Email: Weekly Revenue Report** 
+  - *Type*: `n8n-nodes-base.emailSend`
+  - *Purpose*: Executes the Email: Weekly Revenue Report operation.
+
+## WF-21
+- **WF-21: Cron: Every 15 Minutes** 
+  - *Type*: `n8n-nodes-base.scheduleTrigger`
+  - *Purpose*: Executes the Cron: Every 15 Minutes operation.
+- **WF-21: Fetch: Unprocessed Sync Events** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Fetch: Unprocessed Sync Events operation.
+- **WF-21: Any Pending Events?** 
+  - *Type*: `n8n-nodes-base.if`
+  - *Purpose*: Executes the Any Pending Events? operation.
+- **WF-21: Batch Process Events** 
+  - *Type*: `n8n-nodes-base.splitInBatches`
+  - *Purpose*: Executes the Batch Process Events operation.
+- **WF-21: Route: Operation** 
+  - *Type*: `n8n-nodes-base.switch`
+  - *Purpose*: Executes the Route: Operation operation.
+- **WF-21: Supabase: Upsert** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Upsert operation.
+- **WF-21: Supabase: Patch** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Patch operation.
+- **WF-21: Supabase: Soft Delete** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Soft Delete operation.
+- **WF-21: Mark Event Processed** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Mark Event Processed operation.
+
+## WF-22
+- **WF-22: Receive: Sub-workflow Trigger** 
+  - *Type*: `n8n-nodes-base.executeWorkflowTrigger`
+  - *Purpose*: Executes the Receive: Sub-workflow Trigger operation.
+- **WF-22: Supabase: Insert Comm Log** 
+  - *Type*: `n8n-nodes-base.httpRequest`
+  - *Purpose*: Executes the Supabase: Insert Comm Log operation.
+

@@ -1,0 +1,202 @@
+<style>
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #content, #content * {
+    visibility: visible;
+  }
+  #content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .invoice-container {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+.invoice-container {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 40px;
+  max-width: 850px;
+  margin: 0 auto 24px auto;
+  color: #111;
+  font-family: 'Inter', sans-serif;
+}
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid #333;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+.invoice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 24px;
+}
+.invoice-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+.invoice-details-table th {
+  background: #333;
+  color: #fff;
+  font-size: 11px;
+  padding: 8px 10px;
+  font-weight: 600;
+}
+.invoice-details-table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  font-size: 12px;
+}
+.invoice-totals {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+.invoice-totals-table {
+  width: 300px;
+  border-collapse: collapse;
+}
+.invoice-totals-table td {
+  padding: 6px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid #eee;
+}
+</style>
+
+<div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <button id="btn-back" class="btn">← Back to List</button>
+  <div style="display: flex; gap: 12px;">
+    <button id="btn-download-pdf" class="btn btn-primary">Download PDF</button>
+    <button id="btn-print" class="btn btn-success">Print Invoice</button>
+  </div>
+</div>
+
+<div class="invoice-container">
+  <!-- Invoice Header -->
+  <div class="invoice-header">
+    <div>
+      <h2 id="biz-name" style="font-size: 24px; font-weight: 700; margin-bottom: 4px; color: #111;">Business Name</h2>
+      <div id="biz-address" style="font-size: 12px; color: #555; line-height: 1.4;">Business Address</div>
+      <div style="font-size: 12px; font-weight: 600; margin-top: 6px;">GSTIN: <span id="biz-gstin">27AAAAA0000A1Z5</span></div>
+    </div>
+    <div style="text-align: right;">
+      <h1 style="font-size: 28px; font-weight: 800; color: #333; margin-bottom: 10px; letter-spacing: -0.5px;">TAX INVOICE</h1>
+      <div style="font-size: 13px; margin-bottom: 4px;"><strong>Invoice No:</strong> <span id="inv-number">INV-001</span></div>
+      <div style="font-size: 13px; margin-bottom: 4px;"><strong>Date:</strong> <span id="inv-date">09/06/2026</span></div>
+      <div style="font-size: 13px;"><strong>Due Date:</strong> <span id="inv-due-date">09/07/2026</span></div>
+    </div>
+  </div>
+
+  <!-- Billing Grid -->
+  <div class="invoice-grid">
+    <div>
+      <h3 style="font-size: 12px; text-transform: uppercase; color: #666; margin-bottom: 8px; font-weight: 600;">Bill To:</h3>
+      <div id="cust-name" style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">Customer Name</div>
+      <div id="cust-address" style="font-size: 12px; color: #555; line-height: 1.4; white-space: pre-line;">Customer Address</div>
+      <div id="cust-contact" style="font-size: 12px; color: #555; margin-top: 4px;">Phone: 9876543210 | Email: mail@domain.com</div>
+      <div style="font-size: 12px; font-weight: 600; margin-top: 6px;">GSTIN: <span id="cust-gstin">—</span></div>
+    </div>
+    <div style="text-align: right;">
+      <h3 style="font-size: 12px; text-transform: uppercase; color: #666; margin-bottom: 8px; font-weight: 600;">Place of Supply:</h3>
+      <div id="place-of-supply" style="font-size: 13px; font-weight: 600;">Maharashtra (27)</div>
+      <div style="font-size: 13px; margin-top: 4px;"><strong>Supply Type:</strong> <span id="supply-type">Intrastate</span></div>
+    </div>
+  </div>
+
+  <!-- Line Items Table -->
+  <table class="invoice-details-table">
+    <thead>
+      <tr>
+        <th style="width: 40px; text-align: center;">#</th>
+        <th>Description</th>
+        <th style="width: 70px; text-align: center;">HSN</th>
+        <th style="width: 50px; text-align: center;">Qty</th>
+        <th style="width: 80px; text-align: right;">Rate</th>
+        <th style="width: 60px; text-align: right;">Disc%</th>
+        <th style="width: 80px; text-align: right;">Taxable</th>
+        <th style="width: 50px; text-align: center;">GST%</th>
+        <th style="width: 90px; text-align: right;">Taxes</th>
+        <th style="width: 100px; text-align: right;">Total</th>
+      </tr>
+    </thead>
+    <tbody id="items-tbody">
+      <!-- Dynamic rows -->
+    </tbody>
+  </table>
+
+  <!-- Summary Section -->
+  <div style="display: grid; grid-template-columns: 1fr auto; gap: 40px; margin-top: 10px;">
+    <div>
+      <div style="font-size: 12px; margin-bottom: 8px;"><strong>Amount in Words:</strong></div>
+      <div id="amount-words" style="font-size: 13px; font-weight: 700; color: #333; font-style: italic; margin-bottom: 20px;">Rupees One Thousand Only</div>
+      
+      <div id="notes-container" style="font-size: 11px; color: #555; margin-bottom: 12px; display: none;">
+        <strong>Notes:</strong> <span id="inv-notes">...</span>
+      </div>
+      <div id="terms-container" style="font-size: 11px; color: #555; display: none;">
+        <strong>Terms & Conditions:</strong> <span id="inv-terms">...</span>
+      </div>
+      
+      <!-- Bank details -->
+      <div id="bank-container" style="font-size: 11px; color: #555; margin-top: 16px; border-top: 1px solid #ddd; padding-top: 10px; display: none;">
+        <strong>Bank Details:</strong> <span id="bank-details">Bank: HDFC | A/C: 12345 | IFSC: HDFC0001</span>
+      </div>
+    </div>
+    <div>
+      <table class="invoice-totals-table">
+        <tr>
+          <td>Subtotal:</td>
+          <td id="total-subtotal" style="text-align: right; font-weight: 500;">₹0.00</td>
+        </tr>
+        <tr id="row-discount" style="display: none;">
+          <td>Discount:</td>
+          <td id="total-discount" style="text-align: right; color: var(--color-danger);">₹0.00</td>
+        </tr>
+        <tr>
+          <td>Taxable Value:</td>
+          <td id="total-taxable" style="text-align: right; font-weight: 500;">₹0.00</td>
+        </tr>
+        <tr id="row-cgst" style="display: none;">
+          <td>CGST:</td>
+          <td id="total-cgst" style="text-align: right;">₹0.00</td>
+        </tr>
+        <tr id="row-sgst" style="display: none;">
+          <td>SGST:</td>
+          <td id="total-sgst" style="text-align: right;">₹0.00</td>
+        </tr>
+        <tr id="row-igst" style="display: none;">
+          <td>IGST:</td>
+          <td id="total-igst" style="text-align: right;">₹0.00</td>
+        </tr>
+        <tr>
+          <td>Round-off:</td>
+          <td id="total-roundoff" style="text-align: right; font-style: italic;">₹0.00</td>
+        </tr>
+        <tr style="border-top: 2px solid #333; font-size: 16px; font-weight: 800;">
+          <td style="padding: 10px 10px;">Grand Total:</td>
+          <td id="total-grand" style="text-align: right; padding: 10px 10px; color: var(--color-primary);">₹0.00</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

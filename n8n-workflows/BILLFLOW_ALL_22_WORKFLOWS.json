@@ -1,0 +1,6692 @@
+{
+  "id": "billflowcore0001",
+  "name": "BillFlow Core Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bill-created",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf01-node-01",
+      "name": "WF-01: Webhook: Bill Created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "originalName": "Webhook: Bill Created"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "bill_id",
+              "value": "={{ $json.body.bill.id }}"
+            },
+            {
+              "name": "bill_number",
+              "value": "={{ $json.body.bill.bill_number }}"
+            },
+            {
+              "name": "bill_date",
+              "value": "={{ $json.body.bill.bill_date }}"
+            },
+            {
+              "name": "due_date",
+              "value": "={{ $json.body.bill.due_date }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.body.bill.status }}"
+            },
+            {
+              "name": "grand_total",
+              "value": "={{ $json.body.bill.grand_total }}"
+            },
+            {
+              "name": "total_cgst",
+              "value": "={{ $json.body.bill.total_cgst }}"
+            },
+            {
+              "name": "total_sgst",
+              "value": "={{ $json.body.bill.total_sgst }}"
+            },
+            {
+              "name": "total_igst",
+              "value": "={{ $json.body.bill.total_igst }}"
+            },
+            {
+              "name": "supply_type",
+              "value": "={{ $json.body.bill.supply_type }}"
+            },
+            {
+              "name": "customer_id",
+              "value": "={{ $json.body.customer.id }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.name }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $json.body.customer.email }}"
+            },
+            {
+              "name": "customer_phone",
+              "value": "={{ $json.body.customer.phone }}"
+            },
+            {
+              "name": "customer_gstin",
+              "value": "={{ $json.body.customer.gstin }}"
+            },
+            {
+              "name": "customer_state",
+              "value": "={{ $json.body.customer.state }}"
+            },
+            {
+              "name": "business_name",
+              "value": "={{ $json.body.business.name }}"
+            },
+            {
+              "name": "business_gstin",
+              "value": "={{ $json.body.business.gstin }}"
+            },
+            {
+              "name": "owner_email",
+              "value": "={{ $json.body.business.owner_email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf01-node-02",
+      "name": "WF-01: Extract Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "originalName": "Extract Variables"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ id: $json.bill_id, bill_number: $json.bill_number, bill_date: $json.bill_date, due_date: $json.due_date, status: $json.status, grand_total: parseFloat($json.grand_total), total_cgst: parseFloat($json.total_cgst), total_sgst: parseFloat($json.total_sgst), total_igst: parseFloat($json.total_igst), supply_type: $json.supply_type, customer_id: $json.customer_id }) }}",
+        "options": {}
+      },
+      "id": "wf01-node-03",
+      "name": "WF-01: Supabase Upsert Bill",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        680,
+        300
+      ],
+      "originalName": "Supabase Upsert Bill"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ id: $('WF-01: Webhook: Bill Created').item.json.body.customer.id, name: $('WF-01: Webhook: Bill Created').item.json.body.customer.name, email: $('WF-01: Webhook: Bill Created').item.json.body.customer.email, phone: $('WF-01: Webhook: Bill Created').item.json.body.customer.phone, gstin: $('WF-01: Webhook: Bill Created').item.json.body.customer.gstin, state: $('WF-01: Webhook: Bill Created').item.json.body.customer.state }) }}",
+        "options": {}
+      },
+      "id": "wf01-node-04",
+      "name": "WF-01: Supabase Upsert Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        900,
+        300
+      ],
+      "originalName": "Supabase Upsert Customer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/tax_records",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ bill_id: $('WF-01: Extract Variables').item.json.bill_id, bill_date: $('WF-01: Extract Variables').item.json.bill_date, supply_type: $('WF-01: Extract Variables').item.json.supply_type, total_cgst: parseFloat($('WF-01: Extract Variables').item.json.total_cgst), total_sgst: parseFloat($('WF-01: Extract Variables').item.json.total_sgst), total_igst: parseFloat($('WF-01: Extract Variables').item.json.total_igst) }) }}",
+        "options": {}
+      },
+      "id": "wf01-node-05",
+      "name": "WF-01: Supabase Upsert Tax Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1120,
+        300
+      ],
+      "originalName": "Supabase Upsert Tax Record"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('WF-01: Webhook: Bill Created').item.json.body.bill.status }}",
+              "operation": "equals",
+              "value2": "sent"
+            }
+          ]
+        }
+      },
+      "id": "wf01-node-06",
+      "name": "WF-01: Bill Status = Sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        300
+      ],
+      "originalName": "Bill Status = Sent?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": true, \"message\": \"Bill created and synced\", \"bill_id\": \"{{ $('WF-01: Extract Variables').item.json.bill_id }}\" }",
+        "options": {}
+      },
+      "id": "wf01-node-08",
+      "name": "WF-01: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        400
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bill-send",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf02-node-01",
+      "name": "WF-02: Webhook: Bill Send",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        2740,
+        400
+      ],
+      "originalName": "Webhook: Bill Send"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "bill_id",
+              "value": "={{ $json.body.bill.id }}"
+            },
+            {
+              "name": "bill_number",
+              "value": "={{ $json.body.bill.bill_number }}"
+            },
+            {
+              "name": "due_date",
+              "value": "={{ $json.body.bill.due_date }}"
+            },
+            {
+              "name": "grand_total",
+              "value": "={{ $json.body.bill.grand_total }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.name }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $json.body.customer.email }}"
+            },
+            {
+              "name": "customer_phone",
+              "value": "={{ $json.body.customer.phone }}"
+            },
+            {
+              "name": "business_name",
+              "value": "={{ $json.body.business.name }}"
+            },
+            {
+              "name": "business_gstin",
+              "value": "={{ $json.body.business.gstin }}"
+            },
+            {
+              "name": "owner_email",
+              "value": "={{ $json.body.business.owner_email }}"
+            },
+            {
+              "name": "owner_phone",
+              "value": "={{ $json.body.business.owner_phone }}"
+            },
+            {
+              "name": "pdf_base64",
+              "value": "={{ $json.body.pdf_base64 }}"
+            },
+            {
+              "name": "bank_name",
+              "value": "={{ $json.body.business.bank_name }}"
+            },
+            {
+              "name": "bank_account",
+              "value": "={{ $json.body.business.bank_account }}"
+            },
+            {
+              "name": "bank_ifsc",
+              "value": "={{ $json.body.business.bank_ifsc }}"
+            }
+          ],
+          "boolean": [
+            {
+              "name": "send_email",
+              "value": "={{ ($json.body.send_channels || ['email']).includes('email') }}"
+            },
+            {
+              "name": "send_whatsapp",
+              "value": "={{ ($json.body.send_channels || []).includes('whatsapp') }}"
+            },
+            {
+              "name": "send_sms",
+              "value": "={{ ($json.body.send_channels || []).includes('sms') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf02-node-02",
+      "name": "WF-02: Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        2960,
+        400
+      ],
+      "originalName": "Set Variables"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?id=eq.{{ $json.bill_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"status\": \"sent\", \"updated_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf02-node-03",
+      "name": "WF-02: Supabase: Mark Sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3180,
+        400
+      ],
+      "originalName": "Supabase: Mark Sent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('WF-02: Set Variables').item.json.send_email }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "wf02-node-04",
+      "name": "WF-02: Send Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        400
+      ],
+      "originalName": "Send Email?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $('WF-02: Set Variables').item.json.customer_email }}",
+        "subject": "=Invoice {{ $('WF-02: Set Variables').item.json.bill_number }} from {{ $('WF-02: Set Variables').item.json.business_name }} — ₹{{ $('WF-02: Set Variables').item.json.grand_total }}",
+        "html": "=<p>Dear {{ $('WF-02: Set Variables').item.json.customer_name }},</p><p>Please find attached <strong>Invoice {{ $('WF-02: Set Variables').item.json.bill_number }}</strong> for ₹{{ $('WF-02: Set Variables').item.json.grand_total }}.</p><p><strong>Due Date:</strong> {{ $('WF-02: Set Variables').item.json.due_date }}</p><p>Bank Details:<br>Bank: {{ $('WF-02: Set Variables').item.json.bank_name }}<br>Account: {{ $('WF-02: Set Variables').item.json.bank_account }}<br>IFSC: {{ $('WF-02: Set Variables').item.json.bank_ifsc }}</p><p>Thank you for your business.<br><strong>{{ $('WF-02: Set Variables').item.json.business_name }}</strong></p>",
+        "attachmentsUi": {
+          "attachmentsValues": [
+            {
+              "type": "base64",
+              "fileContent": "={{ $('WF-02: Set Variables').item.json.pdf_base64 }}",
+              "fileName": "=Invoice_{{ $('WF-02: Set Variables').item.json.bill_number }}.pdf",
+              "mimeType": "application/pdf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf02-node-05",
+      "name": "WF-02: Email: Invoice to Customer",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        3620,
+        280
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Invoice to Customer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('WF-02: Set Variables').item.json.send_whatsapp }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "wf02-node-06",
+      "name": "WF-02: Send WhatsApp?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        3840,
+        400
+      ],
+      "originalName": "Send WhatsApp?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-02: Set Variables').item.json.customer_phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_invoice_sent', broadcast_name: 'bill_sent_' + $('WF-02: Set Variables').item.json.bill_id, parameters: [ { name: '1', value: $('WF-02: Set Variables').item.json.customer_name }, { name: '2', value: $('WF-02: Set Variables').item.json.bill_number }, { name: '3', value: String($('WF-02: Set Variables').item.json.grand_total) }, { name: '4', value: $('WF-02: Set Variables').item.json.business_name }, { name: '5', value: $('WF-02: Set Variables').item.json.due_date } ] }) }}",
+        "options": {}
+      },
+      "id": "wf02-node-07",
+      "name": "WF-02: WATI: Invoice Sent WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        4060,
+        280
+      ],
+      "originalName": "WATI: Invoice Sent WA"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('WF-02: Set Variables').item.json.send_sms }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "wf02-node-08",
+      "name": "WF-02: Send SMS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        4060,
+        500
+      ],
+      "originalName": "Send SMS?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.msg91.com/api/v5/flow/",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "authkey",
+              "value": "={{ $env.MSG91_AUTH_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ flow_id: 'SMS-01-FLOW-ID', sender: $env.MSG91_SENDER_ID, mobiles: $('WF-02: Set Variables').item.json.customer_phone, VAR1: $('WF-02: Set Variables').item.json.customer_name, VAR2: $('WF-02: Set Variables').item.json.bill_number, VAR3: String($('WF-02: Set Variables').item.json.grand_total), VAR4: $('WF-02: Set Variables').item.json.business_name, VAR5: $('WF-02: Set Variables').item.json.due_date, VAR6: $('WF-02: Set Variables').item.json.business_name }) }}",
+        "options": {}
+      },
+      "id": "wf02-node-09",
+      "name": "WF-02: MSG91: Bill Sent SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        4280,
+        500
+      ],
+      "originalName": "MSG91: Bill Sent SMS"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $('WF-02: Set Variables').item.json.owner_email }}",
+        "subject": "=✅ Bill {{ $('WF-02: Set Variables').item.json.bill_number }} sent to {{ $('WF-02: Set Variables').item.json.customer_name }}",
+        "html": "=<p>Invoice <strong>{{ $('WF-02: Set Variables').item.json.bill_number }}</strong> (₹{{ $('WF-02: Set Variables').item.json.grand_total }}) has been sent to <strong>{{ $('WF-02: Set Variables').item.json.customer_name }}</strong> ({{ $('WF-02: Set Variables').item.json.customer_email }}).</p><p>Due date: {{ $('WF-02: Set Variables').item.json.due_date }}</p>",
+        "options": {}
+      },
+      "id": "wf02-node-10",
+      "name": "WF-02: Email: Owner Copy",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        4280,
+        280
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Owner Copy"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Bill sent via all selected channels\"}",
+        "options": {}
+      },
+      "id": "wf02-node-11",
+      "name": "WF-02: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        4500,
+        400
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bill-paid",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf03-node-01",
+      "name": "WF-03: Webhook: Bill Paid",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        5240,
+        400
+      ],
+      "originalName": "Webhook: Bill Paid"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "bill_id",
+              "value": "={{ $json.body.bill.id }}"
+            },
+            {
+              "name": "bill_number",
+              "value": "={{ $json.body.bill.bill_number }}"
+            },
+            {
+              "name": "grand_total",
+              "value": "={{ $json.body.bill.grand_total }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.name }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $json.body.customer.email }}"
+            },
+            {
+              "name": "customer_phone",
+              "value": "={{ $json.body.customer.phone }}"
+            },
+            {
+              "name": "business_name",
+              "value": "={{ $json.body.business.name }}"
+            },
+            {
+              "name": "owner_email",
+              "value": "={{ $json.body.business.owner_email }}"
+            },
+            {
+              "name": "owner_phone",
+              "value": "={{ $json.body.business.owner_phone }}"
+            },
+            {
+              "name": "amount_paid",
+              "value": "={{ $json.body.payment.amount_paid }}"
+            },
+            {
+              "name": "payment_date",
+              "value": "={{ $json.body.payment.payment_date }}"
+            },
+            {
+              "name": "payment_method",
+              "value": "={{ $json.body.payment.payment_method }}"
+            },
+            {
+              "name": "payment_reference",
+              "value": "={{ $json.body.payment.payment_reference }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf03-node-02",
+      "name": "WF-03: Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        5460,
+        400
+      ],
+      "originalName": "Set Variables"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?id=eq.{{ $json.bill_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ status: 'paid', payment_date: $json.payment_date, payment_method: $json.payment_method, payment_reference: $json.payment_reference, updated_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "wf03-node-03",
+      "name": "WF-03: Supabase: Mark Paid",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5680,
+        400
+      ],
+      "originalName": "Supabase: Mark Paid"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/payment_log",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ bill_id: $('WF-03: Set Variables').item.json.bill_id, amount_paid: parseFloat($('WF-03: Set Variables').item.json.amount_paid), payment_date: $('WF-03: Set Variables').item.json.payment_date, payment_method: $('WF-03: Set Variables').item.json.payment_method, payment_reference: $('WF-03: Set Variables').item.json.payment_reference, recorded_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "wf03-node-04",
+      "name": "WF-03: Supabase: Log Payment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5900,
+        400
+      ],
+      "originalName": "Supabase: Log Payment"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $('WF-03: Set Variables').item.json.customer_email }}",
+        "subject": "=Payment Received — Invoice {{ $('WF-03: Set Variables').item.json.bill_number }} — Thank You!",
+        "html": "=<p>Dear {{ $('WF-03: Set Variables').item.json.customer_name }},</p><p>We have received your payment of <strong>₹{{ $('WF-03: Set Variables').item.json.amount_paid }}</strong>.</p><table border='1' cellpadding='8' style='border-collapse:collapse'><tr><th>Invoice</th><td>{{ $('WF-03: Set Variables').item.json.bill_number }}</td></tr><tr><th>Amount Paid</th><td>₹{{ $('WF-03: Set Variables').item.json.amount_paid }}</td></tr><tr><th>Payment Date</th><td>{{ $('WF-03: Set Variables').item.json.payment_date }}</td></tr><tr><th>Method</th><td>{{ $('WF-03: Set Variables').item.json.payment_method }}</td></tr><tr><th>Reference/UTR</th><td>{{ $('WF-03: Set Variables').item.json.payment_reference }}</td></tr></table><p>This is your payment confirmation. No further action needed.</p><p>Thank you for your prompt payment!<br><strong>{{ $('WF-03: Set Variables').item.json.business_name }}</strong></p>",
+        "options": {}
+      },
+      "id": "wf03-node-05",
+      "name": "WF-03: Email: Receipt to Customer",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        6120,
+        280
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Receipt to Customer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $env.NOTIFY_OWNER_WHATSAPP }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf03-node-06",
+      "name": "WF-03: Owner WA Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        6120,
+        500
+      ],
+      "originalName": "Owner WA Enabled?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-03: Set Variables').item.json.customer_phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_payment_received', broadcast_name: 'paid_' + $('WF-03: Set Variables').item.json.bill_id, parameters: [ { name: '1', value: $('WF-03: Set Variables').item.json.customer_name }, { name: '2', value: String($('WF-03: Set Variables').item.json.amount_paid) }, { name: '3', value: $('WF-03: Set Variables').item.json.bill_number }, { name: '4', value: $('WF-03: Set Variables').item.json.payment_reference }, { name: '5', value: $('WF-03: Set Variables').item.json.business_name } ] }) }}",
+        "options": {}
+      },
+      "id": "wf03-node-07",
+      "name": "WF-03: WATI: Payment Received WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        6340,
+        400
+      ],
+      "originalName": "WATI: Payment Received WA"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.OWNER_EMAIL }}",
+        "subject": "=💰 Payment received: {{ $('WF-03: Set Variables').item.json.bill_number }} — ₹{{ $('WF-03: Set Variables').item.json.amount_paid }}",
+        "html": "=<p>Payment received from <strong>{{ $('WF-03: Set Variables').item.json.customer_name }}</strong>.</p><p>Invoice: {{ $('WF-03: Set Variables').item.json.bill_number }}<br>Amount: ₹{{ $('WF-03: Set Variables').item.json.amount_paid }}<br>Method: {{ $('WF-03: Set Variables').item.json.payment_method }}<br>Reference: {{ $('WF-03: Set Variables').item.json.payment_reference }}</p>",
+        "options": {}
+      },
+      "id": "wf03-node-08",
+      "name": "WF-03: Email: Owner Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        6340,
+        600
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Owner Notification"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Payment recorded and receipts sent\"}",
+        "options": {}
+      },
+      "id": "wf03-node-09",
+      "name": "WF-03: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        6560,
+        400
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bill-cancelled",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf04-node-01",
+      "name": "WF-04: Webhook: Bill Cancelled",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        7740,
+        300
+      ],
+      "originalName": "Webhook: Bill Cancelled"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "bill_id",
+              "value": "={{ $json.body.bill.id }}"
+            },
+            {
+              "name": "bill_number",
+              "value": "={{ $json.body.bill.bill_number }}"
+            },
+            {
+              "name": "bill_date",
+              "value": "={{ $json.body.bill.bill_date }}"
+            },
+            {
+              "name": "grand_total",
+              "value": "={{ $json.body.bill.grand_total }}"
+            },
+            {
+              "name": "prev_status",
+              "value": "={{ $json.body.bill.status }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.name }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $json.body.customer.email }}"
+            },
+            {
+              "name": "customer_phone",
+              "value": "={{ $json.body.customer.phone }}"
+            },
+            {
+              "name": "business_name",
+              "value": "={{ $json.body.business.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf04-node-02",
+      "name": "WF-04: Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        7960,
+        300
+      ],
+      "originalName": "Set Variables"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?id=eq.{{ $json.bill_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"status\": \"cancelled\", \"updated_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf04-node-03",
+      "name": "WF-04: Supabase: Mark Cancelled",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        8180,
+        300
+      ],
+      "originalName": "Supabase: Mark Cancelled"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('WF-04: Set Variables').item.json.prev_status }}",
+              "operation": "equals",
+              "value2": "sent"
+            }
+          ]
+        }
+      },
+      "id": "wf04-node-04",
+      "name": "WF-04: Was Previously Sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        8400,
+        300
+      ],
+      "originalName": "Was Previously Sent?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $('WF-04: Set Variables').item.json.customer_email }}",
+        "subject": "=Invoice {{ $('WF-04: Set Variables').item.json.bill_number }} has been cancelled",
+        "html": "=<p>Dear {{ $('WF-04: Set Variables').item.json.customer_name }},</p><p>Please note that Invoice <strong>{{ $('WF-04: Set Variables').item.json.bill_number }}</strong> dated {{ $('WF-04: Set Variables').item.json.bill_date }} for ₹{{ $('WF-04: Set Variables').item.json.grand_total }} has been <strong>cancelled</strong>.</p><p>If you believe this is an error, please contact us immediately.</p><p><strong>{{ $('WF-04: Set Variables').item.json.business_name }}</strong></p>",
+        "options": {}
+      },
+      "id": "wf04-node-05",
+      "name": "WF-04: Email: Cancellation Notice",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        8620,
+        180
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Cancellation Notice"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendSessionMessage?whatsappNumber={{ $('WF-04: Set Variables').item.json.customer_phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ messageText: 'Hi ' + $('WF-04: Set Variables').item.json.customer_name + ', Invoice ' + $('WF-04: Set Variables').item.json.bill_number + ' for ₹' + $('WF-04: Set Variables').item.json.grand_total + ' from ' + $('WF-04: Set Variables').item.json.business_name + ' has been cancelled. Please contact us if you have any queries.' }) }}",
+        "options": {}
+      },
+      "id": "wf04-node-06",
+      "name": "WF-04: WATI: Cancellation WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        8620,
+        380
+      ],
+      "originalName": "WATI: Cancellation WA"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Bill cancelled and customer notified\"}",
+        "options": {}
+      },
+      "id": "wf04-node-07",
+      "name": "WF-04: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        8840,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customer-saved",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf05-node-01",
+      "name": "WF-05: Webhook: Customer Saved",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        10240,
+        300
+      ],
+      "originalName": "Webhook: Customer Saved"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "UPDATE"
+            }
+          ]
+        }
+      },
+      "id": "wf05-node-02",
+      "name": "WF-05: Route: Insert or Update",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        10460,
+        300
+      ],
+      "originalName": "Route: Insert or Update"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($('WF-05: Webhook: Customer Saved').item.json.body.customer) }}",
+        "options": {}
+      },
+      "id": "wf05-node-03",
+      "name": "WF-05: Supabase: Insert Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        10680,
+        180
+      ],
+      "originalName": "Supabase: Insert Customer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('WF-05: Webhook: Customer Saved').item.json.body.customer.email }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "wf05-node-04",
+      "name": "WF-05: Has Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        10900,
+        180
+      ],
+      "originalName": "Has Email?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $('WF-05: Webhook: Customer Saved').item.json.body.customer.email }}",
+        "subject": "=Welcome to {{ $('WF-05: Webhook: Customer Saved').item.json.body.business.name }}",
+        "html": "=<p>Dear {{ $('WF-05: Webhook: Customer Saved').item.json.body.customer.name }},</p><p>Thank you for choosing <strong>{{ $('WF-05: Webhook: Customer Saved').item.json.body.business.name }}</strong>. We look forward to working with you.</p><p>Your invoices will be sent to this email address. If you have any questions, please don't hesitate to reach out.</p><p>Warm regards,<br><strong>{{ $('WF-05: Webhook: Customer Saved').item.json.body.business.name }}</strong></p>",
+        "options": {}
+      },
+      "id": "wf05-node-05",
+      "name": "WF-05: Email: Welcome New Customer",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        11120,
+        100
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Welcome New Customer"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $('WF-05: Webhook: Customer Saved').item.json.body.customer.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($('WF-05: Webhook: Customer Saved').item.json.body.customer) }}",
+        "options": {}
+      },
+      "id": "wf05-node-06",
+      "name": "WF-05: Supabase: Update Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        10680,
+        420
+      ],
+      "originalName": "Supabase: Update Customer"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Customer synced\"}",
+        "options": {}
+      },
+      "id": "wf05-node-07",
+      "name": "WF-05: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        11340,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "item-saved",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf06-node-01",
+      "name": "WF-06: Webhook: Item Saved",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        12740,
+        300
+      ],
+      "originalName": "Webhook: Item Saved"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "UPDATE"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "DELETE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "DELETE"
+            }
+          ]
+        }
+      },
+      "id": "wf06-node-02",
+      "name": "WF-06: Route: Operation Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        12960,
+        300
+      ],
+      "originalName": "Route: Operation Type"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/items",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($('WF-06: Webhook: Item Saved').item.json.body.item) }}",
+        "options": {}
+      },
+      "id": "wf06-node-03",
+      "name": "WF-06: Supabase: Insert Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        13180,
+        180
+      ],
+      "originalName": "Supabase: Insert Item"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/items?id=eq.{{ $('WF-06: Webhook: Item Saved').item.json.body.item.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($('WF-06: Webhook: Item Saved').item.json.body.item) }}",
+        "options": {}
+      },
+      "id": "wf06-node-04",
+      "name": "WF-06: Supabase: Update Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        13180,
+        300
+      ],
+      "originalName": "Supabase: Update Item"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/items?id=eq.{{ $('WF-06: Webhook: Item Saved').item.json.body.item.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"deleted_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf06-node-05",
+      "name": "WF-06: Supabase: Soft Delete Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        13180,
+        420
+      ],
+      "originalName": "Supabase: Soft Delete Item"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Item catalog synced\"}",
+        "options": {}
+      },
+      "id": "wf06-node-06",
+      "name": "WF-06: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        13400,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sync-push",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf07-node-01",
+      "name": "WF-07: Webhook: Sync Push",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        15240,
+        300
+      ],
+      "originalName": "Webhook: Sync Push"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.sync_items",
+        "options": {
+          "batchSize": 10
+        }
+      },
+      "id": "wf07-node-02",
+      "name": "WF-07: Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        15460,
+        300
+      ],
+      "originalName": "Split In Batches"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "bills_INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "bills_INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "bills_UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "bills_UPDATE"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "customers_INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "customers_INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "customers_UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "customers_UPDATE"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "items_INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "items_any"
+            }
+          ]
+        }
+      },
+      "id": "wf07-node-03",
+      "name": "WF-07: Route by Table+Operation",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        15680,
+        300
+      ],
+      "originalName": "Route by Table+Operation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "wf07-node-04",
+      "name": "WF-07: Supabase: Upsert Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        15900,
+        180
+      ],
+      "originalName": "Supabase: Upsert Record"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}?id=eq.{{ $json.record_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "wf07-node-05",
+      "name": "WF-07: Supabase: Patch Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        15900,
+        360
+      ],
+      "originalName": "Supabase: Patch Record"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Sync completed\", \"processed\": {{ $('WF-07: Split In Batches').context.totalItems }} }",
+        "options": {}
+      },
+      "id": "wf07-node-06",
+      "name": "WF-07: Respond with Summary",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        16120,
+        300
+      ],
+      "originalName": "Respond with Summary"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "report-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf08-node-01",
+      "name": "WF-08: Webhook: Report Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        17740,
+        300
+      ],
+      "originalName": "Webhook: Report Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.report_type }}",
+                    "operation": "equals",
+                    "value2": "gst_monthly"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "gst_monthly"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.report_type }}",
+                    "operation": "equals",
+                    "value2": "revenue"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "revenue"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.report_type }}",
+                    "operation": "equals",
+                    "value2": "overdue"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "overdue"
+            }
+          ]
+        }
+      },
+      "id": "wf08-node-02",
+      "name": "WF-08: Route by Report Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        17960,
+        300
+      ],
+      "originalName": "Route by Report Type"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/tax_records?bill_date=gte.{{ $('WF-08: Webhook: Report Request').item.json.body.period + '-01' }}&bill_date=lte.{{ $('WF-08: Webhook: Report Request').item.json.body.period + '-31' }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf08-node-03",
+      "name": "WF-08: Fetch: GST Tax Records",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        18180,
+        100
+      ],
+      "originalName": "Fetch: GST Tax Records"
+    },
+    {
+      "parameters": {
+        "jsCode": "const records = $input.all();\nconst period = $('WF-08: Webhook: Report Request').item.json.body.period;\nlet totalTaxable = 0, totalCGST = 0, totalSGST = 0, totalIGST = 0;\nconst byRate = {};\nrecords.forEach(r => {\n  const d = r.json;\n  totalCGST += parseFloat(d.total_cgst || 0);\n  totalSGST += parseFloat(d.total_sgst || 0);\n  totalIGST += parseFloat(d.total_igst || 0);\n});\ntotalTaxable = (totalCGST + totalSGST + totalIGST) * 2;\nconst fmt = n => '₹' + parseFloat(n).toFixed(2);\nconst html = `<h2>GST Summary — ${period}</h2><table border='1' cellpadding='8' style='border-collapse:collapse'><tr><th>Total Taxable</th><td>${fmt(totalTaxable)}</td></tr><tr><th>Total CGST</th><td>${fmt(totalCGST)}</td></tr><tr><th>Total SGST</th><td>${fmt(totalSGST)}</td></tr><tr><th>Total IGST</th><td>${fmt(totalIGST)}</td></tr><tr><th>Total Tax</th><td>${fmt(totalCGST+totalSGST+totalIGST)}</td></tr></table><p><em>Auto-generated by BillFlow. Verify with accountant before filing.</em></p>`;\nreturn [{ json: { html_report: html, period, totalCGST, totalSGST, totalIGST, totalTaxable, record_count: records.length } }];"
+      },
+      "id": "wf08-node-04",
+      "name": "WF-08: Build GST Report HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18400,
+        100
+      ],
+      "originalName": "Build GST Report HTML"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $('WF-08: Webhook: Report Request').item.json.body.email_to }}",
+        "ccEmail": "={{ $('WF-08: Webhook: Report Request').item.json.body.cc_to }}",
+        "subject": "=GST Summary — {{ $('WF-08: Webhook: Report Request').item.json.body.period }} | BillFlow Report",
+        "html": "={{ $json.html_report }}",
+        "options": {}
+      },
+      "id": "wf08-node-05",
+      "name": "WF-08: Email: GST Report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        18620,
+        100
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: GST Report"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?status=eq.paid&bill_date=gte.{{ $('WF-08: Webhook: Report Request').item.json.body.period + '-01' }}&bill_date=lte.{{ $('WF-08: Webhook: Report Request').item.json.body.period + '-31' }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf08-node-06",
+      "name": "WF-08: Fetch: Revenue Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        18180,
+        300
+      ],
+      "originalName": "Fetch: Revenue Bills"
+    },
+    {
+      "parameters": {
+        "jsCode": "const bills = $input.all();\nconst period = $('WF-08: Webhook: Report Request').item.json.body.period;\nlet total = 0;\nbills.forEach(b => { total += parseFloat(b.json.grand_total || 0); });\nconst html = `<h2>Revenue Report — ${period}</h2><p>Total Revenue: ₹${total.toFixed(2)}</p><p>Bills Paid: ${bills.length}</p><p><em>Auto-generated by BillFlow</em></p>`;\nreturn [{ json: { html_report: html, period, total_revenue: total, bill_count: bills.length } }];"
+      },
+      "id": "wf08-node-07",
+      "name": "WF-08: Build Revenue Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18400,
+        300
+      ],
+      "originalName": "Build Revenue Report"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $('WF-08: Webhook: Report Request').item.json.body.email_to }}",
+        "ccEmail": "={{ $('WF-08: Webhook: Report Request').item.json.body.cc_to }}",
+        "subject": "=Revenue Report — {{ $('WF-08: Webhook: Report Request').item.json.body.period }}",
+        "html": "={{ $json.html_report }}",
+        "options": {}
+      },
+      "id": "wf08-node-08",
+      "name": "WF-08: Email: Revenue Report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        18620,
+        300
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Revenue Report"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?status=eq.overdue&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf08-node-09",
+      "name": "WF-08: Fetch: Overdue Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        18180,
+        500
+      ],
+      "originalName": "Fetch: Overdue Bills"
+    },
+    {
+      "parameters": {
+        "jsCode": "const bills = $input.all();\nlet total = 0;\nconst rows = bills.map(b => { total += parseFloat(b.json.grand_total || 0); return `<tr><td>${b.json.bill_number}</td><td>₹${b.json.grand_total}</td><td>${b.json.due_date}</td></tr>`; }).join('');\nconst html = `<h2>Overdue Bills Report</h2><table border='1' cellpadding='8' style='border-collapse:collapse'><tr><th>Invoice</th><th>Amount</th><th>Due Date</th></tr>${rows}</table><p>Total Outstanding: ₹${total.toFixed(2)} across ${bills.length} bills.</p>`;\nreturn [{ json: { html_report: html, total_overdue: total, count: bills.length } }];"
+      },
+      "id": "wf08-node-10",
+      "name": "WF-08: Build Overdue Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18400,
+        500
+      ],
+      "originalName": "Build Overdue Report"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $('WF-08: Webhook: Report Request').item.json.body.email_to }}",
+        "subject": "=Overdue Bills Report — BillFlow",
+        "html": "={{ $json.html_report }}",
+        "options": {}
+      },
+      "id": "wf08-node-11",
+      "name": "WF-08: Email: Overdue Report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        18620,
+        500
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Overdue Report"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Report emailed\"}",
+        "options": {}
+      },
+      "id": "wf08-node-12",
+      "name": "WF-08: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        18840,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "settings-updated",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf09-node-01",
+      "name": "WF-09: Webhook: Settings Updated",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        20240,
+        300
+      ],
+      "originalName": "Webhook: Settings Updated"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/profiles?id=eq.{{ $json.body.owner_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ business_name: $json.body.business_name, gstin: $json.body.gstin, business_state: $json.body.business_state, business_state_code: $json.body.business_state_code, updated_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "wf09-node-02",
+      "name": "WF-09: Supabase: Update Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        20460,
+        300
+      ],
+      "originalName": "Supabase: Update Profile"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Business profile synced\"}",
+        "options": {}
+      },
+      "id": "wf09-node-03",
+      "name": "WF-09: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        20680,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "wf10-node-01",
+      "name": "WF-10: Cron: 8 AM Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        22740,
+        300
+      ],
+      "originalName": "Cron: 8 AM Daily"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?status=eq.overdue&select=id,bill_number,grand_total,due_date,customer_id",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf10-node-02",
+      "name": "WF-10: Fetch: Overdue Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        22960,
+        200
+      ],
+      "originalName": "Fetch: Overdue Bills"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?due_date=eq.{{ new Date().toISOString().split('T')[0] }}&status=eq.sent&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf10-node-03",
+      "name": "WF-10: Fetch: Bills Due Today",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        22960,
+        400
+      ],
+      "originalName": "Fetch: Bills Due Today"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?status=eq.paid&bill_date=gte.{{ new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0] }}&select=grand_total",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf10-node-04",
+      "name": "WF-10: Fetch: Month Revenue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        22960,
+        600
+      ],
+      "originalName": "Fetch: Month Revenue"
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\n// Note: In real execution, these come from previous nodes\nconst overdueBills = [];\nconst dueTodayBills = [];\nconst revenueBills = [];\n\nlet overdueTotal = overdueBills.reduce((s, b) => s + parseFloat(b.json?.grand_total || 0), 0);\nlet monthRevenue = revenueBills.reduce((s, b) => s + parseFloat(b.json?.grand_total || 0), 0);\n\nconst dueTodayRows = dueTodayBills.length > 0\n  ? dueTodayBills.map(b => `<tr><td>${b.json?.bill_number}</td><td>₹${b.json?.grand_total}</td></tr>`).join('')\n  : '<tr><td colspan=\"2\">No bills due today 🎉</td></tr>';\n\nconst html = `<h2>📊 BillFlow Daily Summary</h2><h3>${today}</h3><h3>📋 Bills Due Today (${dueTodayBills.length})</h3><table border='1' cellpadding='8' style='border-collapse:collapse'><tr><th>Invoice</th><th>Amount</th></tr>${dueTodayRows}</table><h3>⚠️ Overdue Bills</h3><p>${overdueBills.length} bills overdue — Total: ₹${overdueTotal.toFixed(2)}</p><h3>💰 This Month's Revenue</h3><p>Collected: ₹${monthRevenue.toFixed(2)} from ${revenueBills.length} paid bills</p><p style='color:#888;font-size:12px'>— BillFlow Automation</p>`;\n\nreturn [{ json: { html_summary: html, today, overdue_count: overdueBills.length, overdueTotal, monthRevenue, due_today_count: dueTodayBills.length } }];"
+      },
+      "id": "wf10-node-05",
+      "name": "WF-10: Build Daily Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        23180,
+        400
+      ],
+      "originalName": "Build Daily Summary"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $env.NOTIFY_DAILY_SUMMARY }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf10-node-06",
+      "name": "WF-10: Summary Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        23400,
+        400
+      ],
+      "originalName": "Summary Enabled?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.OWNER_EMAIL }}",
+        "subject": "=📊 BillFlow Daily Summary — {{ new Date().toLocaleDateString('en-IN') }}",
+        "html": "={{ $json.html_summary }}",
+        "options": {}
+      },
+      "id": "wf10-node-07",
+      "name": "WF-10: Email: Daily Summary to Owner",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        23620,
+        300
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Daily Summary to Owner"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $env.NOTIFY_OWNER_WHATSAPP }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf10-node-08",
+      "name": "WF-10: Owner WA Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        23620,
+        500
+      ],
+      "originalName": "Owner WA Enabled?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $env.OWNER_PHONE }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_daily_summary', broadcast_name: 'daily_' + new Date().toISOString().split('T')[0], parameters: [ { name: '1', value: new Date().toLocaleDateString('en-IN') }, { name: '2', value: String($('WF-10: Build Daily Summary').item.json.due_today_count) }, { name: '3', value: String($('WF-10: Build Daily Summary').item.json.overdue_count) }, { name: '4', value: String($('WF-10: Build Daily Summary').item.json.overdueTotal.toFixed(2)) }, { name: '5', value: String($('WF-10: Build Daily Summary').item.json.monthRevenue.toFixed(2)) } ] }) }}",
+        "options": {}
+      },
+      "id": "wf10-node-09",
+      "name": "WF-10: WATI: Daily Summary WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        23840,
+        500
+      ],
+      "originalName": "WATI: Daily Summary WA"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "wf11-node-01",
+      "name": "WF-11: Cron: 9 AM Monthly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        25240,
+        300
+      ],
+      "originalName": "Cron: 9 AM Monthly"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = new Date();\nd.setDate(d.getDate() + 7);\nreturn [{ json: { due_date_7: d.toISOString().split('T')[0] } }];"
+      },
+      "id": "wf11-node-02",
+      "name": "WF-11: Calculate: Due Date +7",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        25460,
+        300
+      ],
+      "originalName": "Calculate: Due Date +7"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?due_date=eq.{{ $json.due_date_7 }}&status=eq.sent&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf11-node-03",
+      "name": "WF-11: Fetch: Bills Due in 7 Days",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        25680,
+        300
+      ],
+      "originalName": "Fetch: Bills Due in 7 Days"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "wf11-node-04",
+      "name": "WF-11: Any Bills Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        25900,
+        300
+      ],
+      "originalName": "Any Bills Found?"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "",
+        "options": {
+          "batchSize": 1
+        }
+      },
+      "id": "wf11-node-05",
+      "name": "WF-11: Process Each Bill",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        26120,
+        200
+      ],
+      "originalName": "Process Each Bill"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $json.customer_id }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf11-node-06",
+      "name": "WF-11: Fetch: Customer Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        26340,
+        200
+      ],
+      "originalName": "Fetch: Customer Details"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $json[0].email }}",
+        "subject": "=Friendly Reminder: Invoice {{ $('WF-11: Process Each Bill').item.json.bill_number }} due in 7 days",
+        "html": "=<p>Dear {{ $json[0].name }},</p><p>This is a friendly reminder that Invoice <strong>{{ $('WF-11: Process Each Bill').item.json.bill_number }}</strong> for ₹{{ $('WF-11: Process Each Bill').item.json.grand_total }} is due on <strong>{{ $('WF-11: Process Each Bill').item.json.due_date }}</strong> (7 days from now).</p><p>Please arrange payment at your earliest convenience. Please disregard if payment has already been made.</p>",
+        "options": {}
+      },
+      "id": "wf11-node-07",
+      "name": "WF-11: Email: 7-Day Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        26560,
+        100
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: 7-Day Reminder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json[0].phone }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "wf11-node-08",
+      "name": "WF-11: Has Phone?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        26560,
+        300
+      ],
+      "originalName": "Has Phone?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-11: Fetch: Customer Details').item.json[0].phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_reminder_7day', broadcast_name: 'rem7_' + $('WF-11: Process Each Bill').item.json.id, parameters: [ { name: '1', value: $('WF-11: Fetch: Customer Details').item.json[0].name }, { name: '2', value: $('WF-11: Process Each Bill').item.json.bill_number }, { name: '3', value: String($('WF-11: Process Each Bill').item.json.grand_total) }, { name: '4', value: $env.EMAIL_FROM_NAME }, { name: '5', value: $('WF-11: Process Each Bill').item.json.due_date } ] }) }}",
+        "options": {}
+      },
+      "id": "wf11-node-09",
+      "name": "WF-11: WATI: 7-Day Reminder WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        26780,
+        200
+      ],
+      "originalName": "WATI: 7-Day Reminder WA"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "wf12-node-01",
+      "name": "WF-12: Cron: 9 AM Monthly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        27740,
+        300
+      ],
+      "originalName": "Cron: 9 AM Monthly"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = new Date();\nd.setDate(d.getDate() + 3);\nreturn [{ json: { due_date_3: d.toISOString().split('T')[0] } }];"
+      },
+      "id": "wf12-node-02",
+      "name": "WF-12: Calculate: Due Date +3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        27960,
+        300
+      ],
+      "originalName": "Calculate: Due Date +3"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?due_date=eq.{{ $json.due_date_3 }}&status=eq.sent&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf12-node-03",
+      "name": "WF-12: Fetch: Bills Due in 3 Days",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        28180,
+        300
+      ],
+      "originalName": "Fetch: Bills Due in 3 Days"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "wf12-node-04",
+      "name": "WF-12: Any Bills Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        28400,
+        300
+      ],
+      "originalName": "Any Bills Found?"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "",
+        "options": {
+          "batchSize": 1
+        }
+      },
+      "id": "wf12-node-05",
+      "name": "WF-12: Process Each Bill",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        28620,
+        200
+      ],
+      "originalName": "Process Each Bill"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $json.customer_id }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf12-node-06",
+      "name": "WF-12: Fetch: Customer Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        28840,
+        200
+      ],
+      "originalName": "Fetch: Customer Details"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $json[0].email }}",
+        "subject": "=Urgent Reminder: Invoice {{ $('WF-12: Process Each Bill').item.json.bill_number }} due in 3 days",
+        "html": "=<p>Dear {{ $json[0].name }},</p><p><strong>Urgent Reminder:</strong> Invoice <strong>{{ $('WF-12: Process Each Bill').item.json.bill_number }}</strong> for ₹{{ $('WF-12: Process Each Bill').item.json.grand_total }} is due in just <strong>3 days</strong> on {{ $('WF-12: Process Each Bill').item.json.due_date }}.</p><p>Please ensure payment is made before the due date to avoid late charges.</p>",
+        "options": {}
+      },
+      "id": "wf12-node-07",
+      "name": "WF-12: Email: 3-Day Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        29060,
+        100
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: 3-Day Reminder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json[0].phone }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "wf12-node-08",
+      "name": "WF-12: Has Phone?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        29060,
+        300
+      ],
+      "originalName": "Has Phone?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-12: Fetch: Customer Details').item.json[0].phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_reminder_3day', broadcast_name: 'rem3_' + $('WF-12: Process Each Bill').item.json.id, parameters: [ { name: '1', value: $('WF-12: Fetch: Customer Details').item.json[0].name }, { name: '2', value: $('WF-12: Process Each Bill').item.json.bill_number }, { name: '3', value: String($('WF-12: Process Each Bill').item.json.grand_total) }, { name: '4', value: $('WF-12: Process Each Bill').item.json.due_date } ] }) }}",
+        "options": {}
+      },
+      "id": "wf12-node-09",
+      "name": "WF-12: WATI: 3-Day Reminder WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        29280,
+        200
+      ],
+      "originalName": "WATI: 3-Day Reminder WA"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.msg91.com/api/v5/flow/",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "authkey",
+              "value": "={{ $env.MSG91_AUTH_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ flow_id: 'SMS-02-FLOW-ID', sender: $env.MSG91_SENDER_ID, mobiles: $('WF-12: Fetch: Customer Details').item.json[0].phone, VAR1: $('WF-12: Process Each Bill').item.json.bill_number, VAR2: String($('WF-12: Process Each Bill').item.json.grand_total), VAR3: $('WF-12: Process Each Bill').item.json.due_date }) }}",
+        "options": {}
+      },
+      "id": "wf12-node-10",
+      "name": "WF-12: MSG91: 3-Day Reminder SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        29280,
+        400
+      ],
+      "originalName": "MSG91: 3-Day Reminder SMS"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "wf13-node-01",
+      "name": "WF-13: Cron: 9 AM Monthly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        30240,
+        300
+      ],
+      "originalName": "Cron: 9 AM Monthly"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = new Date();\nd.setDate(d.getDate() + 1);\nreturn [{ json: { due_date_1: d.toISOString().split('T')[0] } }];"
+      },
+      "id": "wf13-node-02",
+      "name": "WF-13: Calculate: Due Date +1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        30460,
+        300
+      ],
+      "originalName": "Calculate: Due Date +1"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?due_date=eq.{{ $json.due_date_1 }}&status=eq.sent&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf13-node-03",
+      "name": "WF-13: Fetch: Bills Due Tomorrow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        30680,
+        300
+      ],
+      "originalName": "Fetch: Bills Due Tomorrow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "wf13-node-04",
+      "name": "WF-13: Any Bills Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        30900,
+        300
+      ],
+      "originalName": "Any Bills Found?"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "",
+        "options": {
+          "batchSize": 1
+        }
+      },
+      "id": "wf13-node-05",
+      "name": "WF-13: Process Each Bill",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        31120,
+        200
+      ],
+      "originalName": "Process Each Bill"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $json.customer_id }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf13-node-06",
+      "name": "WF-13: Fetch: Customer Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        31340,
+        200
+      ],
+      "originalName": "Fetch: Customer Details"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $json[0].email }}",
+        "subject": "=⚠️ Final Reminder: Invoice {{ $('WF-13: Process Each Bill').item.json.bill_number }} due TOMORROW",
+        "html": "=<p>Dear {{ $json[0].name }},</p><p><strong>Final Notice:</strong> Invoice <strong>{{ $('WF-13: Process Each Bill').item.json.bill_number }}</strong> for ₹{{ $('WF-13: Process Each Bill').item.json.grand_total }} is due <strong>TOMORROW</strong> ({{ $('WF-13: Process Each Bill').item.json.due_date }}).</p><p>Please arrange payment today to avoid overdue status. If payment has been made, please disregard this message.</p>",
+        "options": {}
+      },
+      "id": "wf13-node-07",
+      "name": "WF-13: Email: 1-Day Final Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        31560,
+        100
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: 1-Day Final Reminder"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-13: Fetch: Customer Details').item.json[0].phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_reminder_1day', broadcast_name: 'rem1_' + $('WF-13: Process Each Bill').item.json.id, parameters: [ { name: '1', value: $('WF-13: Fetch: Customer Details').item.json[0].name }, { name: '2', value: $('WF-13: Process Each Bill').item.json.bill_number }, { name: '3', value: String($('WF-13: Process Each Bill').item.json.grand_total) }, { name: '4', value: $('WF-13: Process Each Bill').item.json.due_date } ] }) }}",
+        "options": {}
+      },
+      "id": "wf13-node-08",
+      "name": "WF-13: WATI: 1-Day Reminder WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        31560,
+        300
+      ],
+      "originalName": "WATI: 1-Day Reminder WA"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Alert owner about all bills due tomorrow\nconst bills = $input.all();\nconst list = bills.map(b => `- ${b.json.bill_number}: ₹${b.json.grand_total}`).join('\\n');\nreturn [{ json: { owner_alert_text: `Bills due TOMORROW (${new Date().toLocaleDateString('en-IN')}):\\n${list}` } }];"
+      },
+      "id": "wf13-node-09",
+      "name": "WF-13: Build Owner Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        31120,
+        500
+      ],
+      "originalName": "Build Owner Alert"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.OWNER_EMAIL }}",
+        "subject": "=⏰ Bills Due Tomorrow — Action Required",
+        "html": "=<p>The following bills are due <strong>tomorrow</strong>. Follow up if not yet received:</p><pre>{{ $json.owner_alert_text }}</pre>",
+        "options": {}
+      },
+      "id": "wf13-node-10",
+      "name": "WF-13: Email: Owner Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        31340,
+        500
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Owner Alert"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "wf14-node-01",
+      "name": "WF-14: Cron: 10 AM Monthly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        32740,
+        300
+      ],
+      "originalName": "Cron: 10 AM Monthly"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = new Date();\nd.setDate(d.getDate() - 1);\nreturn [{ json: { yesterday: d.toISOString().split('T')[0] } }];"
+      },
+      "id": "wf14-node-02",
+      "name": "WF-14: Calculate: Yesterday",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32960,
+        300
+      ],
+      "originalName": "Calculate: Yesterday"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?due_date=eq.{{ $json.yesterday }}&status=eq.sent&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf14-node-03",
+      "name": "WF-14: Fetch: Newly Overdue Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        33180,
+        300
+      ],
+      "originalName": "Fetch: Newly Overdue Bills"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "wf14-node-04",
+      "name": "WF-14: Any Overdue?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        33400,
+        300
+      ],
+      "originalName": "Any Overdue?"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "",
+        "options": {
+          "batchSize": 1
+        }
+      },
+      "id": "wf14-node-05",
+      "name": "WF-14: Process Each Bill",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        33620,
+        200
+      ],
+      "originalName": "Process Each Bill"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?id=eq.{{ $json.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"status\": \"overdue\", \"overdue_since\": \"{{ new Date().toISOString().split('T')[0] }}\"}",
+        "options": {}
+      },
+      "id": "wf14-node-06",
+      "name": "WF-14: Supabase: Flag Overdue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        33840,
+        200
+      ],
+      "originalName": "Supabase: Flag Overdue"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $('WF-14: Process Each Bill').item.json.customer_id }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf14-node-07",
+      "name": "WF-14: Fetch: Customer Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        34060,
+        200
+      ],
+      "originalName": "Fetch: Customer Details"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $json[0].email }}",
+        "subject": "=OVERDUE: Invoice {{ $('WF-14: Process Each Bill').item.json.bill_number }} payment due",
+        "html": "=<p>Dear {{ $json[0].name }},</p><p>Invoice <strong>{{ $('WF-14: Process Each Bill').item.json.bill_number }}</strong> for ₹{{ $('WF-14: Process Each Bill').item.json.grand_total }} was due on <strong>{{ $('WF-14: Process Each Bill').item.json.due_date }}</strong> and remains <strong style='color:red'>unpaid</strong>.</p><p>Please arrange payment immediately. If you are facing difficulties, please contact us to discuss.</p>",
+        "options": {}
+      },
+      "id": "wf14-node-08",
+      "name": "WF-14: Email: Overdue Notice Day-1",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        34280,
+        100
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Overdue Notice Day-1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-14: Fetch: Customer Details').item.json[0].phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_overdue_notice', broadcast_name: 'ov1_' + $('WF-14: Process Each Bill').item.json.id, parameters: [ { name: '1', value: $('WF-14: Fetch: Customer Details').item.json[0].name }, { name: '2', value: $('WF-14: Process Each Bill').item.json.bill_number }, { name: '3', value: String($('WF-14: Process Each Bill').item.json.grand_total) }, { name: '4', value: $env.EMAIL_FROM_NAME }, { name: '5', value: $('WF-14: Process Each Bill').item.json.due_date } ] }) }}",
+        "options": {}
+      },
+      "id": "wf14-node-09",
+      "name": "WF-14: WATI: Overdue Notice WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        34280,
+        300
+      ],
+      "originalName": "WATI: Overdue Notice WA"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.msg91.com/api/v5/flow/",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "authkey",
+              "value": "={{ $env.MSG91_AUTH_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ flow_id: 'SMS-03-FLOW-ID', sender: $env.MSG91_SENDER_ID, mobiles: $('WF-14: Fetch: Customer Details').item.json[0].phone, VAR1: $('WF-14: Process Each Bill').item.json.bill_number, VAR2: String($('WF-14: Process Each Bill').item.json.grand_total), VAR3: $('WF-14: Process Each Bill').item.json.due_date, VAR4: $env.OWNER_PHONE }) }}",
+        "options": {}
+      },
+      "id": "wf14-node-10",
+      "name": "WF-14: MSG91: Overdue SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        34280,
+        500
+      ],
+      "originalName": "MSG91: Overdue SMS"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.OWNER_EMAIL }}",
+        "subject": "=🔴 Bills became overdue today",
+        "html": "=<p>The following bills became overdue today and have been flagged. Customers have been notified.</p><p>Follow up as needed.</p>",
+        "options": {}
+      },
+      "id": "wf14-node-11",
+      "name": "WF-14: Email: Owner Overdue Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        33620,
+        500
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Owner Overdue Alert"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "wf15-node-01",
+      "name": "WF-15: Cron: 10 AM Monthly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        35240,
+        300
+      ],
+      "originalName": "Cron: 10 AM Monthly"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = new Date();\nd.setDate(d.getDate() - 7);\nreturn [{ json: { overdue_since: d.toISOString().split('T')[0] } }];"
+      },
+      "id": "wf15-node-02",
+      "name": "WF-15: Calculate: 7 Days Ago",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        35460,
+        300
+      ],
+      "originalName": "Calculate: 7 Days Ago"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?due_date=eq.{{ $json.overdue_since }}&status=eq.overdue&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf15-node-03",
+      "name": "WF-15: Fetch: 7-Day Overdue Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        35680,
+        300
+      ],
+      "originalName": "Fetch: 7-Day Overdue Bills"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "wf15-node-04",
+      "name": "WF-15: Any Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        35900,
+        300
+      ],
+      "originalName": "Any Found?"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "",
+        "options": {
+          "batchSize": 1
+        }
+      },
+      "id": "wf15-node-05",
+      "name": "WF-15: Process Each Bill",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        36120,
+        200
+      ],
+      "originalName": "Process Each Bill"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $json.customer_id }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf15-node-06",
+      "name": "WF-15: Fetch: Customer Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        36340,
+        200
+      ],
+      "originalName": "Fetch: Customer Details"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $json[0].email }}",
+        "subject": "=Second Notice: Invoice {{ $('WF-15: Process Each Bill').item.json.bill_number }} — 7 days overdue",
+        "html": "=<p>Dear {{ $json[0].name }},</p><p>Despite our earlier notice, Invoice <strong>{{ $('WF-15: Process Each Bill').item.json.bill_number }}</strong> for ₹{{ $('WF-15: Process Each Bill').item.json.grand_total }} remains unpaid. It is now <strong>7 days past the due date</strong>.</p><p>Please make payment <strong>immediately</strong> or contact us within 48 hours to discuss a resolution.</p>",
+        "options": {}
+      },
+      "id": "wf15-node-07",
+      "name": "WF-15: Email: Day-7 Follow-Up",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        36560,
+        100
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Day-7 Follow-Up"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('WF-15: Fetch: Customer Details').item.json[0].phone }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "wf15-node-08",
+      "name": "WF-15: Has Phone?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        36560,
+        300
+      ],
+      "originalName": "Has Phone?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-15: Fetch: Customer Details').item.json[0].phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_overdue_7day', broadcast_name: 'ov7_' + $('WF-15: Process Each Bill').item.json.id, parameters: [ { name: '1', value: $('WF-15: Fetch: Customer Details').item.json[0].name }, { name: '2', value: $('WF-15: Process Each Bill').item.json.bill_number }, { name: '3', value: String($('WF-15: Process Each Bill').item.json.grand_total) }, { name: '4', value: $env.EMAIL_FROM_NAME } ] }) }}",
+        "options": {}
+      },
+      "id": "wf15-node-09",
+      "name": "WF-15: WATI: Day-7 WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        36780,
+        200
+      ],
+      "originalName": "WATI: Day-7 WA"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/communication_log",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ bill_id: $('WF-15: Process Each Bill').item.json.id, customer_id: $('WF-15: Process Each Bill').item.json.customer_id, channel: 'email', template: 'EMAIL-08', recipient: $('WF-15: Fetch: Customer Details').item.json[0].email, sent_at: new Date().toISOString(), status: 'sent' }) }}",
+        "options": {}
+      },
+      "id": "wf15-node-10",
+      "name": "WF-15: Log: Communication",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        36560,
+        500
+      ],
+      "originalName": "Log: Communication"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "wf16-node-01",
+      "name": "WF-16: Cron: 10 AM Monthly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        37740,
+        300
+      ],
+      "originalName": "Cron: 10 AM Monthly"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = new Date();\nd.setDate(d.getDate() - 30);\nreturn [{ json: { overdue_since_30: d.toISOString().split('T')[0], escalation_date: new Date().toISOString().split('T')[0] } }];"
+      },
+      "id": "wf16-node-02",
+      "name": "WF-16: Calculate: 30 Days Ago",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        37960,
+        300
+      ],
+      "originalName": "Calculate: 30 Days Ago"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?due_date=eq.{{ $json.overdue_since_30 }}&status=eq.overdue&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf16-node-03",
+      "name": "WF-16: Fetch: 30-Day Overdue Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        38180,
+        300
+      ],
+      "originalName": "Fetch: 30-Day Overdue Bills"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "wf16-node-04",
+      "name": "WF-16: Any Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        38400,
+        300
+      ],
+      "originalName": "Any Found?"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "",
+        "options": {
+          "batchSize": 1
+        }
+      },
+      "id": "wf16-node-05",
+      "name": "WF-16: Process Each Bill",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        38620,
+        200
+      ],
+      "originalName": "Process Each Bill"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?id=eq.{{ $json.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ escalated: true, escalation_date: $('WF-16: Calculate: 30 Days Ago').item.json.escalation_date }) }}",
+        "options": {}
+      },
+      "id": "wf16-node-06",
+      "name": "WF-16: Supabase: Flag Escalated",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        38840,
+        200
+      ],
+      "originalName": "Supabase: Flag Escalated"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $('WF-16: Process Each Bill').item.json.customer_id }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf16-node-07",
+      "name": "WF-16: Fetch: Customer Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        39060,
+        200
+      ],
+      "originalName": "Fetch: Customer Details"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $json[0].email }}",
+        "subject": "=URGENT: Invoice {{ $('WF-16: Process Each Bill').item.json.bill_number }} — 30 days overdue",
+        "html": "=<p>Dear {{ $json[0].name }},</p><p>Invoice <strong>{{ $('WF-16: Process Each Bill').item.json.bill_number }}</strong> for ₹{{ $('WF-16: Process Each Bill').item.json.grand_total }} remains unpaid after <strong>30 days</strong>.</p><p><strong>This is our final notice</strong> before we are required to take further action. Please arrange payment within 7 days of receiving this notice.</p><p>If payment has been made, please send us the payment reference immediately.</p>",
+        "options": {}
+      },
+      "id": "wf16-node-08",
+      "name": "WF-16: Email: Escalation Formal",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        39280,
+        100
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Escalation Formal"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.msg91.com/api/v5/flow/",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "authkey",
+              "value": "={{ $env.MSG91_AUTH_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ flow_id: 'SMS-04-FLOW-ID', sender: $env.MSG91_SENDER_ID, mobiles: $('WF-16: Fetch: Customer Details').item.json[0].phone, VAR1: $('WF-16: Process Each Bill').item.json.bill_number, VAR2: String($('WF-16: Process Each Bill').item.json.grand_total) }) }}",
+        "options": {}
+      },
+      "id": "wf16-node-09",
+      "name": "WF-16: MSG91: Escalation SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        39280,
+        300
+      ],
+      "originalName": "MSG91: Escalation SMS"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.OWNER_EMAIL }}",
+        "subject": "=🚨 ESCALATION Required: {{ $('WF-16: Process Each Bill').item.json.bill_number }} — 30 days unpaid",
+        "html": "=<p><strong>Immediate action required.</strong></p><p>Invoice {{ $('WF-16: Process Each Bill').item.json.bill_number }} for ₹{{ $('WF-16: Process Each Bill').item.json.grand_total }} from customer {{ $('WF-16: Fetch: Customer Details').item.json[0].name }} is 30 days overdue.</p><p><strong>Recommended actions:</strong></p><ul><li>Call the customer directly</li><li>Consider engaging a collections partner</li><li>Consult legal counsel if needed</li></ul>",
+        "options": {}
+      },
+      "id": "wf16-node-10",
+      "name": "WF-16: Email: Owner Escalation Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        39280,
+        500
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Owner Escalation Alert"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "wf17-node-01",
+      "name": "WF-17: Cron: Monday 9 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        40240,
+        300
+      ],
+      "originalName": "Cron: Monday 9 AM"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?status=in.(overdue)&select=*,customers(name,email)",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf17-node-02",
+      "name": "WF-17: Fetch: All Overdue Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        40460,
+        300
+      ],
+      "originalName": "Fetch: All Overdue Bills"
+    },
+    {
+      "parameters": {
+        "jsCode": "const bills = $input.all();\nconst today = new Date();\nconst fmt = n => '₹' + parseFloat(n).toFixed(2);\n\nlet buckets = { '1_7': [], '8_30': [], '31_60': [], '60plus': [] };\n\nbills.forEach(b => {\n  const dueDate = new Date(b.json.due_date);\n  const days = Math.floor((today - dueDate) / 86400000);\n  if (days <= 7) buckets['1_7'].push(b.json);\n  else if (days <= 30) buckets['8_30'].push(b.json);\n  else if (days <= 60) buckets['31_60'].push(b.json);\n  else buckets['60plus'].push(b.json);\n});\n\nconst sum = arr => arr.reduce((s, b) => s + parseFloat(b.grand_total || 0), 0);\n\nconst makeRows = arr => arr.map(b => `<tr><td>${b.bill_number}</td><td>${b.customers?.name || '-'}</td><td>${fmt(b.grand_total)}</td><td>${b.due_date}</td></tr>`).join('');\n\nconst html = `<h2>📊 Weekly Overdue Ageing Report</h2><h3>${today.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3><table border='1' cellpadding='8' style='border-collapse:collapse'><tr><th>Bucket</th><th>Count</th><th>Total</th></tr><tr><td>1–7 Days</td><td>${buckets['1_7'].length}</td><td>${fmt(sum(buckets['1_7']))}</td></tr><tr><td>8–30 Days</td><td>${buckets['8_30'].length}</td><td>${fmt(sum(buckets['8_30']))}</td></tr><tr><td>31–60 Days</td><td>${buckets['31_60'].length}</td><td>${fmt(sum(buckets['31_60']))}</td></tr><tr><td>60+ Days</td><td>${buckets['60plus'].length}</td><td>${fmt(sum(buckets['60plus']))}</td></tr><tr style='font-weight:bold'><td>TOTAL</td><td>${bills.length}</td><td>${fmt(sum(bills.map(b=>b.json)))}</td></tr></table><h3>All Overdue Bills</h3><table border='1' cellpadding='8' style='border-collapse:collapse'><tr><th>Invoice</th><th>Customer</th><th>Amount</th><th>Due Date</th></tr>${makeRows(bills.map(b=>b.json))}</table>`;\n\nreturn [{ json: { html_report: html, total_count: bills.length, total_amount: sum(bills.map(b=>b.json)) } }];"
+      },
+      "id": "wf17-node-03",
+      "name": "WF-17: Build: Ageing Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        40680,
+        300
+      ],
+      "originalName": "Build: Ageing Report"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $env.NOTIFY_WEEKLY_REPORT }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf17-node-04",
+      "name": "WF-17: Weekly Report Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        40900,
+        300
+      ],
+      "originalName": "Weekly Report Enabled?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.OWNER_EMAIL }}",
+        "subject": "=📊 Weekly Overdue Report — {{ new Date().toLocaleDateString('en-IN') }}",
+        "html": "={{ $json.html_report }}",
+        "options": {}
+      },
+      "id": "wf17-node-05",
+      "name": "WF-17: Email: Weekly Overdue Report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        41120,
+        200
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Weekly Overdue Report"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $env.NOTIFY_OWNER_WHATSAPP }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf17-node-06",
+      "name": "WF-17: Owner WA Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        41120,
+        420
+      ],
+      "originalName": "Owner WA Enabled?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendSessionMessage?whatsappNumber={{ $env.OWNER_PHONE }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ messageText: '📊 Weekly Overdue Summary: ' + $('WF-17: Build: Ageing Report').item.json.total_count + ' overdue bills totalling ₹' + $('WF-17: Build: Ageing Report').item.json.total_amount.toFixed(2) + '. Check your email for details. — BillFlow' }) }}",
+        "options": {}
+      },
+      "id": "wf17-node-07",
+      "name": "WF-17: WATI: Weekly Summary WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        41340,
+        420
+      ],
+      "originalName": "WATI: Weekly Summary WA"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "wf18-node-01",
+      "name": "WF-18: Cron: 1st of Month",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        42740,
+        300
+      ],
+      "originalName": "Cron: 1st of Month"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);\nconst lastDay = new Date(now.getFullYear(), now.getMonth(), 0);\nconst from = prevMonth.toISOString().split('T')[0];\nconst to   = lastDay.toISOString().split('T')[0];\nconst monthName = prevMonth.toLocaleString('en-IN', { month: 'long' });\nconst year = prevMonth.getFullYear();\nreturn [{ json: { from, to, monthName, year } }];"
+      },
+      "id": "wf18-node-02",
+      "name": "WF-18: Calculate: Previous Month",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        42960,
+        300
+      ],
+      "originalName": "Calculate: Previous Month"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/tax_records?bill_date=gte.{{ $json.from }}&bill_date=lte.{{ $json.to }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf18-node-03",
+      "name": "WF-18: Fetch: Tax Records",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        43180,
+        300
+      ],
+      "originalName": "Fetch: Tax Records"
+    },
+    {
+      "parameters": {
+        "jsCode": "const records = $input.all();\nconst { monthName, year } = $('WF-18: Calculate: Previous Month').item.json;\nlet totalCGST = 0, totalSGST = 0, totalIGST = 0;\nrecords.forEach(r => {\n  totalCGST += parseFloat(r.json.total_cgst || 0);\n  totalSGST += parseFloat(r.json.total_sgst || 0);\n  totalIGST += parseFloat(r.json.total_igst || 0);\n});\nconst totalTax = totalCGST + totalSGST + totalIGST;\nconst totalTaxable = totalTax * 2;\nconst fmt = n => '₹' + n.toFixed(2);\n\nconst html = `<h2>GST Collection Summary — ${monthName} ${year}</h2><p><strong>Business:</strong> ${process.env.EMAIL_FROM_NAME || 'Your Business'}</p><table border='1' cellpadding='10' style='border-collapse:collapse;width:100%'><tr style='background:#f0f0f0'><th>Tax Type</th><th>Amount</th></tr><tr><td>Total Taxable Value</td><td>${fmt(totalTaxable)}</td></tr><tr><td>CGST Collected</td><td>${fmt(totalCGST)}</td></tr><tr><td>SGST Collected</td><td>${fmt(totalSGST)}</td></tr><tr><td>IGST Collected</td><td>${fmt(totalIGST)}</td></tr><tr style='font-weight:bold;background:#fffde7'><td>Total Tax Collected</td><td>${fmt(totalTax)}</td></tr></table><p><em>⚠️ This is an auto-generated summary. Please verify with your accountant before filing GSTR returns.</em></p><p>— BillFlow Automation</p>`;\n\nreturn [{ json: { html_report: html, monthName, year, totalCGST, totalSGST, totalIGST, totalTax, totalTaxable, record_count: records.length } }];"
+      },
+      "id": "wf18-node-04",
+      "name": "WF-18: Build: GST Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        43400,
+        300
+      ],
+      "originalName": "Build: GST Report"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $env.NOTIFY_MONTHLY_GST }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf18-node-05",
+      "name": "WF-18: GST Report Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        43620,
+        300
+      ],
+      "originalName": "GST Report Enabled?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.OWNER_EMAIL }}",
+        "ccEmail": "={{ $env.ACCOUNTANT_EMAIL }}",
+        "subject": "=GST Summary — {{ $json.monthName }} {{ $json.year }} | BillFlow",
+        "html": "={{ $json.html_report }}",
+        "options": {}
+      },
+      "id": "wf18-node-06",
+      "name": "WF-18: Email: GST Report to Owner+CA",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        43840,
+        180
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: GST Report to Owner+CA"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $env.NOTIFY_OWNER_WHATSAPP }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf18-node-07",
+      "name": "WF-18: Owner WA Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        43840,
+        420
+      ],
+      "originalName": "Owner WA Enabled?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendSessionMessage?whatsappNumber={{ $env.OWNER_PHONE }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ messageText: '📋 GST Summary ' + $('WF-18: Build: GST Report').item.json.monthName + ' ' + $('WF-18: Build: GST Report').item.json.year + ': CGST ₹' + $('WF-18: Build: GST Report').item.json.totalCGST.toFixed(2) + ', SGST ₹' + $('WF-18: Build: GST Report').item.json.totalSGST.toFixed(2) + ', IGST ₹' + $('WF-18: Build: GST Report').item.json.totalIGST.toFixed(2) + '. Total tax: ₹' + $('WF-18: Build: GST Report').item.json.totalTax.toFixed(2) + '. Check email for full report. — BillFlow' }) }}",
+        "options": {}
+      },
+      "id": "wf18-node-08",
+      "name": "WF-18: WATI: GST Summary WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        44060,
+        420
+      ],
+      "originalName": "WATI: GST Summary WA"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/report_log",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ report_type: 'gst_monthly', period: $('WF-18: Build: GST Report').item.json.monthName + '_' + $('WF-18: Build: GST Report').item.json.year, generated_at: new Date().toISOString(), total_tax: $('WF-18: Build: GST Report').item.json.totalTax, record_count: $('WF-18: Build: GST Report').item.json.record_count }) }}",
+        "options": {}
+      },
+      "id": "wf18-node-09",
+      "name": "WF-18: Supabase: Log Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        43840,
+        600
+      ],
+      "originalName": "Supabase: Log Report"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 15 3,6,9,12 *"
+            }
+          ]
+        }
+      },
+      "id": "wf19-node-01",
+      "name": "WF-19: Cron: 15th of Mar/Jun/Sep/Dec",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        45240,
+        300
+      ],
+      "originalName": "Cron: 15th of Mar/Jun/Sep/Dec"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst month = now.getMonth() + 1;\nconst year = now.getFullYear();\nconst quarters = { 3: 'Q4 (Jan–Mar)', 6: 'Q1 (Apr–Jun)', 9: 'Q2 (Jul–Sep)', 12: 'Q3 (Oct–Dec)' };\nconst quarterEnds = { 3: `31 March ${year}`, 6: `30 June ${year}`, 9: `30 September ${year}`, 12: `31 December ${year}` };\nconst gstr1Dues   = { 3: `11 April ${year}`, 6: `11 July ${year}`, 9: `11 October ${year}`, 12: `11 January ${year + 1}` };\nconst gstr3bDues  = { 3: `20 April ${year}`, 6: `20 July ${year}`, 9: `20 October ${year}`, 12: `20 January ${year + 1}` };\nreturn [{ json: { quarter: quarters[month], quarter_end: quarterEnds[month], gstr1_due: gstr1Dues[month], gstr3b_due: gstr3bDues[month] } }];"
+      },
+      "id": "wf19-node-02",
+      "name": "WF-19: Calculate: Quarter Info",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        45460,
+        300
+      ],
+      "originalName": "Calculate: Quarter Info"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.OWNER_EMAIL }}",
+        "ccEmail": "={{ $env.ACCOUNTANT_EMAIL }}",
+        "subject": "=⚠️ Reminder: GST Return Filing Due — {{ $json.quarter }} Quarter",
+        "html": "=<h2>GST Filing Reminder</h2><p>The GST quarter <strong>{{ $json.quarter }}</strong> ends on <strong>{{ $json.quarter_end }}</strong>.</p><table border='1' cellpadding='8' style='border-collapse:collapse'><tr><th>Return</th><th>Due Date</th></tr><tr><td><strong>GSTR-1</strong></td><td>{{ $json.gstr1_due }}</td></tr><tr><td><strong>GSTR-3B</strong></td><td>{{ $json.gstr3b_due }}</td></tr></table><p>📤 Use BillFlow → Reports → GST Summary → Export JSON to download your GSTR-1 data.</p><p>— BillFlow Automation</p>",
+        "options": {}
+      },
+      "id": "wf19-node-03",
+      "name": "WF-19: Email: GST Filing Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        45680,
+        200
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: GST Filing Reminder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $env.NOTIFY_OWNER_WHATSAPP }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf19-node-04",
+      "name": "WF-19: Owner WA Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        45680,
+        420
+      ],
+      "originalName": "Owner WA Enabled?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendSessionMessage?whatsappNumber={{ $env.OWNER_PHONE }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ messageText: '⚠️ GST Filing Reminder: Quarter ends ' + $('WF-19: Calculate: Quarter Info').item.json.quarter_end + '. GSTR-1 due: ' + $('WF-19: Calculate: Quarter Info').item.json.gstr1_due + '. GSTR-3B due: ' + $('WF-19: Calculate: Quarter Info').item.json.gstr3b_due + '. Export data from BillFlow Reports. — BillFlow' }) }}",
+        "options": {}
+      },
+      "id": "wf19-node-05",
+      "name": "WF-19: WATI: Filing Reminder WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        45900,
+        420
+      ],
+      "originalName": "WATI: Filing Reminder WA"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "wf20-node-01",
+      "name": "WF-20: Cron: Monday 9 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        47740,
+        300
+      ],
+      "originalName": "Cron: Monday 9 AM"
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date();\nconst lastMonday = new Date(today);\nlastMonday.setDate(today.getDate() - 7);\nconst lastSunday = new Date(today);\nlastSunday.setDate(today.getDate() - 1);\nconst thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);\nreturn [{\n  json: {\n    week_from:    lastMonday.toISOString().split('T')[0],\n    week_to:      lastSunday.toISOString().split('T')[0],\n    month_start:  thisMonthStart.toISOString().split('T')[0],\n    today:        today.toISOString().split('T')[0]\n  }\n}];"
+      },
+      "id": "wf20-node-02",
+      "name": "WF-20: Calculate: Week Dates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        47960,
+        300
+      ],
+      "originalName": "Calculate: Week Dates"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?status=eq.paid&payment_date=gte.{{ $json.week_from }}&payment_date=lte.{{ $json.week_to }}&select=*,customers(name)",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf20-node-03",
+      "name": "WF-20: Fetch: Last Week Paid Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        48180,
+        200
+      ],
+      "originalName": "Fetch: Last Week Paid Bills"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/bills?status=eq.paid&payment_date=gte.{{ $('WF-20: Calculate: Week Dates').item.json.month_start }}&payment_date=lte.{{ $('WF-20: Calculate: Week Dates').item.json.today }}&select=grand_total",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf20-node-04",
+      "name": "WF-20: Fetch: Month Revenue So Far",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        48180,
+        420
+      ],
+      "originalName": "Fetch: Month Revenue So Far"
+    },
+    {
+      "parameters": {
+        "jsCode": "const weekBills = $('WF-20: Fetch: Last Week Paid Bills').all();\nconst monthBills = $('WF-20: Fetch: Month Revenue So Far').all();\n\nconst { week_from, week_to } = $('WF-20: Calculate: Week Dates').item.json;\n\nlet weekRevenue = 0;\nconst custMap = {};\nweekBills.forEach(b => {\n  const amt = parseFloat(b.json.grand_total || 0);\n  weekRevenue += amt;\n  const name = b.json.customers?.name || 'Unknown';\n  custMap[name] = (custMap[name] || 0) + amt;\n});\n\nconst topCustomer = Object.keys(custMap).reduce((a, b) => custMap[a] > custMap[b] ? a : b, '');\nconst monthRevenue = monthBills.reduce((s, b) => s + parseFloat(b.json.grand_total || 0), 0);\n\nconst fmt = n => '₹' + n.toFixed(2);\nconst html = `<h2>📈 Weekly Revenue Report</h2><h3>Last Week: ${week_from} to ${week_to}</h3><table border='1' cellpadding='10' style='border-collapse:collapse;width:100%'><tr><th>Metric</th><th>Value</th></tr><tr><td>Revenue Collected</td><td>${fmt(weekRevenue)}</td></tr><tr><td>Bills Paid</td><td>${weekBills.length}</td></tr><tr><td>Best Customer</td><td>${topCustomer} (${fmt(custMap[topCustomer] || 0)})</td></tr></table><h3>This Month So Far</h3><table border='1' cellpadding='10' style='border-collapse:collapse;width:100%'><tr><td>Month Revenue</td><td>${fmt(monthRevenue)}</td></tr><tr><td>Month Bills Paid</td><td>${monthBills.length}</td></tr></table><p>— BillFlow Automation</p>`;\n\nreturn [{ json: { html_report: html, weekRevenue, monthRevenue, weekBillCount: weekBills.length, topCustomer } }];"
+      },
+      "id": "wf20-node-05",
+      "name": "WF-20: Build: Weekly Revenue Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48400,
+        300
+      ],
+      "originalName": "Build: Weekly Revenue Report"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $env.NOTIFY_WEEKLY_REPORT }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf20-node-06",
+      "name": "WF-20: Weekly Report Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        48620,
+        300
+      ],
+      "originalName": "Weekly Report Enabled?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.OWNER_EMAIL }}",
+        "subject": "=📈 Weekly Revenue Report — Week of {{ $('WF-20: Calculate: Week Dates').item.json.week_from }}",
+        "html": "={{ $json.html_report }}",
+        "options": {}
+      },
+      "id": "wf20-node-07",
+      "name": "WF-20: Email: Weekly Revenue Report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        48840,
+        300
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Weekly Revenue Report"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "wf21-node-01",
+      "name": "WF-21: Cron: Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        50240,
+        300
+      ],
+      "originalName": "Cron: Every 15 Minutes"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/sync_events?processed=eq.false&limit=50&select=*&order=created_at.asc",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf21-node-02",
+      "name": "WF-21: Fetch: Unprocessed Sync Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        50460,
+        300
+      ],
+      "originalName": "Fetch: Unprocessed Sync Events"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "wf21-node-03",
+      "name": "WF-21: Any Pending Events?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        50680,
+        300
+      ],
+      "originalName": "Any Pending Events?"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "",
+        "options": {
+          "batchSize": 10
+        }
+      },
+      "id": "wf21-node-04",
+      "name": "WF-21: Batch Process Events",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        50900,
+        200
+      ],
+      "originalName": "Batch Process Events"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.operation }}",
+                    "operation": "equals",
+                    "value2": "INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.operation }}",
+                    "operation": "equals",
+                    "value2": "UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "UPDATE"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.operation }}",
+                    "operation": "equals",
+                    "value2": "DELETE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "DELETE"
+            }
+          ]
+        }
+      },
+      "id": "wf21-node-05",
+      "name": "WF-21: Route: Operation",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        51120,
+        200
+      ],
+      "originalName": "Route: Operation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "wf21-node-06",
+      "name": "WF-21: Supabase: Upsert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        51340,
+        100
+      ],
+      "originalName": "Supabase: Upsert"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}?id=eq.{{ $json.record_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "wf21-node-07",
+      "name": "WF-21: Supabase: Patch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        51340,
+        260
+      ],
+      "originalName": "Supabase: Patch"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}?id=eq.{{ $json.record_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"deleted_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf21-node-08",
+      "name": "WF-21: Supabase: Soft Delete",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        51340,
+        420
+      ],
+      "originalName": "Supabase: Soft Delete"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/sync_events?id=eq.{{ $json.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"processed\": true, \"processed_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf21-node-09",
+      "name": "WF-21: Mark Event Processed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        51560,
+        260
+      ],
+      "originalName": "Mark Event Processed"
+    },
+    {
+      "parameters": {
+        "inputSource": "workflowInputData"
+      },
+      "id": "wf22-node-01",
+      "name": "WF-22: Receive: Sub-workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        52740,
+        300
+      ],
+      "originalName": "Receive: Sub-workflow Trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/communication_log",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ bill_id: $json.bill_id, customer_id: $json.customer_id, channel: $json.channel, template: $json.template, recipient: $json.recipient, sent_at: $json.sent_at || new Date().toISOString(), status: $json.status || 'sent', error_msg: $json.error_msg || null }) }}",
+        "options": {}
+      },
+      "id": "wf22-node-02",
+      "name": "WF-22: Supabase: Insert Comm Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        52960,
+        300
+      ],
+      "originalName": "Supabase: Insert Comm Log"
+    }
+  ],
+  "connections": {
+    "WF-01: Webhook: Bill Created": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Extract Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Extract Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Supabase Upsert Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Supabase Upsert Bill": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Supabase Upsert Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Supabase Upsert Customer": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Supabase Upsert Tax Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Supabase Upsert Tax Record": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Bill Status = Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Bill Status = Sent?": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-01: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Webhook: Bill Send": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Set Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Supabase: Mark Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Supabase: Mark Sent": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Send Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Send Email?": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Email: Invoice to Customer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-02: Send WhatsApp?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Email: Invoice to Customer": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Email: Owner Copy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Email: Owner Copy": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Send WhatsApp?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Send WhatsApp?": {
+      "main": [
+        [
+          {
+            "node": "WF-02: WATI: Invoice Sent WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-02: Send SMS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: WATI: Invoice Sent WA": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Send SMS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Send SMS?": {
+      "main": [
+        [
+          {
+            "node": "WF-02: MSG91: Bill Sent SMS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-02: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: MSG91: Bill Sent SMS": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Webhook: Bill Paid": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Set Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Supabase: Mark Paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Supabase: Mark Paid": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Supabase: Log Payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Supabase: Log Payment": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Email: Receipt to Customer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-03: Owner WA Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Email: Receipt to Customer": {
+      "main": [
+        [
+          {
+            "node": "WF-03: WATI: Payment Received WA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Owner WA Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-03: WATI: Payment Received WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-03: Email: Owner Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: WATI: Payment Received WA": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Email: Owner Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Email: Owner Notification": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: Webhook: Bill Cancelled": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: Set Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Supabase: Mark Cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: Supabase: Mark Cancelled": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Was Previously Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: Was Previously Sent?": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Email: Cancellation Notice",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-04: WATI: Cancellation WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-04: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: Email: Cancellation Notice": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: WATI: Cancellation WA": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Webhook: Customer Saved": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Route: Insert or Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Route: Insert or Update": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Supabase: Insert Customer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-05: Supabase: Update Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Supabase: Insert Customer": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Has Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Has Email?": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Email: Welcome New Customer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-05: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Email: Welcome New Customer": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Supabase: Update Customer": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Webhook: Item Saved": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Route: Operation Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Route: Operation Type": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Supabase: Insert Item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-06: Supabase: Update Item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-06: Supabase: Soft Delete Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Supabase: Insert Item": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Supabase: Update Item": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Supabase: Soft Delete Item": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Webhook: Sync Push": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Route by Table+Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Route by Table+Operation": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Supabase: Upsert Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-07: Supabase: Patch Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-07: Supabase: Upsert Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-07: Supabase: Patch Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-07: Supabase: Upsert Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Supabase: Upsert Record": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Respond with Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Supabase: Patch Record": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Respond with Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Webhook: Report Request": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Route by Report Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Route by Report Type": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Fetch: GST Tax Records",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-08: Fetch: Revenue Bills",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-08: Fetch: Overdue Bills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Fetch: GST Tax Records": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Build GST Report HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Build GST Report HTML": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Email: GST Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Email: GST Report": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Fetch: Revenue Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Build Revenue Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Build Revenue Report": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Email: Revenue Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Email: Revenue Report": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Fetch: Overdue Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Build Overdue Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Build Overdue Report": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Email: Overdue Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Email: Overdue Report": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-09: Webhook: Settings Updated": {
+      "main": [
+        [
+          {
+            "node": "WF-09: Supabase: Update Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-09: Supabase: Update Profile": {
+      "main": [
+        [
+          {
+            "node": "WF-09: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-10: Cron: 8 AM Daily": {
+      "main": [
+        [
+          {
+            "node": "WF-10: Fetch: Overdue Bills",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-10: Fetch: Bills Due Today",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-10: Fetch: Month Revenue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-10: Fetch: Overdue Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-10: Build Daily Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-10: Fetch: Bills Due Today": {
+      "main": [
+        [
+          {
+            "node": "WF-10: Build Daily Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-10: Fetch: Month Revenue": {
+      "main": [
+        [
+          {
+            "node": "WF-10: Build Daily Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-10: Build Daily Summary": {
+      "main": [
+        [
+          {
+            "node": "WF-10: Summary Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-10: Summary Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-10: Email: Daily Summary to Owner",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-10: Email: Daily Summary to Owner": {
+      "main": [
+        [
+          {
+            "node": "WF-10: Owner WA Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-10: Owner WA Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-10: WATI: Daily Summary WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-11: Calculate: Due Date +7": {
+      "main": [
+        [
+          {
+            "node": "WF-11: Fetch: Bills Due in 7 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-11: Fetch: Bills Due in 7 Days": {
+      "main": [
+        [
+          {
+            "node": "WF-11: Any Bills Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-11: Any Bills Found?": {
+      "main": [
+        [
+          {
+            "node": "WF-11: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-11: Process Each Bill": {
+      "main": [
+        [
+          {
+            "node": "WF-11: Fetch: Customer Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-11: Fetch: Customer Details": {
+      "main": [
+        [
+          {
+            "node": "WF-11: Email: 7-Day Reminder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-11: Has Phone?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-11: Email: 7-Day Reminder": {
+      "main": [
+        [
+          {
+            "node": "WF-11: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-11: Has Phone?": {
+      "main": [
+        [
+          {
+            "node": "WF-11: WATI: 7-Day Reminder WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-11: WATI: 7-Day Reminder WA": {
+      "main": [
+        [
+          {
+            "node": "WF-11: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-11: Cron: 9 AM Monthly": {
+      "main": [
+        [
+          {
+            "node": "WF-11: Calculate: Due Date +7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-12: Calculate: Due Date +3": {
+      "main": [
+        [
+          {
+            "node": "WF-12: Fetch: Bills Due in 3 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-12: Fetch: Bills Due in 3 Days": {
+      "main": [
+        [
+          {
+            "node": "WF-12: Any Bills Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-12: Any Bills Found?": {
+      "main": [
+        [
+          {
+            "node": "WF-12: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-12: Process Each Bill": {
+      "main": [
+        [
+          {
+            "node": "WF-12: Fetch: Customer Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-12: Fetch: Customer Details": {
+      "main": [
+        [
+          {
+            "node": "WF-12: Email: 3-Day Reminder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-12: Has Phone?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-12: Email: 3-Day Reminder": {
+      "main": [
+        [
+          {
+            "node": "WF-12: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-12: Has Phone?": {
+      "main": [
+        [
+          {
+            "node": "WF-12: WATI: 3-Day Reminder WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-12: WATI: 3-Day Reminder WA": {
+      "main": [
+        [
+          {
+            "node": "WF-12: MSG91: 3-Day Reminder SMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-12: MSG91: 3-Day Reminder SMS": {
+      "main": [
+        [
+          {
+            "node": "WF-12: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-12: Cron: 9 AM Monthly": {
+      "main": [
+        [
+          {
+            "node": "WF-12: Calculate: Due Date +3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-13: Calculate: Due Date +1": {
+      "main": [
+        [
+          {
+            "node": "WF-13: Fetch: Bills Due Tomorrow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-13: Fetch: Bills Due Tomorrow": {
+      "main": [
+        [
+          {
+            "node": "WF-13: Any Bills Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-13: Any Bills Found?": {
+      "main": [
+        [
+          {
+            "node": "WF-13: Process Each Bill",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-13: Build Owner Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-13: Process Each Bill": {
+      "main": [
+        [
+          {
+            "node": "WF-13: Fetch: Customer Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-13: Fetch: Customer Details": {
+      "main": [
+        [
+          {
+            "node": "WF-13: Email: 1-Day Final Reminder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-13: WATI: 1-Day Reminder WA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-13: Email: 1-Day Final Reminder": {
+      "main": [
+        [
+          {
+            "node": "WF-13: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-13: WATI: 1-Day Reminder WA": {
+      "main": [
+        [
+          {
+            "node": "WF-13: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-13: Build Owner Alert": {
+      "main": [
+        [
+          {
+            "node": "WF-13: Email: Owner Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-13: Cron: 9 AM Monthly": {
+      "main": [
+        [
+          {
+            "node": "WF-13: Calculate: Due Date +1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-14: Calculate: Yesterday": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Fetch: Newly Overdue Bills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-14: Fetch: Newly Overdue Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Any Overdue?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-14: Any Overdue?": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Process Each Bill",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-14: Email: Owner Overdue Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-14: Process Each Bill": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Supabase: Flag Overdue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-14: Supabase: Flag Overdue": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Fetch: Customer Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-14: Fetch: Customer Details": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Email: Overdue Notice Day-1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-14: WATI: Overdue Notice WA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-14: MSG91: Overdue SMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-14: Email: Overdue Notice Day-1": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-14: WATI: Overdue Notice WA": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-14: MSG91: Overdue SMS": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-14: Cron: 10 AM Monthly": {
+      "main": [
+        [
+          {
+            "node": "WF-14: Calculate: Yesterday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-15: Calculate: 7 Days Ago": {
+      "main": [
+        [
+          {
+            "node": "WF-15: Fetch: 7-Day Overdue Bills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-15: Fetch: 7-Day Overdue Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-15: Any Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-15: Any Found?": {
+      "main": [
+        [
+          {
+            "node": "WF-15: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-15: Process Each Bill": {
+      "main": [
+        [
+          {
+            "node": "WF-15: Fetch: Customer Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-15: Fetch: Customer Details": {
+      "main": [
+        [
+          {
+            "node": "WF-15: Email: Day-7 Follow-Up",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-15: Has Phone?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-15: Email: Day-7 Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "WF-15: Log: Communication",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-15: Has Phone?": {
+      "main": [
+        [
+          {
+            "node": "WF-15: WATI: Day-7 WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-15: WATI: Day-7 WA": {
+      "main": [
+        [
+          {
+            "node": "WF-15: Log: Communication",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-15: Log: Communication": {
+      "main": [
+        [
+          {
+            "node": "WF-15: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-15: Cron: 10 AM Monthly": {
+      "main": [
+        [
+          {
+            "node": "WF-15: Calculate: 7 Days Ago",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-16: Calculate: 30 Days Ago": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Fetch: 30-Day Overdue Bills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-16: Fetch: 30-Day Overdue Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Any Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-16: Any Found?": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-16: Process Each Bill": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Supabase: Flag Escalated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-16: Supabase: Flag Escalated": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Fetch: Customer Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-16: Fetch: Customer Details": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Email: Escalation Formal",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-16: MSG91: Escalation SMS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-16: Email: Owner Escalation Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-16: Email: Escalation Formal": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-16: MSG91: Escalation SMS": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-16: Email: Owner Escalation Alert": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Process Each Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-16: Cron: 10 AM Monthly": {
+      "main": [
+        [
+          {
+            "node": "WF-16: Calculate: 30 Days Ago",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-17: Cron: Monday 9 AM": {
+      "main": [
+        [
+          {
+            "node": "WF-17: Fetch: All Overdue Bills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-17: Fetch: All Overdue Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-17: Build: Ageing Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-17: Build: Ageing Report": {
+      "main": [
+        [
+          {
+            "node": "WF-17: Weekly Report Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-17: Weekly Report Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-17: Email: Weekly Overdue Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-17: Email: Weekly Overdue Report": {
+      "main": [
+        [
+          {
+            "node": "WF-17: Owner WA Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-17: Owner WA Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-17: WATI: Weekly Summary WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-18: Cron: 1st of Month": {
+      "main": [
+        [
+          {
+            "node": "WF-18: Calculate: Previous Month",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-18: Calculate: Previous Month": {
+      "main": [
+        [
+          {
+            "node": "WF-18: Fetch: Tax Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-18: Fetch: Tax Records": {
+      "main": [
+        [
+          {
+            "node": "WF-18: Build: GST Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-18: Build: GST Report": {
+      "main": [
+        [
+          {
+            "node": "WF-18: GST Report Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-18: GST Report Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-18: Email: GST Report to Owner+CA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-18: Owner WA Enabled?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-18: Supabase: Log Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-18: Email: GST Report to Owner+CA": {},
+    "WF-18: Owner WA Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-18: WATI: GST Summary WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-19: Cron: 15th of Mar/Jun/Sep/Dec": {
+      "main": [
+        [
+          {
+            "node": "WF-19: Calculate: Quarter Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-19: Calculate: Quarter Info": {
+      "main": [
+        [
+          {
+            "node": "WF-19: Email: GST Filing Reminder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-19: Owner WA Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-19: Owner WA Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-19: WATI: Filing Reminder WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-20: Cron: Monday 9 AM": {
+      "main": [
+        [
+          {
+            "node": "WF-20: Calculate: Week Dates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-20: Calculate: Week Dates": {
+      "main": [
+        [
+          {
+            "node": "WF-20: Fetch: Last Week Paid Bills",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WF-20: Fetch: Month Revenue So Far",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-20: Fetch: Last Week Paid Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-20: Build: Weekly Revenue Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-20: Fetch: Month Revenue So Far": {
+      "main": [
+        [
+          {
+            "node": "WF-20: Build: Weekly Revenue Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-20: Build: Weekly Revenue Report": {
+      "main": [
+        [
+          {
+            "node": "WF-20: Weekly Report Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-20: Weekly Report Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-20: Email: Weekly Revenue Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-21: Cron: Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Fetch: Unprocessed Sync Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Fetch: Unprocessed Sync Events": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Any Pending Events?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Any Pending Events?": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Batch Process Events",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WF-21: Batch Process Events": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Route: Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Route: Operation": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Supabase: Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-21: Supabase: Patch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-21: Supabase: Soft Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Supabase: Upsert": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Mark Event Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Supabase: Patch": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Mark Event Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Supabase: Soft Delete": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Mark Event Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Mark Event Processed": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Batch Process Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-22: Receive: Sub-workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "WF-22: Supabase: Insert Comm Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -1,0 +1,41 @@
+<div class="customers-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <h1>Customers</h1>
+  <button id="btn-add-customer" class="btn btn-primary">+ Add Customer</button>
+</div>
+
+<!-- Filter and Search -->
+<div class="card" style="padding: 16px; margin-bottom: 20px;">
+  <div style="display: flex; gap: 16px; align-items: center;">
+    <div style="flex: 1;">
+      <input type="text" id="customer-search" placeholder="Search by name, email, or phone..." style="width: 100%;">
+    </div>
+    <div style="width: 150px;">
+      <select id="customer-filter-active">
+        <option value="all">All Customers</option>
+        <option value="active" selected>Active Only</option>
+        <option value="inactive">Inactive Only</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Customers Table -->
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div class="table-responsive">
+    <table style="margin-bottom: 0;">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>State</th>
+          <th style="text-align: center;">Status</th>
+          <th style="text-align: right; width: 220px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="customers-tbody">
+        <!-- Rendered dynamically -->
+      </tbody>
+    </table>
+  </div>
+</div>

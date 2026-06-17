@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BillFlow</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*; img-src 'self' data:;">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-modern.css">
+  <!-- Vendor libraries (exposed as globals in renderer context) -->
+  <script src="js/vendor/gst-calculator.js"></script>
+  <script src="js/vendor/amount-to-words.js"></script>
+  <script src="js/vendor/date-utils.js"></script>
+  <script src="js/vendor/format-currency.js"></script>
+  <script src="js/vendor/state-codes.js"></script>
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top logo bar and user status -->
+    <div id="topbar">
+      <span id="topbar-logo">BillFlow</span>
+      <div id="topbar-right">
+        <span id="user-email"></span>
+        <button id="logout-btn" class="btn" style="display: none;">Logout</button>
+      </div>
+    </div>
+    <!-- Main layout panel -->
+    <div id="main-layout">
+      <!-- Navigation Sidebar -->
+      <nav id="sidebar" style="display: none;">
+        <ul>
+          <li><a href="#" data-page="dashboard" class="active">Dashboard</a></li>
+          <li><a href="#" data-page="bills-list">Bills</a></li>
+          <li><a href="#" data-page="customers-list">Customers</a></li>
+          <li><a href="#" data-page="catalog-list">Items</a></li>
+          <li><a href="#" data-page="reports">Reports</a></li>
+          <li><a href="#" data-page="settings">Settings</a></li>
+        </ul>
+      </nav>
+      <!-- Page Content Viewer -->
+      <main id="content">
+        <div class="page-loading">Loading...</div>
+      </main>
+    </div>
+    <!-- Status footer -->
+    <div id="statusbar">
+      <span id="sync-badge">● Synced</span>
+      <span id="app-version">v1.0.0</span>
+    </div>
+  </div>
+  <!-- Application components -->
+  <script src="js/components/toast.js"></script>
+  <script src="js/components/modal.js"></script>
+  <script src="js/components/sync-status.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

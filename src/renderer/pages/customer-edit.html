@@ -1,0 +1,86 @@
+<div class="customer-edit-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <h1 id="page-title">Add Customer</h1>
+  <div style="display: flex; gap: 12px;">
+    <button id="btn-cancel" class="btn">Cancel</button>
+    <button id="btn-save" class="btn btn-primary">Save Customer</button>
+  </div>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+  <form id="customer-form" onsubmit="return false;">
+    <input type="hidden" id="c-id">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      
+      <!-- General Details -->
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Customer Name *</label>
+        <input type="text" id="c-name" placeholder="e.g. John Doe / Acme Inc" required>
+      </div>
+
+      <div class="form-group">
+        <label>Customer Type</label>
+        <select id="c-type">
+          <option value="Business" selected>Business</option>
+          <option value="Individual">Individual</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>GSTIN</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="c-gstin" placeholder="e.g. 27AAAAA0000A1Z5" style="flex: 1; text-transform: uppercase;">
+          <button type="button" id="btn-fetch-gstin" class="btn" style="white-space: nowrap; font-size: 12px; height: 38px; padding: 0 16px;">Fetch Details</button>
+        </div>
+        <span id="gstin-error" style="color: var(--color-danger); font-size: 11px; display: none; margin-top: 4px;">Invalid GSTIN format</span>
+        <span id="gstin-loading" style="color: var(--color-primary); font-size: 11px; display: none; margin-top: 4px;">● Fetching client details from GST Portal...</span>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="c-email" placeholder="e.g. client@example.com">
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" id="c-phone" placeholder="e.g. +919876543210">
+      </div>
+
+      <!-- State & Address -->
+      <div class="form-group">
+        <label>State *</label>
+        <select id="c-state" required>
+          <option value="">Select State</option>
+          <!-- Will be filled from StateCodes -->
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Payment Terms</label>
+        <select id="c-payment_terms">
+          <option value="due_on_receipt" selected>Due on receipt</option>
+          <option value="net_7">Net 7</option>
+          <option value="net_15">Net 15</option>
+          <option value="net_30">Net 30</option>
+          <option value="net_60">Net 60</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Address</label>
+        <textarea id="c-address" rows="3" placeholder="e.g. 456 Business Park, Suite 101"></textarea>
+      </div>
+
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Notes</label>
+        <textarea id="c-notes" rows="2" placeholder="Internal remarks..."></textarea>
+      </div>
+
+      <div class="form-group" style="grid-column: span 2; display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" id="c-is_active" checked style="width: auto;">
+        <label for="c-is_active" style="margin-bottom: 0; cursor: pointer;">Active Client</label>
+      </div>
+
+    </div>
+  </form>
+</div>

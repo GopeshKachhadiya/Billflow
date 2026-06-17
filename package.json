@@ -1,0 +1,22 @@
+{
+  "name": "billflow",
+  "version": "1.0.0",
+  "description": "Local-first billing and GST management for Indian SMBs",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "build:modern": "electron-builder",
+    "test:gst": "node src/gst/test-calculator.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "better-sqlite3": "^11.3.0",
+    "pdfkit": "^0.14.0",
+    "pg": "^8.21.0",
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.9.1"
+  }
+}
