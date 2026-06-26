@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createUser } from '../hooks/useUsers'
 import { generateLicenseKey, callAdminWebhook } from '../lib/utils'
+import { supabase } from '../lib/supabase'
 
 const PLANS = [
   { id: 'starter',      name: 'Starter',      price: 499,  desc: '50 bills/mo, 100 customers, Email only' },
@@ -36,6 +37,7 @@ export default function AddUser() {
     their_n8n_url:    'http://localhost:5678',
     their_n8n_secret: '',
     app_version:      '1.0.0',
+    password:         '',
   })
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -61,14 +63,30 @@ export default function AddUser() {
   }
 
   const handleSubmit = async () => {
+    if (!form.password || form.password.length < 6) {
+      alert('Please set a password for the user (minimum 6 characters).')
+      return
+    }
     setSaving(true)
     try {
+      // Step 1: Create the Supabase Auth account so the user can log into the consumer app
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: form.email,
+        password: form.password,
+        email_confirm: true  // Auto-confirm email so user can log in immediately
+      })
+      if (authError) throw new Error('Failed to create auth account: ' + authError.message)
+
+      // Step 2: Insert into admin_users table (exclude password from DB record)
       const userData = { ...form }
+      delete userData.password
       if (form.status === 'active') {
         userData.activated_at   = new Date().toISOString()
         userData.next_billing_date = form.trial_start_date
       }
       const created = await createUser(userData)
+
+      // Step 3: Fire webhook for welcome email
       await callAdminWebhook('/webhook/admin-user-added', {
         event:         'new_user_added',
         user_email:    form.email,
@@ -110,12 +128,13 @@ export default function AddUser() {
             <h2 className="text-sm font-semibold text-gray-700 mb-2 border-b pb-2">Customer Info</h2>
             <div className="grid grid-cols-2 gap-4">
               {[
-                ['Full Name*',     'full_name',    'text', 'Rajesh Kumar'],
-                ['Business Name*', 'business_name','text', 'Rajesh Enterprises'],
-                ['Email*',         'email',        'email','rajesh@example.com'],
-                ['Phone*',         'phone',        'tel',  '9876543210'],
-                ['GSTIN',          'gstin',        'text', '27AABCU9603R1ZX'],
-                ['City',           'city',         'text', 'Mumbai'],
+                ['Full Name*',     'full_name',    'text',     'Rajesh Kumar'],
+                ['Business Name*', 'business_name','text',     'Rajesh Enterprises'],
+                ['Email*',         'email',        'email',    'rajesh@example.com'],
+                ['Password*',      'password',     'password', 'Min 6 characters'],
+                ['Phone*',         'phone',        'tel',      '9876543210'],
+                ['GSTIN',          'gstin',        'text',     '27AABCU9603R1ZX'],
+                ['City',           'city',         'text',     'Mumbai'],
               ].map(([label, key, type, ph]) => (
                 <div key={key}>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{label}</label>
@@ -253,7 +272,7 @@ export default function AddUser() {
           ) : <div />}
           {step < 3 ? (
             <button onClick={() => setStep(s => s + 1)}
-              disabled={step === 1 && (!form.full_name || !form.email || !form.business_name)}
+              disabled={step === 1 && (!form.full_name || !form.email || !form.business_name || !form.password || form.password.length < 6)}
               className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-indigo-150 transition-all">
               Continue →
             </button>
