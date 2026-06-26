@@ -88,18 +88,67 @@ function login(email, password, callback) {
       var session = result.data.session;
       var user    = result.data.user;
 
-      var db = conn.getDB();
-      db.prepare('DELETE FROM users_local').run();
-      db.prepare(
-        'INSERT INTO users_local (id, email, role, access_token, refresh_token, expires_at) ' +
-        'VALUES (?, ?, ?, ?, ?, ?)'
-      ).run(
-        user.id, user.email, 'owner',
-        session.access_token, session.refresh_token,
-        session.expires_at || Math.floor(Date.now() / 1000) + 3600
-      );
+      // Query admin onboarding record
+      client
+        .from('admin_users')
+        .select('status, trial_end_date, license_key')
+        .eq('email', email)
+        .single()
+        .then(function(profileRes) {
+          if (profileRes.error || !profileRes.data) {
+            client.auth.signOut();
+            conn.closeDB();
+            return callback({
+              success: false,
+              error: 'Your account is not registered. Registration is only permitted through the admin panel.'
+            });
+          }
 
-      callback({ success: true, mode: 'full', email: user.email, userId: user.id });
+          var profile = profileRes.data;
+
+          // Check status and approval
+          if (profile.status === 'suspended') {
+            client.auth.signOut();
+            conn.closeDB();
+            return callback({ success: false, error: 'Your account has been suspended. Please contact the administrator.' });
+          }
+          if (profile.status === 'cancelled') {
+            client.auth.signOut();
+            conn.closeDB();
+            return callback({ success: false, error: 'Your account has been cancelled.' });
+          }
+          if (profile.status === 'expired') {
+            client.auth.signOut();
+            conn.closeDB();
+            return callback({ success: false, error: 'Your subscription has expired.' });
+          }
+          if (profile.status === 'trial') {
+            var today = new Date().toISOString().split('T')[0];
+            if (profile.trial_end_date && profile.trial_end_date < today) {
+              client.auth.signOut();
+              conn.closeDB();
+              return callback({ success: false, error: 'Your trial has expired. Expiry: ' + profile.trial_end_date });
+            }
+          }
+
+          var db = conn.getDB();
+          db.prepare('DELETE FROM users_local').run();
+          db.prepare(
+            'INSERT INTO users_local (id, email, role, access_token, refresh_token, expires_at) ' +
+            'VALUES (?, ?, ?, ?, ?, ?)'
+          ).run(
+            user.id, user.email, 'owner',
+            session.access_token, session.refresh_token,
+            session.expires_at || Math.floor(Date.now() / 1000) + 3600
+          );
+
+          callback({ success: true, mode: 'full', email: user.email, userId: user.id });
+        })
+        .catch(function(err) {
+          client.auth.signOut();
+          conn.closeDB();
+          callback({ success: false, error: 'Authorization verification failed: ' + err.message });
+        });
     })
     .catch(function(err) {
       callback({ success: true, mode: 'local-only', email: email,

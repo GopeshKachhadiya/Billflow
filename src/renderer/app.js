@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', function() {
+      localStorage.setItem('manual_logout', 'true');
       window.api.logout().then(function() {
         updateTopbar('');
         showSidebar(false);
