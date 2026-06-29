@@ -26,8 +26,40 @@ function writeBootstrap(data) {
   fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
 }
 
+function wipeLocalDatabase() {
+  try {
+    conn.closeDB();
+    var userDataPath;
+    try {
+      userDataPath = require('electron').app.getPath('userData');
+    } catch(e) {
+      userDataPath = path.join(__dirname, '../../data');
+    }
+    var dbPath = path.join(userDataPath, 'data.db');
+    var files = [
+      dbPath,
+      dbPath + '-wal',
+      dbPath + '-shm',
+      path.join(userDataPath, 'bootstrap.json')
+    ];
+    files.forEach(function(f) {
+      if (fs.existsSync(f)) {
+        try { fs.unlinkSync(f); } catch(_) {}
+      }
+    });
+    console.log('[auth] Local database and bootstrap wiped due to user switch');
+  } catch(e) {
+    console.error('[auth] Failed to wipe local database:', e.message);
+  }
+}
+
 function login(email, password, callback) {
   var boot = readBootstrap();
+  if (boot.last_logged_in_email && boot.last_logged_in_email !== email) {
+    wipeLocalDatabase();
+    boot = {};
+  }
+
   if (!boot.device_key_salt) {
     boot.device_key_salt = kd.generateDeviceSalt();
     writeBootstrap(boot);
@@ -57,8 +89,10 @@ function login(email, password, callback) {
     }
   } else {
     boot.key_verification = kd.generateVerificationBlob(derivedKey);
-    writeBootstrap(boot);
   }
+
+  boot.last_logged_in_email = email;
+  writeBootstrap(boot);
 
   migrate.runMigrations();
   enc.setKey(derivedKey);
