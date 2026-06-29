@@ -34,22 +34,22 @@ export const generateLicenseKey = () => {
 
 export const getStatusColor = (status) => {
   const map = {
-    trial:     'bg-blue-50 text-blue-700 border border-blue-200',
-    active:    'bg-green-50 text-green-700 border border-green-200',
-    suspended: 'bg-amber-50 text-amber-700 border border-amber-200',
-    cancelled: 'bg-rose-50 text-rose-700 border border-rose-200',
-    expired:   'bg-gray-50 text-gray-700 border border-gray-200'
+    trial:     'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900/40',
+    active:    'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/40',
+    suspended: 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40',
+    cancelled: 'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40',
+    expired:   'bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-350 border border-gray-200 dark:border-slate-700'
   }
-  return map[status] || 'bg-gray-50 text-gray-600 border border-gray-200'
+  return map[status] || 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border border-gray-200 dark:border-slate-700'
 }
 
 export const getPlanColor = (plan) => {
   const map = {
-    starter:      'bg-slate-50 text-slate-700 border border-slate-200',
-    professional: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
-    enterprise:   'bg-purple-50 text-purple-700 border border-purple-200'
+    starter:      'bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-350 border border-slate-200 dark:border-slate-700',
+    professional: 'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/40',
+    enterprise:   'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/40'
   }
-  return map[plan] || 'bg-gray-50 text-gray-600 border border-gray-200'
+  return map[plan] || 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border border-gray-200 dark:border-slate-700'
 }
 
 export const callAdminWebhook = async (path, payload) => {
