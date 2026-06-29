@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Edit2, Plus, Trash2, Send, RefreshCw } from 'lucide-react'
-import { useUser, updateUser, addPayment, logActivity } from '../hooks/useUsers'
+import { useUser, updateUser, addPayment, logActivity, deleteUser } from '../hooks/useUsers'
 import { StatusBadge, PlanBadge } from '../components/ui/StatusBadge'
 import { formatCurrency, formatDate, formatDatetime, daysUntil, callAdminWebhook } from '../lib/utils'
 import { supabase } from '../lib/supabase'
@@ -37,6 +37,27 @@ export default function UserDetail() {
       business_name: user.business_name, new_status: newStatus
     })
     refetch()
+  }
+
+  const handleDeleteUser = async () => {
+    if (!confirm(`⚠️ WARNING: Are you sure you want to PERMANENTLY delete user "${user.full_name}"?\n\nThis will remove all database records, activity logs, payments, and disable their login credentials. This action CANNOT be undone.`)) return
+    
+    setSaving(true)
+    try {
+      await deleteUser(id)
+      await callAdminWebhook('/webhook/admin-user-deleted', {
+        event: 'user_deleted',
+        user_email: user.email,
+        user_name: user.full_name,
+        business_name: user.business_name
+      }).catch(err => console.error('Webhook error:', err))
+      
+      alert('User deleted successfully.')
+      navigate('/users')
+    } catch (e) {
+      alert('Error deleting user: ' + e.message)
+      setSaving(false)
+    }
   }
 
   const handleExtendTrial = async (days) => {
@@ -260,6 +281,10 @@ export default function UserDetail() {
                   ✕ Cancel Account
                 </button>
               )}
+              <button onClick={handleDeleteUser} disabled={saving}
+                className="w-full text-center text-xs px-3 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-colors mt-2 flex items-center justify-center gap-1.5 shadow-sm shadow-red-100">
+                <Trash2 size={12} /> Delete User Permanently
+              </button>
             </div>
           </div>
 

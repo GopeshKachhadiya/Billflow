@@ -124,3 +124,16 @@ export async function logActivity(userId, action, description, performedBy = 'sy
     user_id: userId, action, description, performed_by: performedBy
   }])
 }
+
+export async function deleteUser(id) {
+  const { error: dbError } = await supabase
+    .from('admin_users')
+    .delete()
+    .eq('id', id)
+  if (dbError) throw dbError
+
+  const { error: authError } = await supabase.auth.admin.deleteUser(id)
+  if (authError) {
+    console.error('Failed to delete auth user:', authError.message)
+  }
+}
