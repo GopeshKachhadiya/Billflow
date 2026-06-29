@@ -23,7 +23,8 @@ function listItems(filter) {
   }
   sql += ' ORDER BY name COLLATE NOCASE ASC';
 
-  var rows = conn.getDB().prepare(sql).all.apply(conn.getDB().prepare(sql), args);
+  var stmt = conn.getDB().prepare(sql);
+  var rows = stmt.all.apply(stmt, args);
   return rows.map(function(row) {
     if (!row.encrypted_data) return row;
     try { return encryptor.decryptItem(row, row.encrypted_data, row.enc_iv, row.enc_auth_tag); }

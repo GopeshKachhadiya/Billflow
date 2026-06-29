@@ -42,7 +42,8 @@ function listCustomers(filter) {
     }
   }
 
-  var rows = db.prepare(sql).all.apply(db.prepare(sql), args);
+  var stmt = db.prepare(sql);
+  var rows = stmt.all.apply(stmt, args);
 
   return rows.map(function(row) {
     if (row.encrypted_data) {
