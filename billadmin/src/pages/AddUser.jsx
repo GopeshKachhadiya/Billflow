@@ -80,6 +80,13 @@ export default function AddUser() {
       // Step 2: Insert into admin_users table (exclude password from DB record)
       const userData = { ...form }
       delete userData.password
+      
+      // Dynamic configuration from environment variables
+      userData.their_supabase_url = import.meta.env.VITE_SUPABASE_URL || ''
+      userData.their_supabase_key = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+      userData.their_n8n_url      = import.meta.env.VITE_N8N_BASE_URL || ''
+      userData.their_n8n_secret   = import.meta.env.VITE_N8N_SECRET || ''
+
       if (form.status === 'active') {
         userData.activated_at   = new Date().toISOString()
         userData.next_billing_date = form.trial_start_date
@@ -110,13 +117,13 @@ export default function AddUser() {
 
       {/* Step Indicator */}
       <div className="flex gap-2 mb-8 bg-white p-4 border border-gray-200 rounded-xl shadow-xs">
-        {['Profile','Plan & Trial','Configuration'].map((s, i) => (
+        {['Profile','Plan & Trial'].map((s, i) => (
           <div key={s} className="flex items-center gap-2 flex-1 justify-center first:justify-start last:justify-end">
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step === i+1 ? 'bg-indigo-600 text-white shadow-sm ring-4 ring-indigo-50' : step > i+1 ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
               {step > i+1 ? '✓' : i+1}
             </div>
             <span className={`text-xs font-semibold ${step === i+1 ? 'text-indigo-700' : 'text-gray-400'}`}>{s}</span>
-            {i < 2 && <span className="text-gray-200 mx-2 flex-1 border-t border-dashed border-gray-300" />}
+            {i < 1 && <span className="text-gray-200 mx-2 flex-1 border-t border-dashed border-gray-300" />}
           </div>
         ))}
       </div>
@@ -241,36 +248,12 @@ export default function AddUser() {
           </div>
         )}
 
-        {/* Step 3 */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-gray-700 mb-2 border-b pb-2">BillFlow Configuration (Optional)</h2>
-            <p className="text-xs text-gray-400">Fill these in when you set up the customer's installation. Can also be added later from the User Detail page.</p>
-            {[
-              ['Supabase URL',  'their_supabase_url', 'https://xxx.supabase.co'],
-              ['Supabase Key',  'their_supabase_key', 'eyJ...'],
-              ['n8n URL',       'their_n8n_url',       'http://localhost:5678'],
-              ['n8n Secret',    'their_n8n_secret',    'webhook-secret-token'],
-            ].map(([label, key, ph]) => (
-              <div key={key}>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{label}</label>
-                <input value={form[key]} onChange={e => set(key, e.target.value)} placeholder={ph}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              </div>
-            ))}
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-xs">
-              <p className="font-bold text-green-800 mb-1">Ready to Onboard!</p>
-              <p className="text-green-700 leading-relaxed">After saving, a welcome email will be automatically sent via n8n. The license key <b className="font-mono text-green-900 bg-white px-2 py-0.5 border border-green-150 rounded">{form.license_key}</b> will be included.</p>
-            </div>
-          </div>
-        )}
-
         {/* Navigation Buttons */}
         <div className="flex justify-between mt-6 pt-5 border-t border-gray-100">
           {step > 1 ? (
             <button onClick={() => setStep(s => s - 1)} className="border border-gray-300 text-gray-700 px-5 py-2 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-55">← Back</button>
           ) : <div />}
-          {step < 3 ? (
+          {step < 2 ? (
             <button onClick={() => setStep(s => s + 1)}
               disabled={step === 1 && (!form.full_name || !form.email || !form.business_name || !form.password || form.password.length < 6)}
               className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-indigo-150 transition-all">
