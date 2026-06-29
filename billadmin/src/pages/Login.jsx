@@ -62,29 +62,29 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-indigo-100">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-indigo-100 dark:border-slate-850">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-200">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-500/20">
             <span className="text-white text-2xl font-bold font-sans">B</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">BillFlow Admin</h1>
-          <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mt-1">Manager Dashboard</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 tracking-tight">BillFlow Admin</h1>
+          <p className="text-gray-400 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mt-1">Manager Dashboard</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Email Address</label>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Email Address</label>
             <input
               type="email" value={email} onChange={e => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              className="w-full border border-gray-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
               placeholder="admin@yourdomain.com" required
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Password</label>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Password</label>
             <input
               type="password" value={password} onChange={e => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              className="w-full border border-gray-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
               placeholder="••••••••" required
             />
           </div>
@@ -94,15 +94,15 @@ export default function Login() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="w-4 h-4 rounded border-gray-300 dark:border-slate-800 text-indigo-600 focus:ring-indigo-500"
               />
-              <span className="text-xs font-semibold text-gray-500">Remember Me / Auto-Login</span>
+              <span className="text-xs font-semibold text-gray-500 dark:text-slate-450">Remember Me / Auto-Login</span>
             </label>
           </div>
-          {error && <p className="text-rose-600 text-xs font-medium bg-rose-50 border border-rose-100 p-3 rounded-lg">{error}</p>}
+          {error && <p className="text-rose-600 text-xs font-medium bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 p-3 rounded-lg">{error}</p>}
           <button
             type="submit" disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-indigo-100 active:scale-[0.98]"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

@@ -28,8 +28,8 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-0.5">BillFlow SaaS Overview</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Dashboard</h1>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5">BillFlow SaaS Overview</p>
         </div>
         <Link to="/users/add"
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md shadow-indigo-100 hover:scale-[1.02] active:scale-[0.98]">
@@ -39,17 +39,17 @@ export default function Dashboard() {
 
       {/* Alerts */}
       {stats.expiringTrials.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 shadow-sm">
-          <AlertTriangle size={18} className="text-amber-600 mt-0.5 shrink-0" />
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl p-4 flex items-start gap-3 shadow-sm">
+          <AlertTriangle size={18} className="text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-800">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
               {stats.expiringTrials.length} trial{stats.expiringTrials.length > 1 ? 's' : ''} expiring within 7 days
             </p>
-            <p className="text-xs text-amber-600 mt-0.5 leading-relaxed">
+            <p className="text-xs text-amber-600 dark:text-amber-300 mt-0.5 leading-relaxed">
               {stats.expiringTrials.map(u => `${u.full_name} (${u.business_name})`).join(', ')}
             </p>
           </div>
-          <Link to="/trials" className="text-xs bg-amber-100 hover:bg-amber-250 text-amber-850 px-3 py-1.5 rounded-lg font-bold transition-colors whitespace-nowrap">
+          <Link to="/trials" className="text-xs bg-amber-100 dark:bg-amber-950/40 hover:bg-amber-200 dark:hover:bg-amber-900 text-amber-850 dark:text-amber-300 px-3 py-1.5 rounded-lg font-bold transition-colors whitespace-nowrap">
             Manage Trials
           </Link>
         </div>
@@ -57,7 +57,7 @@ export default function Dashboard() {
 
       {/* KPI Cards — Revenue */}
       <div>
-        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Revenue Performance</h2>
+        <h2 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-3">Revenue Performance</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <KPICard title="MRR"           value={formatCurrency(stats.mrr)}          color="green"  icon={IndianRupee}  subtitle="Monthly Recurring Revenue" />
           <KPICard title="ARR"           value={formatCurrency(stats.arr)}          color="purple" icon={TrendingUp}   subtitle="Annual Recurring Revenue" />
@@ -68,7 +68,7 @@ export default function Dashboard() {
 
       {/* KPI Cards — Users */}
       <div>
-        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">User Acquisition & Retention</h2>
+        <h2 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-3">User Acquisition & Retention</h2>
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <KPICard title="Total Users"   value={stats.total}           color="indigo" icon={Users}     />
           <KPICard title="Active"        value={stats.active}          color="green"  icon={UserCheck} />
@@ -81,14 +81,14 @@ export default function Dashboard() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue Chart */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Monthly Revenue Trend (Last 12 Months)</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Monthly Revenue Trend (Last 12 Months)</h3>
           <div className="w-full">
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={stats.monthlyRevenue}>
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} tickFormatter={v => '₹' + (v >= 1000 ? (v/1000).toFixed(0)+'K' : v)} axisLine={false} tickLine={false} />
-                <Tooltip formatter={v => ['₹' + v.toLocaleString('en-IN'), 'Revenue']} contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb' }} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => '₹' + (v >= 1000 ? (v/1000).toFixed(0)+'K' : v)} axisLine={false} tickLine={false} />
+                <Tooltip formatter={v => ['₹' + v.toLocaleString('en-IN'), 'Revenue']} contentStyle={{ borderRadius: '12px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#f1f5f9' }} />
                 <Bar dataKey="revenue" fill="#6366f1" radius={[4,4,0,0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -96,15 +96,15 @@ export default function Dashboard() {
         </div>
 
         {/* User Growth Chart */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Customer Growth Trend (Last 12 Months)</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Customer Growth Trend (Last 12 Months)</h3>
           <div className="w-full">
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={stats.userGrowth}>
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb' }} />
-                <Line type="monotone" dataKey="users" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#ffffff' }} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#f1f5f9' }} />
+                <Line type="monotone" dataKey="users" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#8b5cf6', stroke: '#ffffff' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

@@ -70,8 +70,8 @@ export default function Analytics() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Revenue & SaaS Analytics</h1>
-        <p className="text-gray-500 text-sm mt-0.5">Deep-dive customer analytics and KPI breakdowns</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Revenue & SaaS Analytics</h1>
+        <p className="text-gray-555 dark:text-slate-400 text-sm mt-0.5">Deep-dive customer analytics and KPI breakdowns</p>
       </div>
 
       {/* KPI Cards */}
@@ -86,8 +86,8 @@ export default function Analytics() {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Plan Breakdown */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover-glow transition-all lg:col-span-1">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b pb-2">Active Subscribers By Plan</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm hover-glow transition-all lg:col-span-1">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4 border-b border-gray-150 dark:border-slate-800 pb-2">Active Subscribers By Plan</h3>
           <div className="flex justify-center items-center h-56">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -112,13 +112,13 @@ export default function Analytics() {
         </div>
 
         {/* Revenue by State */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover-glow transition-all lg:col-span-2">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b pb-2">Top States by Total Revenue (₹)</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm hover-glow transition-all lg:col-span-2">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4 border-b border-gray-150 dark:border-slate-800 pb-2">Top States by Total Revenue (₹)</h3>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stateRevenueData} layout="vertical">
                 <XAxis type="number" hide />
-                <YAxis dataKey="state" type="category" tick={{ fontSize: 10, fill: '#6b7280' }} width={80} axisLine={false} tickLine={false} />
+                <YAxis dataKey="state" type="category" tick={{ fontSize: 10, fill: '#94a3b8' }} width={80} axisLine={false} tickLine={false} />
                 <Tooltip formatter={v => ['₹' + v.toLocaleString('en-IN'), 'Total Collected']} />
                 <Bar dataKey="revenue" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={12} />
               </BarChart>
@@ -130,21 +130,21 @@ export default function Analytics() {
       {/* Status & Cohorts Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* User Status Cohorts */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover-glow transition-all lg:col-span-1">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b pb-2">SaaS Accounts Cohort</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm hover-glow transition-all lg:col-span-1">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4 border-b border-gray-150 dark:border-slate-800 pb-2">SaaS Accounts Cohort</h3>
           <div className="space-y-4">
             {statusSummary.map(status => {
               const percent = stats.total > 0 ? Math.round((status.value / stats.total) * 100) : 0
               return (
                 <div key={status.name} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-semibold text-gray-600">
+                  <div className="flex items-center justify-between text-xs font-semibold text-gray-600 dark:text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: status.color }} />
                       {status.name}
                     </span>
                     <span>{status.value} ({percent}%)</span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5">
+                  <div className="w-full bg-gray-100 dark:bg-slate-950 rounded-full h-1.5">
                     <div
                       className="h-1.5 rounded-full"
                       style={{ width: `${percent}%`, backgroundColor: status.color }}
@@ -157,25 +157,25 @@ export default function Analytics() {
         </div>
 
         {/* Business Insights */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover-glow transition-all lg:col-span-2 flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm hover-glow transition-all lg:col-span-2 flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b pb-2 font-sans">Business Health Insights</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4 border-b border-gray-150 dark:border-slate-800 pb-2 font-sans">Business Health Insights</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="bg-indigo-50/50 p-4 border border-indigo-100 rounded-xl leading-relaxed">
-                <h4 className="font-bold text-indigo-800 mb-1">Conversion Optimization</h4>
-                <p className="text-indigo-700">
+              <div className="bg-indigo-50/50 dark:bg-indigo-950/10 p-4 border border-indigo-100 dark:border-indigo-900/30 rounded-xl leading-relaxed">
+                <h4 className="font-bold text-indigo-800 dark:text-indigo-400 mb-1">Conversion Optimization</h4>
+                <p className="text-indigo-700 dark:text-indigo-300">
                   Your trial-to-paid conversion is currently at <b>{stats.conversionRate}%</b>. Extending trial limits (+7d, +14d) selectively for engaged users often yields up to 15% growth in conversions. Ensure SMTP setup in n8n works seamlessly to prevent churn during trial dropoffs.
                 </p>
               </div>
-              <div className="bg-emerald-50/50 p-4 border border-emerald-100 rounded-xl leading-relaxed">
-                <h4 className="font-bold text-emerald-800 mb-1">ARPU Optimization</h4>
-                <p className="text-emerald-700">
+              <div className="bg-emerald-50/50 dark:bg-emerald-950/10 p-4 border border-emerald-100 dark:border-emerald-900/30 rounded-xl leading-relaxed">
+                <h4 className="font-bold text-emerald-800 dark:text-emerald-400 mb-1">ARPU Optimization</h4>
+                <p className="text-emerald-700 dark:text-emerald-300">
                   With average revenue per user at <b>{formatCurrency(stats.arpu)}</b>, encouraging customers to migrate to professional and enterprise plans via customized configurations (e.g. multi-user licensing) can scale MRR quickly.
                 </p>
               </div>
             </div>
           </div>
-          <p className="text-[10px] text-gray-400 font-mono mt-4">
+          <p className="text-[10px] text-gray-400 dark:text-slate-500 font-mono mt-4">
             Insights calculated dynamically using the active database snapshot. Updates in real-time.
           </p>
         </div>
