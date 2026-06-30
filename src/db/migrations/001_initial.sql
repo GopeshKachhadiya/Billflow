@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS users_local (
     role TEXT,
     access_token TEXT,
     refresh_token TEXT,
-    expires_at INTEGER
+    expires_at INTEGER,
+    status TEXT,
+    trial_end_date TEXT
 );
 
 -- customers table (with encryption columns)

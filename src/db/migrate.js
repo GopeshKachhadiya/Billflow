@@ -18,6 +18,14 @@ function runMigrations() {
   } else {
     console.log('[migrate] Database already exists — skipping');
   }
+
+  // Ensure users_local table has status and trial_end_date columns for older setups
+  try {
+    db.prepare("ALTER TABLE users_local ADD COLUMN status TEXT").run();
+  } catch (e) {}
+  try {
+    db.prepare("ALTER TABLE users_local ADD COLUMN trial_end_date TEXT").run();
+  } catch (e) {}
 }
 
 module.exports = { runMigrations: runMigrations };

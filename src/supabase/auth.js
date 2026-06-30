@@ -168,12 +168,14 @@ function login(email, password, callback) {
           var db = conn.getDB();
           db.prepare('DELETE FROM users_local').run();
           db.prepare(
-            'INSERT INTO users_local (id, email, role, access_token, refresh_token, expires_at) ' +
-            'VALUES (?, ?, ?, ?, ?, ?)'
+            'INSERT INTO users_local (id, email, role, access_token, refresh_token, expires_at, status, trial_end_date) ' +
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
           ).run(
             user.id, user.email, 'owner',
             session.access_token, session.refresh_token,
-            session.expires_at || Math.floor(Date.now() / 1000) + 3600
+            session.expires_at || Math.floor(Date.now() / 1000) + 3600,
+            profile.status,
+            profile.trial_end_date
           );
 
           callback({ success: true, mode: 'full', email: user.email, userId: user.id });
@@ -185,6 +187,34 @@ function login(email, password, callback) {
         });
     })
     .catch(function(err) {
+      // Check local cache for trial and status checks if database was already opened
+      try {
+        var db = conn.getDB();
+        var localUser = db.prepare('SELECT * FROM users_local WHERE email = ? LIMIT 1').get(email);
+        if (localUser) {
+          if (localUser.status === 'suspended') {
+            conn.closeDB();
+            return callback({ success: false, error: 'Your account has been suspended. Please contact the administrator.' });
+          }
+          if (localUser.status === 'cancelled') {
+            conn.closeDB();
+            return callback({ success: false, error: 'Your account has been cancelled.' });
+          }
+          if (localUser.status === 'expired') {
+            conn.closeDB();
+            return callback({ success: false, error: 'Your subscription has expired.' });
+          }
+          if (localUser.status === 'trial') {
+            var today = new Date().toISOString().split('T')[0];
+            if (localUser.trial_end_date && localUser.trial_end_date < today) {
+              conn.closeDB();
+              return callback({ success: false, error: 'Your trial has expired. Expiry: ' + localUser.trial_end_date });
+            }
+          }
+        }
+      } catch(dbErr) {
+        // If DB not opened or table query failed, proceed with generic error
+      }
       callback({ success: true, mode: 'local-only', email: email,
                  warning: 'Cloud error: ' + err.message });
     });
@@ -206,7 +236,19 @@ function isLoggedIn() {
     var row = conn.getDB()
       .prepare('SELECT * FROM users_local LIMIT 1')
       .get();
-    if (!row) return true;
+    if (!row) return false;
+
+    // Check status and trial expiry on app launch
+    if (row.status === 'suspended' || row.status === 'cancelled' || row.status === 'expired') {
+      return false;
+    }
+    if (row.status === 'trial') {
+      var today = new Date().toISOString().split('T')[0];
+      if (row.trial_end_date && row.trial_end_date < today) {
+        return false;
+      }
+    }
+
     return row.expires_at > Math.floor(Date.now() / 1000);
   } catch(e) { return false; }
 }
