@@ -71,13 +71,12 @@ export function usePayments(filter = {}) {
       .filter(u => u.days_left >= 0 && u.days_left <= 90)
       .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
 
-    // Calculate plan price breakdown
     const planBreakdown = allUsers.reduce((acc, u) => {
       if (u.status === 'active') {
         acc[u.plan] = (acc[u.plan] || 0) + (parseFloat(u.plan_price) || 0)
       }
       return acc
-    }, { starter: 0, professional: 0, enterprise: 0 })
+    }, { standard: 0 })
 
     setPayments(paymentsWithUser)
     setStats({

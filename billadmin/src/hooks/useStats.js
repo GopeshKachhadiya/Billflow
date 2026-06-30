@@ -29,9 +29,9 @@ export function useStats() {
         const active = users.filter(u => u.status === 'active')
         const mrr = active.reduce((sum, u) => {
           const price = parseFloat(u.plan_price) || 0
-          if (u.billing_cycle === 'monthly')   return sum + price
-          if (u.billing_cycle === 'quarterly') return sum + price / 3
-          if (u.billing_cycle === 'yearly')    return sum + price / 12
+          if (u.billing_cycle === 'monthly')     return sum + price
+          if (u.billing_cycle === 'half_yearly') return sum + price / 6
+          if (u.billing_cycle === 'yearly')      return sum + price / 12
           return sum
         }, 0)
 

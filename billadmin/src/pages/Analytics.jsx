@@ -30,7 +30,7 @@ export default function Analytics() {
     activeUsers.reduce((acc, u) => {
       acc[u.plan] = (acc[u.plan] || 0) + 1
       return acc
-    }, { starter: 0, professional: 0, enterprise: 0 })
+    }, { standard: 0 })
   ).map(([name, value]) => ({
     name: name.toUpperCase(),
     value
@@ -170,7 +170,7 @@ export default function Analytics() {
               <div className="bg-primary/10 p-4 border border-primary/20 rounded-xl leading-relaxed">
                 <h4 className="font-bold text-primary mb-1">ARPU Optimization</h4>
                 <p className="text-on-surface-variant">
-                  With average revenue per user at <b>{formatCurrency(stats.arpu)}</b>, encouraging customers to migrate to professional and enterprise plans via customized configurations (e.g. multi-user licensing) can scale MRR quickly.
+                  With average revenue per user at <b>{formatCurrency(stats.arpu)}</b>, encouraging customers to select longer billing cycles (like 6-month or yearly plans) secures predictable cash flow and scales active MRR.
                 </p>
               </div>
             </div>

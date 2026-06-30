@@ -51,11 +51,9 @@ export const getStatusColor = (status) => {
 
 export const getPlanColor = (plan) => {
   const map = {
-    starter:      'bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-350 border border-slate-200 dark:border-slate-700',
-    professional: 'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/40',
-    enterprise:   'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/40'
+    standard: 'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/40'
   }
-  return map[plan] || 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border border-gray-200 dark:border-slate-700'
+  return map[plan] || 'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/40'
 }
 
 export const callAdminWebhook = async (path, payload) => {

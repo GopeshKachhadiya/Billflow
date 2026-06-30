@@ -205,9 +205,7 @@ export function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <KPICard title="Total Collected" value={formatCurrency(paymentStats?.totalCollected)} icon={Wallet} subtitle="All-Time" />
           <KPICard title="Expected MRR" value={formatCurrency(
-            (paymentStats?.planBreakdown?.starter || 0) + 
-            (paymentStats?.planBreakdown?.professional || 0) + 
-            (paymentStats?.planBreakdown?.enterprise || 0)
+            paymentStats?.planBreakdown?.standard || 0
           )} icon={CreditCard} subtitle="Active billing" />
           <KPICard title="Upcoming Dues" value={(paymentStats?.upcomingDues?.length || 0) + ' accounts'} icon={Calendar} subtitle="Next 90 days" />
         </div>

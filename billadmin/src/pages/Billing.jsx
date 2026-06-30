@@ -99,7 +99,7 @@ export default function Billing() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <KPICard title="Total Collected (All-Time)" value={formatCurrency(stats.totalCollected)} color="primary" icon={Wallet} subtitle="Confirmed payments" />
         <KPICard title="Expected MRR Run-rate" value={formatCurrency(
-          (stats.planBreakdown.starter || 0) + (stats.planBreakdown.professional || 0) + (stats.planBreakdown.enterprise || 0)
+          stats.planBreakdown.standard || 0
         )} color="primary" icon={CreditCard} subtitle="Active billing cycle sum" />
         <KPICard title="Upcoming Dues (Next 90 Days)" value={stats.upcomingDues.length + ' accounts'} color="secondary" icon={Calendar} subtitle="Subscribers with next payment setup" />
       </div>
@@ -214,12 +214,10 @@ export default function Billing() {
             <h2 className="text-sm font-semibold text-on-surface mb-4 border-b border-outline-variant/20 pb-2 uppercase tracking-wider">Revenue Distribution By Plan</h2>
             <div className="space-y-4">
               {[
-                { name: 'Starter Plan', key: 'starter', color: 'bg-on-surface-variant/40', value: stats.planBreakdown.starter || 0 },
-                { name: 'Professional Plan', key: 'professional', color: 'bg-secondary', value: stats.planBreakdown.professional || 0 },
-                { name: 'Enterprise Plan', key: 'enterprise', color: 'bg-primary', value: stats.planBreakdown.enterprise || 0 }
+                { name: 'Standard Plan', key: 'standard', color: 'bg-primary', value: stats.planBreakdown.standard || 0 }
               ].map(plan => {
-                const total = (stats.planBreakdown.starter || 0) + (stats.planBreakdown.professional || 0) + (stats.planBreakdown.enterprise || 0)
-                const percent = total > 0 ? Math.round((plan.value / total) * 100) : 0
+                const total = stats.planBreakdown.standard || 0
+                const percent = total > 0 ? 100 : 0
                 return (
                   <div key={plan.key} className="space-y-1">
                     <div className="flex items-center justify-between text-xs font-semibold text-on-surface-variant">

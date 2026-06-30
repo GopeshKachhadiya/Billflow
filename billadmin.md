@@ -132,8 +132,8 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
   -- Account status
   status                TEXT NOT NULL DEFAULT 'trial'
                           CHECK(status IN ('trial','active','suspended','cancelled','expired')),
-  plan                  TEXT NOT NULL DEFAULT 'starter'
-                          CHECK(plan IN ('starter','professional','enterprise')),
+  plan                  TEXT NOT NULL DEFAULT 'standard'
+                          CHECK(plan IN ('standard')),
 
   -- Trial info
   trial_start_date      DATE,
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
 
   -- Billing
   billing_cycle         TEXT DEFAULT 'monthly'
-                          CHECK(billing_cycle IN ('monthly','quarterly','yearly')),
+                          CHECK(billing_cycle IN ('monthly','half_yearly','yearly')),
   plan_price            NUMERIC(10,2) DEFAULT 0,
   next_billing_date     DATE,
   last_payment_date     DATE,
@@ -250,26 +250,24 @@ CREATE TABLE IF NOT EXISTS public.admin_plans (
   name                TEXT NOT NULL UNIQUE,
   display_name        TEXT NOT NULL,
   monthly_price       NUMERIC(10,2) NOT NULL DEFAULT 0,
-  quarterly_price     NUMERIC(10,2) DEFAULT 0,
+  half_yearly_price   NUMERIC(10,2) DEFAULT 0,
   yearly_price        NUMERIC(10,2) DEFAULT 0,
-  max_bills_per_month INTEGER DEFAULT 100,
-  max_customers       INTEGER DEFAULT 500,
-  whatsapp_enabled    BOOLEAN DEFAULT FALSE,
-  sms_enabled         BOOLEAN DEFAULT FALSE,
-  multi_user          BOOLEAN DEFAULT FALSE,
-  priority_support    BOOLEAN DEFAULT FALSE,
+  max_bills_per_month INTEGER DEFAULT 999999,
+  max_customers       INTEGER DEFAULT 999999,
+  whatsapp_enabled    BOOLEAN DEFAULT TRUE,
+  sms_enabled         BOOLEAN DEFAULT TRUE,
+  multi_user          BOOLEAN DEFAULT TRUE,
+  priority_support    BOOLEAN DEFAULT TRUE,
   is_active           BOOLEAN DEFAULT TRUE,
   created_at          TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Seed default plans
 INSERT INTO public.admin_plans
-  (name, display_name, monthly_price, quarterly_price, yearly_price,
-   max_bills_per_month, max_customers, whatsapp_enabled, sms_enabled, multi_user)
+  (name, display_name, monthly_price, half_yearly_price, yearly_price,
+   max_bills_per_month, max_customers, whatsapp_enabled, sms_enabled, multi_user, priority_support)
 VALUES
-  ('starter',      'Starter',      499,   1299,  4799,   50,   100, FALSE, FALSE, FALSE),
-  ('professional', 'Professional', 999,   2599,  9599,  500,  1000, TRUE,  FALSE, FALSE),
-  ('enterprise',   'Enterprise',  1999,  5199, 19199, 99999, 99999, TRUE,  TRUE,  TRUE)
+  ('standard', 'Standard', 1000.00, 5500.00, 10000.00, 999999, 999999, TRUE, TRUE, TRUE, TRUE)
 ON CONFLICT(name) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════
@@ -1837,9 +1835,7 @@ import { createUser, logActivity } from '../hooks/useUsers'
 import { generateLicenseKey, callAdminWebhook } from '../lib/utils'
 
 const PLANS = [
-  { id: 'starter',      name: 'Starter',      price: 499,  desc: '50 bills/mo, 100 customers, Email only' },
-  { id: 'professional', name: 'Professional', price: 999,  desc: '500 bills/mo, 1000 customers, Email + WhatsApp' },
-  { id: 'enterprise',   name: 'Enterprise',   price: 1999, desc: 'Unlimited, all features, Multi-user, Priority support' },
+  { id: 'standard',      name: 'Standard',      price: 1000,  desc: 'Unlimited bills, unlimited customers, Email + WhatsApp + SMS automations, Multi-user support' }
 ]
 
 export default function AddUser() {
@@ -1854,9 +1850,9 @@ export default function AddUser() {
     gstin:            '',
     city:             '',
     state:            '',
-    plan:             'starter',
+    plan:             'standard',
     billing_cycle:    'monthly',
-    plan_price:       499,
+    plan_price:       1000,
     status:           'trial',
     trial_days:       14,
     trial_start_date: new Date().toISOString().split('T')[0],
@@ -1874,15 +1870,13 @@ export default function AddUser() {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const selectPlan = (plan) => {
-    const p = PLANS.find(p => p.id === plan)
-    const prices = { monthly: p.price, quarterly: Math.round(p.price * 3 * 0.9), yearly: Math.round(p.price * 12 * 0.8) }
-    set('plan', plan)
+    const prices = { monthly: 1000, half_yearly: 5500, yearly: 10000 }
+    set('plan', 'standard')
     set('plan_price', prices[form.billing_cycle])
   }
 
   const selectCycle = (cycle) => {
-    const p     = PLANS.find(p => p.id === form.plan)
-    const prices = { monthly: p.price, quarterly: Math.round(p.price * 3 * 0.9), yearly: Math.round(p.price * 12 * 0.8) }
+    const prices = { monthly: 1000, half_yearly: 5500, yearly: 10000 }
     set('billing_cycle', cycle)
     set('plan_price', prices[cycle])
   }
@@ -2005,11 +1999,15 @@ export default function AddUser() {
             <div>
               <h2 className="text-sm font-semibold text-gray-700 mb-2">Billing Cycle</h2>
               <div className="flex gap-3">
-                {[['monthly','Monthly', 0],['quarterly','Quarterly (10% off)',10],['yearly','Yearly (20% off)',20]].map(([v,l,disc]) => (
+                {[
+                  ['monthly','Monthly', 1000],
+                  ['half_yearly','6 Months', 5500],
+                  ['yearly','Yearly', 10000]
+                ].map(([v,l,pr]) => (
                   <button key={v} type="button" onClick={() => selectCycle(v)}
                     className={`flex-1 border-2 rounded-xl p-3 text-sm text-center transition-colors ${form.billing_cycle === v ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 hover:border-gray-300'}`}>
                     <p className="font-medium">{l}</p>
-                    <p className="text-indigo-600 font-bold mt-1">₹{form.plan_price}</p>
+                    <p className="text-indigo-600 font-bold mt-1">₹{pr}</p>
                   </button>
                 ))}
               </div>

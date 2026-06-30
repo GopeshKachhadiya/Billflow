@@ -5,9 +5,7 @@ import { generateLicenseKey, callAdminWebhook } from '../lib/utils'
 import { supabase } from '../lib/supabase'
 
 const PLANS = [
-  { id: 'starter',      name: 'Starter',      price: 499,  desc: '50 bills/mo, 100 customers, Email only' },
-  { id: 'professional', name: 'Professional', price: 999,  desc: '500 bills/mo, 1000 customers, Email + WhatsApp' },
-  { id: 'enterprise',   name: 'Enterprise',   price: 1999, desc: 'Unlimited, all features, Multi-user, Priority support' },
+  { id: 'standard',      name: 'Standard',      price: 1000,  desc: 'Unlimited bills, unlimited customers, Email + WhatsApp + SMS automations, Multi-user support' }
 ]
 
 export default function AddUser() {
@@ -22,9 +20,9 @@ export default function AddUser() {
     gstin:            '',
     city:             '',
     state:            '',
-    plan:             'starter',
+    plan:             'standard',
     billing_cycle:    'monthly',
-    plan_price:       499,
+    plan_price:       1000,
     status:           'trial',
     trial_days:       14,
     trial_start_date: new Date().toISOString().split('T')[0],
@@ -43,15 +41,13 @@ export default function AddUser() {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const selectPlan = (plan) => {
-    const p = PLANS.find(p => p.id === plan)
-    const prices = { monthly: p.price, quarterly: Math.round(p.price * 3 * 0.9), yearly: Math.round(p.price * 12 * 0.8) }
-    set('plan', plan)
+    const prices = { monthly: 1000, half_yearly: 5500, yearly: 10000 }
+    set('plan', 'standard')
     set('plan_price', prices[form.billing_cycle])
   }
 
   const selectCycle = (cycle) => {
-    const p     = PLANS.find(p => p.id === form.plan)
-    const prices = { monthly: p.price, quarterly: Math.round(p.price * 3 * 0.9), yearly: Math.round(p.price * 12 * 0.8) }
+    const prices = { monthly: 1000, half_yearly: 5500, yearly: 10000 }
     set('billing_cycle', cycle)
     set('plan_price', prices[cycle])
   }
@@ -198,11 +194,15 @@ export default function AddUser() {
             <div>
               <h2 className="text-sm font-semibold text-on-surface mb-2 border-b border-outline-variant/20 pb-2 uppercase tracking-wider">Billing Cycle</h2>
               <div className="flex gap-3">
-                {[['monthly','Monthly', 0],['quarterly','Quarterly (10% off)',10],['yearly','Yearly (20% off)',20]].map(([v,l,disc]) => (
+                {[
+                  ['monthly','Monthly', 1000],
+                  ['half_yearly','6 Months', 5500],
+                  ['yearly','Yearly', 10000]
+                ].map(([v,l,pr]) => (
                   <button key={v} type="button" onClick={() => selectCycle(v)}
                     className={`flex-1 border-2 rounded-xl p-3 text-sm text-center transition-all ${form.billing_cycle === v ? 'border-primary bg-primary/10 text-primary font-bold' : 'border-outline-variant/30 bg-surface-container hover:border-on-surface-variant text-on-surface-variant'}`}>
                     <p className="font-semibold text-xs uppercase tracking-wider">{l}</p>
-                    <p className="text-primary font-bold mt-1">₹{form.plan_price}</p>
+                    <p className="text-primary font-bold mt-1">₹{pr}</p>
                   </button>
                 ))}
               </div>

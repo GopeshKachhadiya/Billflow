@@ -113,9 +113,9 @@ export async function addPayment(userId, payment) {
 
 function calcNextBillingDate(fromDate, cycle) {
   const d = new Date(fromDate)
-  if (cycle === 'monthly')   d.setMonth(d.getMonth() + 1)
-  if (cycle === 'quarterly') d.setMonth(d.getMonth() + 3)
-  if (cycle === 'yearly')    d.setFullYear(d.getFullYear() + 1)
+  if (cycle === 'monthly')     d.setMonth(d.getMonth() + 1)
+  if (cycle === 'half_yearly') d.setMonth(d.getMonth() + 6)
+  if (cycle === 'yearly')      d.setFullYear(d.getFullYear() + 1)
   return d.toISOString().split('T')[0]
 }
 

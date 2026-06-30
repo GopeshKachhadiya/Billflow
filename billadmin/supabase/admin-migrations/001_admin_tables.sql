@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
   -- Account status
   status                TEXT NOT NULL DEFAULT 'trial'
                           CHECK(status IN ('trial','active','suspended','cancelled','expired')),
-  plan                  TEXT NOT NULL DEFAULT 'starter'
-                          CHECK(plan IN ('starter','professional','enterprise')),
+  plan                  TEXT NOT NULL DEFAULT 'standard'
+                          CHECK(plan IN ('standard')),
 
   -- Trial info
   trial_start_date      DATE,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
 
   -- Billing
   billing_cycle         TEXT DEFAULT 'monthly'
-                          CHECK(billing_cycle IN ('monthly','quarterly','yearly')),
+                          CHECK(billing_cycle IN ('monthly','half_yearly','yearly')),
   plan_price            NUMERIC(10,2) DEFAULT 0,
   next_billing_date     DATE,
   last_payment_date     DATE,
@@ -135,26 +135,24 @@ CREATE TABLE IF NOT EXISTS public.admin_plans (
   name                TEXT NOT NULL UNIQUE,
   display_name        TEXT NOT NULL,
   monthly_price       NUMERIC(10,2) NOT NULL DEFAULT 0,
-  quarterly_price     NUMERIC(10,2) DEFAULT 0,
+  half_yearly_price   NUMERIC(10,2) DEFAULT 0,
   yearly_price        NUMERIC(10,2) DEFAULT 0,
-  max_bills_per_month INTEGER DEFAULT 100,
-  max_customers       INTEGER DEFAULT 500,
-  whatsapp_enabled    BOOLEAN DEFAULT FALSE,
-  sms_enabled         BOOLEAN DEFAULT FALSE,
-  multi_user          BOOLEAN DEFAULT FALSE,
-  priority_support    BOOLEAN DEFAULT FALSE,
+  max_bills_per_month INTEGER DEFAULT 999999,
+  max_customers       INTEGER DEFAULT 999999,
+  whatsapp_enabled    BOOLEAN DEFAULT TRUE,
+  sms_enabled         BOOLEAN DEFAULT TRUE,
+  multi_user          BOOLEAN DEFAULT TRUE,
+  priority_support    BOOLEAN DEFAULT TRUE,
   is_active           BOOLEAN DEFAULT TRUE,
   created_at          TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Seed default plans
 INSERT INTO public.admin_plans
-  (name, display_name, monthly_price, quarterly_price, yearly_price,
-   max_bills_per_month, max_customers, whatsapp_enabled, sms_enabled, multi_user)
+  (name, display_name, monthly_price, half_yearly_price, yearly_price,
+   max_bills_per_month, max_customers, whatsapp_enabled, sms_enabled, multi_user, priority_support)
 VALUES
-  ('starter',      'Starter',      499,   1299,  4799,   50,   100, FALSE, FALSE, FALSE),
-  ('professional', 'Professional', 999,   2599,  9599,  500,  1000, TRUE,  FALSE, FALSE),
-  ('enterprise',   'Enterprise',  1999,  5199, 19199, 99999, 99999, TRUE,  TRUE,  TRUE)
+  ('standard', 'Standard', 1000.00, 5500.00, 10000.00, 999999, 999999, TRUE, TRUE, TRUE, TRUE)
 ON CONFLICT(name) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════

@@ -71,9 +71,7 @@ export default function Users() {
         <select value={plan} onChange={e => { setPlan(e.target.value); setPage(0) }}
           className="border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer">
           <option value="all">All Plans</option>
-          <option value="starter">Starter</option>
-          <option value="professional">Professional</option>
-          <option value="enterprise">Enterprise</option>
+          <option value="standard">Standard</option>
         </select>
       </div>
 
