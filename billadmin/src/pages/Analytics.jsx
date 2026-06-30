@@ -1,7 +1,7 @@
 import { useStats } from '../hooks/useStats'
 import { formatCurrency } from '../lib/utils'
 import KPICard from '../components/ui/KPICard'
-import { TrendingUp, Users, DollarSign, Activity, Percent } from 'lucide-react'
+import { TrendingUp, Users, DollarSign, Activity, Percent, IndianRupee } from 'lucide-react'
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts'
 
 export default function Analytics() {
@@ -36,7 +36,7 @@ export default function Analytics() {
     value
   }))
 
-  const COLORS = ['#64748b', '#6366f1', '#a855f7']
+  const COLORS = ['#6bd8cb', '#b4c5ff', '#ffb77d']
 
   // 2. Revenue By State
   const stateRevenueMap = rawUsers.reduce((acc, u) => {
@@ -67,27 +67,27 @@ export default function Analytics() {
     : 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-on-surface">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Revenue & SaaS Analytics</h1>
-        <p className="text-gray-555 dark:text-slate-400 text-sm mt-0.5">Deep-dive customer analytics and KPI breakdowns</p>
+        <h1 className="text-2xl font-bold text-on-surface">Revenue & SaaS Analytics</h1>
+        <p className="text-on-surface-variant text-sm mt-0.5">Deep-dive customer analytics and KPI breakdowns</p>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <KPICard title="MRR" value={formatCurrency(stats.mrr)} color="green" icon={DollarSign} subtitle="Recurring revenue/mo" />
-        <KPICard title="ARR Run Rate" value={formatCurrency(stats.arr)} color="purple" icon={TrendingUp} subtitle="Annual projections" />
-        <KPICard title="ARPU (Active)" value={formatCurrency(stats.arpu)} color="indigo" icon={Users} subtitle="Avg revenue per user" />
-        <KPICard title="Trial-to-Paid" value={stats.conversionRate + '%'} color="blue" icon={Percent} subtitle="Conversion efficiency" />
-        <KPICard title="Churn Rate" value={churnRate + '%'} color="red" icon={Activity} subtitle="All-time churn ratio" />
+        <KPICard title="MRR" value={formatCurrency(stats.mrr)} color="primary" icon={IndianRupee} subtitle="Recurring revenue/mo" />
+        <KPICard title="ARR Run Rate" value={formatCurrency(stats.arr)} color="primary" icon={TrendingUp} subtitle="Annual projections" />
+        <KPICard title="ARPU (Active)" value={formatCurrency(stats.arpu)} color="secondary" icon={Users} subtitle="Avg revenue per user" />
+        <KPICard title="Trial-to-Paid" value={stats.conversionRate + '%'} color="tertiary" icon={Percent} subtitle="Conversion efficiency" />
+        <KPICard title="Churn Rate" value={churnRate + '%'} color="error" icon={Activity} subtitle="All-time churn ratio" />
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Plan Breakdown */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm hover-glow transition-all lg:col-span-1">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4 border-b border-gray-150 dark:border-slate-800 pb-2">Active Subscribers By Plan</h3>
+        <div className="obsidian-card p-6 rounded-xl lg:col-span-1">
+          <h3 className="text-sm font-semibold text-on-surface mb-4 border-b border-outline-variant/15 pb-2 uppercase tracking-wider">Active Subscribers By Plan</h3>
           <div className="flex justify-center items-center h-56">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -104,7 +104,7 @@ export default function Analytics() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#111827', color: '#dfe2f1' }} />
                 <Legend verticalAlign="bottom" height={36} iconType="circle" />
               </PieChart>
             </ResponsiveContainer>
@@ -112,15 +112,15 @@ export default function Analytics() {
         </div>
 
         {/* Revenue by State */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm hover-glow transition-all lg:col-span-2">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4 border-b border-gray-150 dark:border-slate-800 pb-2">Top States by Total Revenue (₹)</h3>
+        <div className="obsidian-card p-6 rounded-xl lg:col-span-2">
+          <h3 className="text-sm font-semibold text-on-surface mb-4 border-b border-outline-variant/15 pb-2 uppercase tracking-wider">Top States by Total Revenue (₹)</h3>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stateRevenueData} layout="vertical">
+              <BarChart data={stateRevenueData} layout="vertical" margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
                 <XAxis type="number" hide />
                 <YAxis dataKey="state" type="category" tick={{ fontSize: 10, fill: '#94a3b8' }} width={80} axisLine={false} tickLine={false} />
-                <Tooltip formatter={v => ['₹' + v.toLocaleString('en-IN'), 'Total Collected']} />
-                <Bar dataKey="revenue" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={12} />
+                <Tooltip formatter={v => ['₹' + v.toLocaleString('en-IN'), 'Total Collected']} contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#111827', color: '#dfe2f1' }} />
+                <Bar dataKey="revenue" fill="#b4c5ff" radius={[0, 4, 4, 0]} barSize={12} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -130,21 +130,21 @@ export default function Analytics() {
       {/* Status & Cohorts Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* User Status Cohorts */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm hover-glow transition-all lg:col-span-1">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4 border-b border-gray-150 dark:border-slate-800 pb-2">SaaS Accounts Cohort</h3>
+        <div className="obsidian-card p-6 rounded-xl lg:col-span-1">
+          <h3 className="text-sm font-semibold text-on-surface mb-4 border-b border-outline-variant/15 pb-2 uppercase tracking-wider">SaaS Accounts Cohort</h3>
           <div className="space-y-4">
             {statusSummary.map(status => {
               const percent = stats.total > 0 ? Math.round((status.value / stats.total) * 100) : 0
               return (
                 <div key={status.name} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-semibold text-gray-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-xs font-semibold text-on-surface-variant">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: status.color }} />
                       {status.name}
                     </span>
-                    <span>{status.value} ({percent}%)</span>
+                    <span className="text-on-surface">{status.value} ({percent}%)</span>
                   </div>
-                  <div className="w-full bg-gray-100 dark:bg-slate-950 rounded-full h-1.5">
+                  <div className="w-full bg-input-bg rounded-full h-1.5">
                     <div
                       className="h-1.5 rounded-full"
                       style={{ width: `${percent}%`, backgroundColor: status.color }}
@@ -157,25 +157,25 @@ export default function Analytics() {
         </div>
 
         {/* Business Insights */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm hover-glow transition-all lg:col-span-2 flex flex-col justify-between">
+        <div className="obsidian-card p-6 rounded-xl lg:col-span-2 flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4 border-b border-gray-150 dark:border-slate-800 pb-2 font-sans">Business Health Insights</h3>
+            <h3 className="text-sm font-semibold text-on-surface mb-4 border-b border-outline-variant/15 pb-2 uppercase tracking-wider">Business Health Insights</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="bg-indigo-50/50 dark:bg-indigo-950/10 p-4 border border-indigo-100 dark:border-indigo-900/30 rounded-xl leading-relaxed">
-                <h4 className="font-bold text-indigo-800 dark:text-indigo-400 mb-1">Conversion Optimization</h4>
-                <p className="text-indigo-700 dark:text-indigo-300">
+              <div className="bg-secondary/10 p-4 border border-secondary/20 rounded-xl leading-relaxed">
+                <h4 className="font-bold text-secondary mb-1">Conversion Optimization</h4>
+                <p className="text-on-surface-variant">
                   Your trial-to-paid conversion is currently at <b>{stats.conversionRate}%</b>. Extending trial limits (+7d, +14d) selectively for engaged users often yields up to 15% growth in conversions. Ensure SMTP setup in n8n works seamlessly to prevent churn during trial dropoffs.
                 </p>
               </div>
-              <div className="bg-emerald-50/50 dark:bg-emerald-950/10 p-4 border border-emerald-100 dark:border-emerald-900/30 rounded-xl leading-relaxed">
-                <h4 className="font-bold text-emerald-800 dark:text-emerald-400 mb-1">ARPU Optimization</h4>
-                <p className="text-emerald-700 dark:text-emerald-300">
+              <div className="bg-primary/10 p-4 border border-primary/20 rounded-xl leading-relaxed">
+                <h4 className="font-bold text-primary mb-1">ARPU Optimization</h4>
+                <p className="text-on-surface-variant">
                   With average revenue per user at <b>{formatCurrency(stats.arpu)}</b>, encouraging customers to migrate to professional and enterprise plans via customized configurations (e.g. multi-user licensing) can scale MRR quickly.
                 </p>
               </div>
             </div>
           </div>
-          <p className="text-[10px] text-gray-400 dark:text-slate-500 font-mono mt-4">
+          <p className="text-[10px] text-on-surface-variant/50 font-mono mt-4">
             Insights calculated dynamically using the active database snapshot. Updates in real-time.
           </p>
         </div>

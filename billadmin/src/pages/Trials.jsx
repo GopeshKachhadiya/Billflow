@@ -36,47 +36,47 @@ export default function Trials() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-on-surface">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Trial Management</h1>
-        <p className="text-gray-550 dark:text-slate-400 text-sm">{users.length} users on trial</p>
+        <h1 className="text-2xl font-bold text-on-surface">Trial Management</h1>
+        <p className="text-on-surface-variant text-sm mt-0.5">{users.length} users on trial</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider">Active Trials</p>
-          <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-200 mt-1">{active.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-5 shadow-xs">
+          <p className="text-xs text-secondary font-bold uppercase tracking-wider">Active Trials</p>
+          <p className="text-3xl font-extrabold text-on-surface mt-1">{active.length}</p>
         </div>
-        <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider">Expiring in 7 Days</p>
-          <p className="text-3xl font-extrabold text-rose-900 dark:text-rose-200 mt-1">{urgentUsers.length}</p>
+        <div className="bg-error/10 border border-error/20 rounded-xl p-5 shadow-xs">
+          <p className="text-xs text-error font-bold uppercase tracking-wider">Expiring in 7 Days</p>
+          <p className="text-3xl font-extrabold text-on-surface mt-1">{urgentUsers.length}</p>
         </div>
-        <div className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-gray-600 dark:text-slate-400 font-bold uppercase tracking-wider">Expired (Unconverted)</p>
-          <p className="text-3xl font-extrabold text-gray-900 dark:text-slate-200 mt-1">{expired.length}</p>
+        <div className="bg-input-bg border border-outline-variant/20 rounded-xl p-5 shadow-xs">
+          <p className="text-xs text-on-surface-variant font-bold uppercase tracking-wider">Expired (Unconverted)</p>
+          <p className="text-3xl font-extrabold text-on-surface mt-1">{expired.length}</p>
         </div>
       </div>
 
       {urgentUsers.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-rose-200 dark:border-rose-900/40 shadow-sm overflow-hidden hover-glow transition-all">
-          <div className="bg-rose-50/50 dark:bg-rose-950/10 px-5 py-3 border-b border-rose-100 dark:border-rose-900/30">
-            <h2 className="text-sm font-bold text-rose-700 dark:text-rose-400">⚠️ Expiring Within 7 Days</h2>
+        <div className="obsidian-card rounded-xl border border-outline-variant/15 overflow-hidden">
+          <div className="bg-error/5 px-5 py-3 border-b border-error/20">
+            <h2 className="text-sm font-bold text-error">⚠️ Expiring Within 7 Days</h2>
           </div>
           <TrialTable users={urgentUsers} onExtend={extend} onConvert={convert} extending={extending} urgent />
         </div>
       )}
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden hover-glow transition-all">
-        <div className="px-5 py-3 border-b border-gray-100 dark:border-slate-800">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-205">All Active Trials ({active.length})</h2>
+      <div className="obsidian-card rounded-xl border border-outline-variant/15 overflow-hidden">
+        <div className="px-5 py-3 border-b border-outline-variant/15">
+          <h2 className="text-sm font-semibold text-on-surface">All Active Trials ({active.length})</h2>
         </div>
         <TrialTable users={active} onExtend={extend} onConvert={convert} extending={extending} />
       </div>
 
       {expired.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden hover-glow transition-all">
-          <div className="px-5 py-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950/20">
-            <h2 className="text-sm font-semibold text-gray-755 dark:text-slate-300">Expired Trials ({expired.length})</h2>
+        <div className="obsidian-card rounded-xl border border-outline-variant/15 overflow-hidden">
+          <div className="px-5 py-3 border-b border-outline-variant/15 bg-input-bg">
+            <h2 className="text-sm font-semibold text-on-surface-variant">Expired Trials ({expired.length})</h2>
           </div>
           <TrialTable users={expired} onExtend={extend} onConvert={convert} extending={extending} />
         </div>
@@ -90,37 +90,37 @@ function TrialTable({ users, onExtend, onConvert, extending }) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-gray-50 dark:bg-slate-950/40 border-b border-gray-150 dark:border-slate-800">
+          <tr className="bg-surface-container-low border-b border-outline-variant/15">
             {['Customer','Email','Plan','Trial End','Days Left','Actions'].map(h =>
-              <th key={h} className="text-left px-4 py-2.5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">{h}</th>
+              <th key={h} className="text-left px-4 py-2.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">{h}</th>
             )}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
+        <tbody className="divide-y divide-outline-variant/10">
           {users.map(u => {
             const left = daysUntil(u.trial_end_date)
             return (
-              <tr key={u.id} className="hover:bg-gray-50/30 dark:hover:bg-slate-800/20 transition-colors">
+              <tr key={u.id} className="hover:bg-surface-container-high/40 transition-colors">
                 <td className="px-4 py-3">
-                  <p className="font-bold text-gray-900 dark:text-slate-200 text-xs">{u.full_name}</p>
-                  <p className="text-xs text-gray-400 dark:text-slate-500">{u.business_name}</p>
+                  <p className="font-bold text-on-surface text-xs">{u.full_name}</p>
+                  <p className="text-xs text-on-surface-variant">{u.business_name}</p>
                 </td>
-                <td className="px-4 py-3 text-gray-600 dark:text-slate-400 font-medium text-xs">{u.email}</td>
+                <td className="px-4 py-3 text-on-surface-variant font-medium text-xs">{u.email}</td>
                 <td className="px-4 py-3 capitalize text-xs font-semibold">{u.plan}</td>
                 <td className="px-4 py-3 text-xs font-medium">{formatDate(u.trial_end_date)}</td>
                 <td className="px-4 py-3">
-                  <span className={`font-bold text-xs ${left == null ? 'text-gray-400' : left <= 0 ? 'text-rose-650' : left <= 3 ? 'text-rose-500' : left <= 7 ? 'text-amber-500' : 'text-green-600'}`}>
+                  <span className={`font-bold text-xs ${left == null ? 'text-on-surface-variant/40' : left <= 0 ? 'text-error' : left <= 3 ? 'text-error' : left <= 7 ? 'text-tertiary' : 'text-primary'}`}>
                     {left == null ? '—' : left <= 0 ? 'Expired' : `${left} days`}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2 flex-wrap">
                     <button onClick={() => onExtend(u, 7)}  disabled={extending === u.id}
-                      className="text-xs border border-gray-300 dark:border-slate-800 px-2.5 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 font-bold disabled:opacity-40 text-gray-700 dark:text-slate-300 transition-colors">+7d</button>
+                      className="text-xs border border-outline-variant/30 px-2.5 py-1 rounded-lg hover:bg-surface-container-high font-bold disabled:opacity-40 text-on-surface transition-colors bg-transparent">+7d</button>
                     <button onClick={() => onExtend(u, 14)} disabled={extending === u.id}
-                      className="text-xs border border-gray-300 dark:border-slate-800 px-2.5 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 font-bold disabled:opacity-40 text-gray-700 dark:text-slate-300 transition-colors">+14d</button>
+                      className="text-xs border border-outline-variant/30 px-2.5 py-1 rounded-lg hover:bg-surface-container-high font-bold disabled:opacity-40 text-on-surface transition-colors bg-transparent">+14d</button>
                     <button onClick={() => onConvert(u)}
-                      className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg font-bold shadow-sm shadow-green-100 transition-colors">→ Activate</button>
+                      className="text-xs accent-gradient hover:opacity-90 text-white px-3 py-1.5 rounded-lg font-bold shadow-md shadow-primary/10 transition-all teal-glow">→ Activate</button>
                   </div>
                 </td>
               </tr>

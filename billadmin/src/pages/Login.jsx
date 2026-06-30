@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { HeroSection } from '../components/ui/hero-section-dark'
 
 export default function Login() {
   const [email, setEmail]       = useState('gopeshkachhadiya00005@gmail.com')
@@ -61,30 +62,44 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-indigo-100 dark:border-slate-850">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-500/20">
-            <span className="text-white text-2xl font-bold font-sans">B</span>
+    <HeroSection
+      title="BillFlow Manager Dashboard"
+      subtitle={{
+        regular: "Secure access to ",
+        gradient: "SaaS admin control center"
+      }}
+      description="Monitor MRR/ARR, manage billing subscriptions, review trials, track collections, and audit n8n workflows in real-time."
+      bottomImage={null}
+      gridOptions={{
+        angle: 65,
+        opacity: 0.5,
+        cellSize: 55,
+        lightLineColor: "#8b5cf6",
+        darkLineColor: "#2e1065"
+      }}
+    >
+      <div className="bg-surface-container-low/60 backdrop-blur-xl rounded-2xl shadow-2xl w-full p-8 border border-outline-variant/20 relative z-20 text-left">
+        <div className="text-center mb-6">
+          <div className="inline-flex w-12 h-12 bg-[#5046e6] rounded-xl mb-3 shadow-lg shadow-indigo-500/20 relative select-none">
+            <span className="absolute text-[20px] font-black text-white top-2 left-3">B</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 tracking-tight">BillFlow Admin</h1>
-          <p className="text-gray-400 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mt-1">Manager Dashboard</p>
+          <h2 className="text-xl font-bold text-on-surface tracking-tight">Manager Authentication</h2>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Email Address</label>
+            <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Email Address</label>
             <input
               type="email" value={email} onChange={e => setEmail(e.target.value)}
-              className="w-full border border-gray-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
+              className="w-full border-none rounded-xl px-4 py-2.5 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none"
               placeholder="admin@yourdomain.com" required
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Password</label>
+            <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Password</label>
             <input
               type="password" value={password} onChange={e => setPassword(e.target.value)}
-              className="w-full border border-gray-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
+              className="w-full border-none rounded-xl px-4 py-2.5 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none"
               placeholder="••••••••" required
             />
           </div>
@@ -94,20 +109,20 @@ export default function Login() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 dark:border-slate-800 text-indigo-600 focus:ring-indigo-500"
+                className="w-4 h-4 rounded border-outline-variant/30 text-primary focus:ring-primary bg-transparent cursor-pointer"
               />
-              <span className="text-xs font-semibold text-gray-500 dark:text-slate-450">Remember Me / Auto-Login</span>
+              <span className="text-xs font-semibold text-on-surface-variant">Remember Me / Auto-Login</span>
             </label>
           </div>
-          {error && <p className="text-rose-600 text-xs font-medium bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 p-3 rounded-lg">{error}</p>}
+          {error && <p className="text-error text-xs font-medium bg-error/10 border border-error/20 p-3 rounded-lg">{error}</p>}
           <button
             type="submit" disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
+            className="w-full accent-gradient hover:opacity-90 disabled:opacity-50 text-white font-bold py-3 rounded-full transition-all shadow-lg shadow-primary/10 active:scale-[0.98] teal-glow flex items-center justify-center gap-2"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
       </div>
-    </div>
+    </HeroSection>
   )
 }

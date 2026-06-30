@@ -2,12 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  font-size: 17.5px;
+}
+
+:root {
+  --bg-color-rgb: 249, 249, 251;                /* #f9f9fb - off-white */
+  --on-surface-rgb: 9, 9, 11;                   /* #09090b - zinc-950 */
+  --on-surface-variant-rgb: 113, 113, 122;      /* #71717a - zinc-500 */
+  --surface-container-lowest-rgb: 255, 255, 255;/* #ffffff - white */
+  --surface-container-low-rgb: 255, 255, 255;   /* #ffffff - white */
+  --surface-container-rgb: 255, 255, 255;       /* #ffffff - white */
+  --surface-container-high-rgb: 244, 244, 245;  /* #f4f4f5 - zinc-100 */
+  
+  --outline-variant-rgb: 228, 228, 231;         /* #e4e4e7 - zinc-200 */
+  --input-bg-rgb: 244, 244, 245;                /* #f4f4f5 - zinc-100 */
+  
+  --card-bg: #ffffff;
+  --card-hover-bg: #f4f4f5;
+  --card-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --card-border: 1px solid #e4e4e7;
+  
+  --chart-grad-start: #71717a;                  /* zinc-500 */
+  --chart-grad-end: #ffffff;                    /* white */
+  --chart-line-stroke: #18181b;                 /* zinc-900 */
+  --chart-line-stroke-secondary: #a1a1aa;       /* zinc-400 */
+}
+
+.dark {
+  --bg-color-rgb: 0, 0, 0;                      /* #000000 - pure black background */
+  --on-surface-rgb: 244, 244, 245;              /* #f4f4f5 - zinc-100 */
+  --on-surface-variant-rgb: 161, 161, 170;      /* #a1a1aa - zinc-400 */
+  --surface-container-lowest-rgb: 0, 0, 0;      /* #000000 - pure black */
+  --surface-container-low-rgb: 0, 0, 0;          /* #000000 - pure black */
+  --surface-container-rgb: 0, 0, 0;              /* #000000 - pure black */
+  --surface-container-high-rgb: 9, 9, 11;        /* #09090b - dark card background */
+  
+  --outline-variant-rgb: 31, 31, 35;            /* #1f1f23 - card border */
+  --input-bg-rgb: 24, 24, 27;                   /* #18181b - zinc-900 */
+  
+  --card-bg: #09090b;                            /* #09090b - card background */
+  --card-hover-bg: #09090b;                      /* #09090b - disabled hover transform */
+  --card-shadow: none;
+  --card-border: 1px solid #1f1f23;
+  
+  --chart-grad-start: #ffffff;
+  --chart-grad-end: #18181b;
+  --chart-line-stroke: #ffffff;
+  --chart-line-stroke-secondary: #71717a;
+}
+
 @layer base {
   body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', 'Geist', sans-serif;
+    background-color: rgb(var(--bg-color-rgb));
+    color: rgb(var(--on-surface-rgb));
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', 'Geist', sans-serif;
   }
 }
 
@@ -28,21 +80,92 @@
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(161, 161, 170, 0.1);
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.45);
+  background: rgba(161, 161, 170, 0.25);
 }
 
 /* Glow effects and hover transitions */
-.hover-glow {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+.glass-sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e4e4e7;
 }
-.hover-glow:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px -3px rgba(99, 102, 241, 0.1), 0 4px 6px -2px rgba(99, 102, 241, 0.05);
+
+.glass-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e4e4e7;
 }
-.dark .hover-glow:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px -3px rgba(99, 102, 241, 0.2), 0 4px 10px -2px rgba(0, 0, 0, 0.4);
+
+.dark .glass-sidebar {
+  background: #000000;
+  border-right: 1px solid #1f1f23;
+}
+
+.dark .glass-header {
+  background: #000000;
+  border-bottom: 1px solid #1f1f23;
+}
+
+.obsidian-card {
+  background-color: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  transition: all 0.2s ease;
+}
+
+.obsidian-card:hover {
+  background-color: #0c0c0e;
+}
+
+.accent-gradient {
+  background: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%);
+}
+
+.teal-glow, .purple-glow {
+  box-shadow: 0 0 15px rgba(167, 139, 250, 0.2);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+@keyframes growUp {
+  from { height: 0; }
+  to { height: var(--final-height); }
+}
+.bar-animate {
+  animation: growUp 1s ease-out forwards;
+}
+
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s infinite ease-in-out;
+}
+
+/* Custom Scrollbars matching design system */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.15);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.4);
 }

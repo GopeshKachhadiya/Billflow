@@ -112,27 +112,27 @@ export default function AddUser() {
   }
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-6">Add New User</h1>
+    <div className="max-w-2xl text-on-surface">
+      <h1 className="text-2xl font-bold text-on-surface mb-6">Add New User</h1>
 
       {/* Step Indicator */}
-      <div className="flex gap-2 mb-8 bg-white dark:bg-slate-900 p-4 border border-gray-200 dark:border-slate-800 rounded-xl shadow-xs">
+      <div className="flex gap-2 mb-8 bg-surface-container-low p-4 border border-outline-variant/10 rounded-xl shadow-sm">
         {['Profile','Plan & Trial'].map((s, i) => (
           <div key={s} className="flex items-center gap-2 flex-1 justify-center first:justify-start last:justify-end">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step === i+1 ? 'bg-indigo-600 text-white shadow-sm ring-4 ring-indigo-500/20' : step > i+1 ? 'bg-green-500 text-white' : 'bg-gray-100 dark:bg-slate-950 text-gray-400 dark:text-slate-500'}`}>
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step === i+1 ? 'accent-gradient text-white shadow-sm ring-4 ring-primary/20' : step > i+1 ? 'bg-primary text-white' : 'bg-surface-container text-on-surface-variant'}`}>
               {step > i+1 ? '✓' : i+1}
             </div>
-            <span className={`text-xs font-semibold ${step === i+1 ? 'text-indigo-700 dark:text-indigo-400' : 'text-gray-400 dark:text-slate-550'}`}>{s}</span>
-            {i < 1 && <span className="text-gray-200 dark:text-slate-800 mx-2 flex-1 border-t border-dashed border-gray-300 dark:border-slate-700" />}
+            <span className={`text-xs font-semibold ${step === i+1 ? 'text-primary' : 'text-on-surface-variant'}`}>{s}</span>
+            {i < 1 && <span className="mx-2 flex-1 border-t border-dashed border-outline-variant/30" />}
           </div>
         ))}
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6">
+      <div className="bg-surface-container-low rounded-xl border border-outline-variant/10 shadow-xl p-6">
         {/* Step 1 */}
         {step === 1 && (
           <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2 border-b border-gray-150 dark:border-slate-800 pb-2">Customer Info</h2>
+            <h2 className="text-sm font-semibold text-on-surface mb-2 border-b border-outline-variant/20 pb-2 uppercase tracking-wider">Customer Info</h2>
             <div className="grid grid-cols-2 gap-4">
               {[
                 ['Full Name*',     'full_name',    'text',     'Rajesh Kumar'],
@@ -144,21 +144,21 @@ export default function AddUser() {
                 ['City',           'city',         'text',     'Mumbai'],
               ].map(([label, key, type, ph]) => (
                 <div key={key}>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">{label}</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">{label}</label>
                   <input type={type} value={form[key]} onChange={e => set(key, e.target.value)}
                     placeholder={ph}
-                    className="w-full border border-gray-300 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100" />
+                    className="w-full border-none rounded-xl px-3 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none placeholder:text-on-surface-variant/40" />
                 </div>
               ))}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">State</label>
+                <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">State</label>
                 <input value={form.state} onChange={e => set('state', e.target.value)} placeholder="Maharashtra"
-                  className="w-full border border-gray-300 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100" />
+                  className="w-full border-none rounded-xl px-3 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none placeholder:text-on-surface-variant/40" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Referral Source</label>
+                <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Referral Source</label>
                 <select value={form.referral_source} onChange={e => set('referral_source', e.target.value)}
-                  className="w-full border border-gray-300 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-all">
+                  className="w-full border-none rounded-xl px-3 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer">
                   <option value="">Select...</option>
                   <option value="referral">Referral</option>
                   <option value="google">Google Search</option>
@@ -170,9 +170,9 @@ export default function AddUser() {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Internal Notes</label>
+              <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Internal Notes</label>
               <textarea value={form.notes} onChange={e => set('notes', e.target.value)} rows={2}
-                className="w-full border border-gray-300 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
+                className="w-full border-none rounded-xl px-3 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none placeholder:text-on-surface-variant/40"
                 placeholder="Any internal notes about this customer..." />
             </div>
           </div>
@@ -182,38 +182,38 @@ export default function AddUser() {
         {step === 2 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3 border-b border-gray-150 dark:border-slate-800 pb-2">Select Plan</h2>
+              <h2 className="text-sm font-semibold text-on-surface mb-3 border-b border-outline-variant/20 pb-2 uppercase tracking-wider">Select Plan</h2>
               <div className="grid grid-cols-3 gap-3">
                 {PLANS.map(p => (
                   <button key={p.id} type="button" onClick={() => selectPlan(p.id)}
-                    className={`text-left border-2 rounded-xl p-4 transition-all hover:scale-[1.01] ${form.plan === p.id ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400' : 'border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700'}`}>
-                    <p className="font-bold text-gray-900 dark:text-slate-200 text-sm">{p.name}</p>
-                    <p className="text-indigo-650 dark:text-indigo-400 font-extrabold mt-1">₹{p.price}<span className="text-[10px] text-gray-400 dark:text-slate-500 font-normal">/mo</span></p>
-                    <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-2 leading-relaxed">{p.desc}</p>
+                    className={`text-left border-2 rounded-xl p-4 transition-all hover:scale-[1.01] ${form.plan === p.id ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant/30 bg-surface-container hover:border-on-surface-variant text-on-surface-variant'}`}>
+                    <p className="font-bold text-on-surface text-sm">{p.name}</p>
+                    <p className="text-primary font-extrabold mt-1">₹{p.price}<span className="text-[10px] text-on-surface-variant font-normal">/mo</span></p>
+                    <p className="text-[11px] text-on-surface-variant/75 mt-2 leading-relaxed">{p.desc}</p>
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2 border-b border-gray-150 dark:border-slate-800 pb-2">Billing Cycle</h2>
+              <h2 className="text-sm font-semibold text-on-surface mb-2 border-b border-outline-variant/20 pb-2 uppercase tracking-wider">Billing Cycle</h2>
               <div className="flex gap-3">
                 {[['monthly','Monthly', 0],['quarterly','Quarterly (10% off)',10],['yearly','Yearly (20% off)',20]].map(([v,l,disc]) => (
                   <button key={v} type="button" onClick={() => selectCycle(v)}
-                    className={`flex-1 border-2 rounded-xl p-3 text-sm text-center transition-all ${form.billing_cycle === v ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 font-bold' : 'border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700'}`}>
+                    className={`flex-1 border-2 rounded-xl p-3 text-sm text-center transition-all ${form.billing_cycle === v ? 'border-primary bg-primary/10 text-primary font-bold' : 'border-outline-variant/30 bg-surface-container hover:border-on-surface-variant text-on-surface-variant'}`}>
                     <p className="font-semibold text-xs uppercase tracking-wider">{l}</p>
-                    <p className="text-indigo-600 dark:text-indigo-400 font-bold mt-1">₹{form.plan_price}</p>
+                    <p className="text-primary font-bold mt-1">₹{form.plan_price}</p>
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2 border-b border-gray-150 dark:border-slate-800 pb-2">Account Activation</h2>
+              <h2 className="text-sm font-semibold text-on-surface mb-2 border-b border-outline-variant/20 pb-2 uppercase tracking-wider">Account Activation</h2>
               <div className="flex gap-3">
                 {[['trial','Start 14-Day Trial'],['active','Activate Immediately (Paid)']].map(([v,l]) => (
                   <button key={v} type="button" onClick={() => set('status', v)}
-                    className={`flex-1 border-2 rounded-xl p-3 text-sm text-center font-semibold transition-all ${form.status === v ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 shadow-xs' : 'border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700'}`}>
+                    className={`flex-1 border-2 rounded-xl p-3 text-sm text-center font-semibold transition-all ${form.status === v ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-outline-variant/30 bg-surface-container hover:border-on-surface-variant text-on-surface-variant'}`}>
                     {l}
                   </button>
                 ))}
@@ -222,46 +222,46 @@ export default function AddUser() {
 
             {form.status === 'trial' && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2 border-b border-gray-150 dark:border-slate-800 pb-2">Trial Duration</h2>
+                <h2 className="text-sm font-semibold text-on-surface mb-2 border-b border-outline-variant/20 pb-2 uppercase tracking-wider">Trial Duration</h2>
                 <div className="flex gap-3">
                   {[7,14,30].map(d => (
                     <button key={d} type="button" onClick={() => updateTrialDays(d)}
-                      className={`flex-1 border-2 rounded-xl p-3 text-sm font-semibold text-center transition-all ${form.trial_days === d ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400' : 'border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700'}`}>
+                      className={`flex-1 border-2 rounded-xl p-3 text-sm font-semibold text-center transition-all ${form.trial_days === d ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant/30 bg-surface-container hover:border-on-surface-variant text-on-surface-variant'}`}>
                       {d} Days
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-2 font-semibold bg-indigo-50 dark:bg-indigo-950/20 p-2.5 rounded-lg border border-indigo-100 dark:border-indigo-900/30">Trial ends on: <span className="font-mono">{form.trial_end_date}</span></p>
+                <p className="text-primary mt-2 font-semibold bg-primary/10 p-2.5 rounded-lg border border-primary/20">Trial ends on: <span className="font-mono">{form.trial_end_date}</span></p>
               </div>
             )}
 
-            <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-xs">
-              <p className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">Summary</p>
-              <div className="space-y-1.5 text-slate-600 dark:text-slate-400">
-                <p>Plan: <b className="text-slate-800 dark:text-slate-250 capitalize">{form.plan}</b> · <span className="capitalize">{form.billing_cycle}</span></p>
-                <p>Price: <b className="text-slate-800 dark:text-slate-250">₹{form.plan_price}</b></p>
-                <p>Status: <b className="text-slate-800 dark:text-slate-250 capitalize">{form.status}</b></p>
-                {form.status === 'trial' && <p>Trial Ends: <b className="text-slate-800 dark:text-slate-250">{form.trial_end_date}</b></p>}
-                <p>License Key: <b className="font-mono text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-950 border border-indigo-100 dark:border-indigo-900/40 rounded-lg px-2 py-0.5 leading-relaxed">{form.license_key}</b></p>
+            <div className="bg-input-bg border border-outline-variant/20 rounded-xl p-4 text-xs">
+              <p className="font-bold text-on-surface uppercase tracking-wider mb-2">Summary</p>
+              <div className="space-y-1.5 text-on-surface-variant">
+                <p>Plan: <b className="text-on-surface capitalize">{form.plan}</b> · <span className="capitalize">{form.billing_cycle}</span></p>
+                <p>Price: <b className="text-on-surface">₹{form.plan_price}</b></p>
+                <p>Status: <b className="text-on-surface capitalize">{form.status}</b></p>
+                {form.status === 'trial' && <p>Trial Ends: <b className="text-on-surface">{form.trial_end_date}</b></p>}
+                <p>License Key: <b className="font-mono text-primary bg-surface-container border border-outline-variant/20 rounded-lg px-2 py-0.5 leading-relaxed">{form.license_key}</b></p>
               </div>
             </div>
           </div>
         )}
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-6 pt-5 border-t border-gray-100 dark:border-slate-800">
+        <div className="flex justify-between mt-6 pt-5 border-t border-outline-variant/25">
           {step > 1 ? (
-            <button onClick={() => setStep(s => s - 1)} className="border border-gray-300 dark:border-slate-800 text-gray-700 dark:text-slate-300 px-5 py-2 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50 dark:hover:bg-slate-800">← Back</button>
+            <button onClick={() => setStep(s => s - 1)} className="border border-outline-variant/30 text-on-surface px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors hover:bg-surface-container bg-transparent">← Back</button>
           ) : <div />}
           {step < 2 ? (
             <button onClick={() => setStep(s => s + 1)}
               disabled={step === 1 && (!form.full_name || !form.email || !form.business_name || !form.password || form.password.length < 6)}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-indigo-150 transition-all">
+              className="accent-gradient hover:opacity-90 disabled:opacity-40 text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md shadow-primary/10 transition-all teal-glow">
               Continue →
             </button>
           ) : (
             <button onClick={handleSubmit} disabled={saving}
-              className="bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-green-150 transition-all">
+              className="accent-gradient hover:opacity-90 disabled:opacity-40 text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md shadow-primary/10 transition-all teal-glow">
               {saving ? 'Creating Account...' : '✓ Create User & Send Welcome Email'}
             </button>
           )}

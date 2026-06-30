@@ -1,0 +1,16 @@
+{
+  "name": "projects/18136933643213772534",
+  "projectId": "18136933643213772534",
+  "title": "BillFlow SaaS Admin Panel",
+  "visibility": "PRIVATE",
+  "projectType": "PROJECT_DESIGN",
+  "origin": "STITCH",
+  "deviceType": "DESKTOP",
+  "designTheme": {
+    "colorMode": "DARK",
+    "font": "INTER",
+    "roundness": "ROUND_TWELVE",
+    "customColor": "#0d9488"
+  },
+  "screens": {}
+}

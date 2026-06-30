@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BillFlow | Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+        
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #0b0f19; /* Obsidian Navy */
+            color: #dfe2f1;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .glass-sidebar {
+            backdrop-filter: blur(12px);
+            background: rgba(17, 24, 39, 0.4);
+        }
+
+        .glass-header {
+            backdrop-filter: blur(20px);
+            background: rgba(15, 19, 29, 0.8);
+        }
+
+        .obsidian-card {
+            background-color: #111827; /* Level 1 Card */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .obsidian-card:hover {
+            background-color: #161d2b;
+            transform: translateY(-2px);
+            box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .accent-gradient {
+            background: linear-gradient(135deg, #6bd8cb 0%, #0053db 100%);
+        }
+
+        .teal-glow {
+            box-shadow: 0 0 15px rgba(107, 216, 203, 0.1);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        /* Chart Animations */
+        @keyframes growUp {
+            from { height: 0; }
+            to { height: var(--final-height); }
+        }
+        .bar-animate {
+            animation: growUp 1s ease-out forwards;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "primary": "#6bd8cb",
+                      "secondary-fixed-dim": "#b4c5ff",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "inverse-primary": "#006a61",
+                      "background": "#0f131d",
+                      "on-secondary": "#002a78",
+                      "tertiary": "#ffb77d",
+                      "on-tertiary-container": "#432100",
+                      "primary-fixed": "#89f5e7",
+                      "secondary-fixed": "#dbe1ff",
+                      "on-error": "#690005",
+                      "surface-container-lowest": "#0a0e18",
+                      "error-container": "#93000a",
+                      "surface-container-highest": "#313540",
+                      "on-secondary-fixed": "#00174b",
+                      "on-surface": "#dfe2f1",
+                      "outline-variant": "#3d4947",
+                      "on-primary-fixed-variant": "#005049",
+                      "on-tertiary-fixed": "#2f1500",
+                      "surface-variant": "#313540",
+                      "surface-container-high": "#262a35",
+                      "surface-tint": "#6bd8cb",
+                      "outline": "#879391",
+                      "surface-container-low": "#171b26",
+                      "primary-container": "#29a195",
+                      "on-surface-variant": "#bcc9c6",
+                      "on-background": "#dfe2f1",
+                      "surface-bright": "#353944",
+                      "on-tertiary": "#4d2600",
+                      "on-primary-fixed": "#00201d",
+                      "inverse-on-surface": "#2c303b",
+                      "primary-fixed-dim": "#6bd8cb",
+                      "inverse-surface": "#dfe2f1",
+                      "on-primary": "#003732",
+                      "on-error-container": "#ffdad6",
+                      "secondary-container": "#0053db",
+                      "secondary": "#b4c5ff",
+                      "tertiary-fixed": "#ffdcc3",
+                      "surface-container": "#1c1f2a",
+                      "on-secondary-container": "#cdd7ff",
+                      "surface-dim": "#0f131d",
+                      "on-secondary-fixed-variant": "#003ea8",
+                      "tertiary-container": "#d97707",
+                      "surface": "#0f131d",
+                      "on-primary-container": "#00302b",
+                      "error": "#ffb4ab"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "margin": "32px",
+                      "base": "8px",
+                      "sm": "12px",
+                      "xl": "64px",
+                      "md": "24px",
+                      "lg": "40px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Geist"],
+                      "display-lg": ["Geist"],
+                      "headline-md": ["Geist"],
+                      "body-md": ["Geist"],
+                      "headline-lg-mobile": ["Geist"],
+                      "label-md": ["Geist"],
+                      "label-sm": ["Geist"],
+                      "headline-lg": ["Geist"],
+                      "body-sm": ["Geist"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low backdrop-blur-md shadow-xl flex flex-col py-md px-sm z-50">
+<div class="mb-lg px-base">
+<h1 class="font-display-lg text-display-lg font-bold text-primary tracking-tighter">BillFlow</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Manager Panel</p>
+</div>
+<nav class="flex-1 space-y-xs">
+<!-- Active Tab: Dashboard -->
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-primary font-bold border-r-4 border-primary bg-primary-container/10 transition-all scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Users</span>
+</a>
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+<span class="font-label-md text-label-md">Trials</span>
+</a>
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md">Billing</span>
+</a>
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">Activity Logs</span>
+</a>
+</nav>
+<div class="mt-auto pt-md border-t border-outline-variant/20">
+<div class="flex items-center gap-sm mb-md px-base">
+<div class="w-10 h-10 rounded-full obsidian-card flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional high-contrast headshot of a female executive in a dark tech-focused environment. The lighting is Moody with cool cyan and warm amber tones reflecting off her glasses. The overall aesthetic is minimalist, sharp, and corporate high-end." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxDlkNkdH-O-Spb9CDMe3DxB1TwtX9fCYSSNep89mQCsancQTGeT-Z-IMpK3K7uELk2Q_HwJug2J4JI1QpmwcpSOufoQjI9DmbphkAAgS1WVL1hLqVaj6QAgxd45COrISUj_WUO0slVnZ3gJQNTsHOMJvEpAHinnC2E44Rth3CZ9u7SbMbNuoJORVYigf7g3TSHyr8VfIp17YMcOwn8tUJCPjvCruE4g1j38aKcndWfI8MSgtLLoBAZYyuR55UVVVW0jUg04PX6PHc"/>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold text-on-surface">BillFlow Admin</p>
+<p class="text-[10px] uppercase tracking-widest text-primary">Pro Tier</p>
+</div>
+</div>
+<button class="w-full flex items-center gap-sm px-base py-sm rounded-lg text-error font-medium hover:bg-error-container/10 transition-colors">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Sign Out</span>
+</button>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 backdrop-blur-xl bg-surface-dim/80 flex justify-between items-center px-lg py-md w-full">
+<div class="flex flex-col">
+<h2 class="font-headline-lg text-headline-lg font-semibold text-on-surface">Dashboard</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">BillFlow SaaS Overview</p>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full pl-lg pr-md py-sm bg-[#080B12] border-none rounded-xl focus:ring-1 focus:ring-primary/40 text-on-surface placeholder:text-on-surface-variant/50" placeholder="Search accounts, invoices, or trials..." type="text"/>
+</div>
+<button class="accent-gradient text-on-primary font-label-md text-label-md px-md py-sm rounded-full flex items-center gap-xs font-bold hover:opacity-90 active:scale-95 transition-all teal-glow">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+                    Add New User
+                </button>
+</div>
+</header>
+<div class="px-lg py-md space-y-lg">
+<!-- Alert Banner -->
+<div class="bg-tertiary-container/20 border border-tertiary-container/30 rounded-xl p-md flex items-center justify-between animate-pulse-subtle">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<p class="font-body-md text-body-md text-tertiary-fixed-dim">
+<span class="font-bold">Attention Required:</span> 3 trials expiring within 7 days.
+                    </p>
+</div>
+<button class="text-tertiary-fixed-dim font-label-md text-label-md font-bold px-md py-sm rounded-lg hover:bg-tertiary-container/30 transition-colors">
+                    Manage Trials
+                </button>
+</div>
+<!-- KPI Row 1: Primary Metrics -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="obsidian-card p-md rounded-xl space-y-sm">
+<div class="flex justify-between items-start">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">MRR</p>
+<span class="material-symbols-outlined text-primary" data-icon="payments">payments</span>
+</div>
+<div class="flex items-baseline gap-xs">
+<h3 class="font-display-lg text-[32px] font-bold text-on-surface">$124,500</h3>
+<span class="text-primary font-label-sm text-label-sm">+12%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[72%]"></div>
+</div>
+</div>
+<div class="obsidian-card p-md rounded-xl space-y-sm">
+<div class="flex justify-between items-start">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">ARR</p>
+<span class="material-symbols-outlined text-secondary" data-icon="auto_graph">auto_graph</span>
+</div>
+<div class="flex items-baseline gap-xs">
+<h3 class="font-display-lg text-[32px] font-bold text-on-surface">$1.49M</h3>
+<span class="text-primary font-label-sm text-label-sm">+8%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[85%]"></div>
+</div>
+</div>
+<div class="obsidian-card p-md rounded-xl space-y-sm">
+<div class="flex justify-between items-start">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Collections</p>
+<span class="material-symbols-outlined text-tertiary" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div class="flex items-baseline gap-xs">
+<h3 class="font-display-lg text-[32px] font-bold text-on-surface">$98,240</h3>
+<span class="text-on-surface-variant font-label-sm text-label-sm">This Month</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full w-[60%]"></div>
+</div>
+</div>
+<div class="obsidian-card p-md rounded-xl space-y-sm">
+<div class="flex justify-between items-start">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Total Revenue</p>
+<span class="material-symbols-outlined text-primary" data-icon="stars">stars</span>
+</div>
+<div class="flex items-baseline gap-xs">
+<h3 class="font-display-lg text-[32px] font-bold text-on-surface">$4.2M</h3>
+<span class="text-on-surface-variant font-label-sm text-label-sm">All-time</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[100%]"></div>
+</div>
+</div>
+</section>
+<!-- KPI Row 2: Secondary Metrics -->
+<section class="grid grid-cols-2 md:grid-cols-5 gap-gutter">
+<div class="obsidian-card p-sm rounded-lg flex flex-col gap-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Total Users</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">12,408</span>
+</div>
+<div class="obsidian-card p-sm rounded-lg flex flex-col gap-xs">
+<span class="font-label-sm text-label-sm text-primary uppercase">Active</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">9,820</span>
+</div>
+<div class="obsidian-card p-sm rounded-lg flex flex-col gap-xs">
+<span class="font-label-sm text-label-sm text-tertiary uppercase">On Trial</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">412</span>
+</div>
+<div class="obsidian-card p-sm rounded-lg flex flex-col gap-xs">
+<span class="font-label-sm text-label-sm text-error uppercase">Suspended</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">18</span>
+</div>
+<div class="obsidian-card p-sm rounded-lg flex flex-col gap-xs border-l-2 border-primary/40">
+<span class="font-label-sm text-label-sm text-primary uppercase">Conv. Rate</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">14.2%</span>
+</div>
+</section>
+<!-- Charts Grid -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-gutter pb-xl">
+<!-- Monthly Revenue Trend -->
+<div class="obsidian-card p-lg rounded-xl flex flex-col gap-md h-[400px]">
+<div class="flex justify-between items-center">
+<h4 class="font-headline-md text-headline-md font-bold text-on-surface">Monthly Revenue Trend</h4>
+<select class="bg-surface-container-high border-none rounded-lg text-label-sm text-on-surface focus:ring-1 focus:ring-primary">
+<option>Last 6 Months</option>
+<option>Last Year</option>
+</select>
+</div>
+<div class="flex-1 flex items-end justify-between gap-base pt-md">
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full accent-gradient rounded-t-sm bar-animate" style="--final-height: 40%; height: 0;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Jan</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full accent-gradient rounded-t-sm bar-animate" style="--final-height: 55%; height: 0;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Feb</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-primary-container/40 rounded-t-sm bar-animate" style="--final-height: 48%; height: 0;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mar</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full accent-gradient rounded-t-sm bar-animate" style="--final-height: 72%; height: 0;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Apr</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full accent-gradient rounded-t-sm bar-animate" style="--final-height: 85%; height: 0;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">May</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full accent-gradient rounded-t-sm bar-animate" style="--final-height: 94%; height: 0;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Jun</span>
+</div>
+</div>
+</div>
+<!-- Customer Growth Trend -->
+<div class="obsidian-card p-lg rounded-xl flex flex-col gap-md h-[400px]">
+<div class="flex justify-between items-center">
+<h4 class="font-headline-md text-headline-md font-bold text-on-surface">Customer Growth Trend</h4>
+<div class="flex gap-sm">
+<div class="flex items-center gap-xs">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Paid</span>
+</div>
+</div>
+</div>
+<div class="flex-1 relative overflow-hidden flex items-end">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 400 200">
+<defs>
+<lineargradient id="lineGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#b4c5ff" stop-opacity="0.5"></stop>
+<stop offset="100%" stop-color="#b4c5ff" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,180 Q50,150 100,160 T200,80 T300,60 T400,20 V200 H0 Z" fill="url(#lineGradient)"></path>
+<path d="M0,180 Q50,150 100,160 T200,80 T300,60 T400,20" fill="none" stroke="#b4c5ff" stroke-linecap="round" stroke-width="3"></path>
+<!-- Dots -->
+<circle cx="100" cy="160" fill="#b4c5ff" r="4"></circle>
+<circle cx="200" cy="80" fill="#b4c5ff" r="4"></circle>
+<circle cx="300" cy="60" fill="#b4c5ff" r="4"></circle>
+<circle class="animate-pulse" cx="400" cy="20" fill="#b4c5ff" r="6"></circle>
+</svg>
+<div class="absolute bottom-0 w-full flex justify-between px-xs font-label-sm text-label-sm text-on-surface-variant">
+<span>Week 1</span>
+<span>Week 2</span>
+<span>Week 3</span>
+<span>Week 4</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Background Subtle Glows -->
+<div class="fixed top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] -z-10 pointer-events-none"></div>
+<div class="fixed bottom-0 left-64 w-[600px] h-[600px] bg-secondary/5 blur-[180px] -z-10 pointer-events-none"></div>
+<script>
+        // Micro-interactions for KPI cards
+        document.querySelectorAll('.obsidian-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px) scale(1.02)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body></html>
