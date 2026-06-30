@@ -123,10 +123,10 @@ export function Dashboard() {
       <div className="space-y-2">
         <h2 className="text-[0.7rem] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider px-1">Revenue Performance</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <KPICard title="MRR" value={formatCurrency(stats.mrr)} icon={CreditCard} progress={72} trend="+12%" />
-          <KPICard title="ARR" value={formatCurrency(stats.arr)} icon={TrendingUp} progress={85} trend="+8%" />
-          <KPICard title="Collections" value={formatCurrency(stats.monthRevenue)} icon={Wallet} progress={60} subtitle="This Month" />
-          <KPICard title="Total Revenue" value={formatCurrency(stats.totalRevenue)} icon={TrendingUp} progress={100} subtitle="All-Time" />
+          <KPICard title="MRR" value={formatCurrency(stats.mrr)} icon={CreditCard} subtitle="Monthly Recurring" trend="+12%" />
+          <KPICard title="ARR" value={formatCurrency(stats.arr)} icon={TrendingUp} subtitle="Annual Projections" trend="+8%" />
+          <KPICard title="Collections" value={formatCurrency(stats.monthRevenue)} icon={Wallet} subtitle="This Month" />
+          <KPICard title="Total Revenue" value={formatCurrency(stats.totalRevenue)} icon={TrendingUp} subtitle="All-Time" />
         </div>
       </div>
 
