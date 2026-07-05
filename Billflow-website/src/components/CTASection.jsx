@@ -219,6 +219,7 @@ export function CTASection() {
               key={badge.label}
               className="absolute paper-card-elevated px-4 py-3 flex items-center gap-3 min-w-[180px] shadow-ink-glow border-gradient-gold"
               style={{ 
+                position: 'absolute',
                 top: badge.top, 
                 bottom: badge.bottom, 
                 left: badge.left, 
