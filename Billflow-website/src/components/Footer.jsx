@@ -103,7 +103,7 @@ const featuresList = [
 
 export function Footer() {
   return (
-    <footer className="relative section-padding overflow-hidden bg-surface border-t border-border text-text-primary" role="contentinfo">
+    <footer className="relative pt-16 pb-10 overflow-hidden bg-surface border-t border-border text-text-primary" role="contentinfo">
       {/* Ledger Cover Background Aesthetics */}
       <div className="absolute inset-0 -z-10" aria-hidden="true">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] rounded-full bg-gradient-to-r from-fountain/5 via-transparent to-stamp-gold/5 blur-3xl" />
@@ -113,7 +113,7 @@ export function Footer() {
       <div className="section-container relative z-10">
         {/* Quick Feature Access (Explore BillFlow Capabilities) */}
         <motion.div
-          className="mb-16 border-b border-border pb-12"
+          className="mb-10 border-b border-border pb-10"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -139,7 +139,7 @@ export function Footer() {
 
         {/* Main Footer Grid (Information) */}
         <motion.div
-          className="grid gap-10 md:gap-16 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr] mb-16 border-b border-border pb-16"
+          className="grid gap-10 md:gap-16 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr] mb-10 border-b border-border pb-10"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -239,7 +239,7 @@ export function Footer() {
         </motion.div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-text-muted">
+        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-text-muted">
           <div className="flex items-center gap-4">
             <p>© {new Date().getFullYear()} BillFlow Technologies Pvt. Ltd. All rights reserved.</p>
             <span className="hidden md:inline">•</span>
@@ -251,7 +251,7 @@ export function Footer() {
 
           <div className="flex flex-wrap items-center justify-center gap-6">
             {footerLinks.legal.map((link) => (
-              <a key={link.label} href={link.href} className="hover:text-fountain transition-colors">
+              <a key={link.label} href={link.href} className="hover:text-brand-accent transition-colors">
                 {link.label}
               </a>
             ))}
