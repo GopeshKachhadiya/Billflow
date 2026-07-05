@@ -80,16 +80,16 @@ export function Navbar() {
               transition={{ delay: 0.1 }}
             >
               <a href="#/" className="flex items-center gap-2.5 group" aria-label="BillFlow Home">
-                <div className="relative w-10 h-10 rounded-paper flex items-center justify-center overflow-hidden bg-surface border border-border shadow-paper group-hover:border-fountain transition-colors">
-                  <PenTool className="w-5 h-5 text-fountain group-hover:scale-110 transition-transform" />
+                <div className="relative w-10 h-10 rounded-paper flex items-center justify-center overflow-hidden bg-brand-primary border border-border shadow-paper group-hover:border-brand-accent transition-colors">
+                  <span className="font-serif font-black text-xl text-surface-elevated select-none group-hover:scale-110 transition-transform">B</span>
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-transparent via-fountain/10 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-br from-transparent via-brand-accent/15 to-transparent"
                     whileHover={{ rotate: 180 }}
                     transition={{ duration: 0.6 }}
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-serif text-xl font-bold tracking-tight text-text-primary group-hover:text-fountain transition-colors">BillFlow</span>
+                  <span className="font-serif text-xl font-bold tracking-tight text-text-primary group-hover:text-brand-accent transition-colors">BillFlow</span>
                   <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest -mt-1">The Digital Ledger</span>
                 </div>
               </a>

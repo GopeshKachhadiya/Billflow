@@ -16,7 +16,7 @@ const floatingElements = [
   { id: 2, icon: Zap, label: "Auto Reminders", color: "brand-accent", delay: 1.2 },
   { id: 3, icon: Cloud, label: "Cloud Sync", color: "brand-secondary", delay: 2.4 },
   { id: 4, icon: MessageSquare, label: "WhatsApp Bills", color: "success", delay: 3.6 },
-  { id: 5, icon: Truck, label: "Doorstep Delivery", color: "warning", delay: 4.8 },
+  { id: 5, icon: Truck, label: "Doorstep Configuration", color: "warning", delay: 4.8 },
 ];
 
 export function HeroSection() {

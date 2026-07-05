@@ -111,7 +111,33 @@ export function Footer() {
       </div>
 
       <div className="section-container relative z-10">
-        {/* Main Footer Grid */}
+        {/* Quick Feature Access (Explore BillFlow Capabilities) */}
+        <motion.div
+          className="mb-16 border-b border-border pb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <h4 className="font-serif text-sm uppercase tracking-widest text-text-muted mb-5 text-center">Explore BillFlow Capabilities</h4>
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            {featuresList.map((feature, i) => (
+              <motion.a
+                key={feature.label}
+                href={feature.href}
+                className="p-3 rounded-paper bg-surface-elevated border border-border flex items-center gap-3 text-left group transition-all duration-300"
+                whileHover={{ y: -2, borderColor: 'var(--color-brand-accent)', backgroundColor: 'var(--color-background)' }}
+              >
+                <div className="w-8 h-8 rounded-paper bg-background flex items-center justify-center flex-shrink-0 border border-border">
+                  <feature.icon className="w-4 h-4 text-brand-primary group-hover:scale-110 transition-transform" />
+                </div>
+                <span className="text-xs font-medium text-text-secondary group-hover:text-brand-accent transition-colors">{feature.label}</span>
+              </motion.a>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Main Footer Grid (Information) */}
         <motion.div
           className="grid gap-10 md:gap-16 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr] mb-16 border-b border-border pb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -122,12 +148,12 @@ export function Footer() {
           {/* Brand Column */}
           <motion.div className="max-w-xs" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
             <a href="#/" className="flex items-center gap-3 mb-6 group" aria-label="BillFlow Home">
-              <div className="w-12 h-12 rounded-paper-lg flex items-center justify-center relative overflow-hidden bg-surface-elevated border border-border group-hover:border-fountain transition-colors">
-                <PenTool className="w-6 h-6 text-fountain group-hover:scale-110 transition-transform" />
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent" />
+              <div className="w-12 h-12 rounded-paper-lg flex items-center justify-center relative overflow-hidden bg-brand-primary border border-border group-hover:border-brand-accent transition-colors">
+                <span className="font-serif font-black text-2xl text-surface-elevated select-none group-hover:scale-110 transition-transform">B</span>
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-brand-accent/15 to-transparent" />
               </div>
               <div className="flex flex-col">
-                <span className="font-serif text-2xl font-bold tracking-tight text-text-primary group-hover:text-fountain transition-colors">BillFlow</span>
+                <span className="font-serif text-2xl font-bold tracking-tight text-text-primary group-hover:text-brand-accent transition-colors">BillFlow</span>
                 <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest -mt-1">The Digital Ledger</span>
               </div>
             </a>
@@ -144,7 +170,7 @@ export function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-paper bg-surface-elevated border border-border flex items-center justify-center text-text-secondary hover:text-fountain hover:border-fountain transition-all duration-200"
+                  className="w-9 h-9 rounded-paper bg-surface-elevated border border-border flex items-center justify-center text-text-secondary hover:text-brand-accent hover:border-brand-accent transition-all duration-200"
                   aria-label={social.label}
                 >
                   <social.icon className="w-4 h-4" />
@@ -159,7 +185,7 @@ export function Footer() {
             <ul className="space-y-2.5">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-text-muted hover:text-fountain transition-colors">
+                  <a href={link.href} className="text-sm text-text-muted hover:text-brand-accent transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -172,7 +198,7 @@ export function Footer() {
             <ul className="space-y-2.5">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-text-muted hover:text-fountain transition-colors">
+                  <a href={link.href} className="text-sm text-text-muted hover:text-brand-accent transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -185,7 +211,7 @@ export function Footer() {
             <ul className="space-y-2.5">
               {footerLinks.resources.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-text-muted hover:text-fountain transition-colors">
+                  <a href={link.href} className="text-sm text-text-muted hover:text-brand-accent transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -198,9 +224,9 @@ export function Footer() {
             <div className="space-y-3">
               {contactInfo.map((contact) => (
                 <div key={contact.label} className="flex items-start gap-2.5 text-sm text-text-muted">
-                  <contact.icon className="w-4 h-4 text-fountain mt-0.5 flex-shrink-0" />
+                  <contact.icon className="w-4 h-4 text-brand-primary mt-0.5 flex-shrink-0" />
                   {contact.href ? (
-                    <a href={contact.href} className="hover:text-fountain transition-colors">
+                    <a href={contact.href} className="hover:text-brand-accent transition-colors">
                       {contact.value}
                     </a>
                   ) : (
@@ -209,32 +235,6 @@ export function Footer() {
                 </div>
               ))}
             </div>
-          </div>
-        </motion.div>
-
-        {/* Quick Feature Access */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <h4 className="font-serif text-sm uppercase tracking-widest text-text-muted mb-5 text-center">Explore BillFlow Capabilities</h4>
-          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {featuresList.map((feature, i) => (
-              <motion.a
-                key={feature.label}
-                href={feature.href}
-                className="p-3 rounded-paper bg-surface-elevated border border-border flex items-center gap-3 text-left group transition-all duration-300"
-                whileHover={{ y: -2, borderColor: 'var(--color-fountain)', backgroundColor: 'var(--color-background)' }}
-              >
-                <div className="w-8 h-8 rounded-paper bg-background flex items-center justify-center flex-shrink-0 border border-border">
-                  <feature.icon className="w-4 h-4 text-fountain group-hover:scale-110 transition-transform" />
-                </div>
-                <span className="text-xs font-medium text-text-secondary group-hover:text-fountain transition-colors">{feature.label}</span>
-              </motion.a>
-            ))}
           </div>
         </motion.div>
 

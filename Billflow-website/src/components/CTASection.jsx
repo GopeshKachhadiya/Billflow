@@ -202,7 +202,7 @@ export function CTASection() {
 
         {/* Floating trust badges around the main card */}
         <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none hidden 2xl:block"
           style={{ width: '100%', height: '100%' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
