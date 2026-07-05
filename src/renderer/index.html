@@ -8,7 +8,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*; img-src 'self' data:;">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles-modern.css">
   <!-- Vendor libraries (exposed as globals in renderer context) -->
   <script src="js/vendor/gst-calculator.js"></script>
@@ -21,7 +21,16 @@
   <div id="app-container">
     <!-- Top logo bar and user status -->
     <div id="topbar">
-      <span id="topbar-logo">BillFlow</span>
+      <div id="topbar-logo-wrapper" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="loadPage('dashboard')">
+        <div class="logo-mark" style="width: 34px; height: 34px; border-radius: 6px; background-color: var(--color-surface-elevated); border: 1.5px solid var(--color-primary); display: flex; align-items: flex-start; justify-content: flex-start; padding: 2px 0 0 5px; position: relative; overflow: hidden; box-shadow: var(--shadow-paper); flex-shrink: 0;">
+          <span style="font-family: var(--font-serif); font-weight: 900; font-size: 22px; color: var(--color-primary); user-select: none; line-height: 1;">B</span>
+          <div style="position: absolute; inset: 0; background: linear-gradient(135deg, transparent, rgba(168, 141, 46, 0.25), transparent);"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; justify-content: center;">
+          <span id="topbar-logo" style="font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--color-primary); line-height: 1.1; letter-spacing: -0.5px;">BillFlow</span>
+          <span style="font-family: var(--font-mono); font-size: 9px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: -2px;">The Digital Ledger</span>
+        </div>
+      </div>
       <div id="topbar-right">
         <span id="user-email"></span>
         <button id="logout-btn" class="btn" style="display: none;">Logout</button>

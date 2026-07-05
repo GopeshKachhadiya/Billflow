@@ -1,8 +1,42 @@
 // ES5 — Settings page controller
+window.switchSettingsTab = function(evt, tabId) {
+  var tabPanes = document.getElementsByClassName("settings-tab-pane");
+  for (var i = 0; i < tabPanes.length; i++) {
+    tabPanes[i].style.display = "none";
+  }
+  var tabLinks = document.querySelectorAll(".tab-nav .tab-link");
+  for (var i = 0; i < tabLinks.length; i++) {
+    tabLinks[i].classList.remove("active");
+    tabLinks[i].style.color = "var(--color-text-muted)";
+    tabLinks[i].style.borderBottom = "none";
+    tabLinks[i].style.fontWeight = "500";
+  }
+  var target = document.getElementById(tabId);
+  if (target) target.style.display = "block";
+  if (evt && evt.currentTarget) {
+    evt.currentTarget.classList.add("active");
+    evt.currentTarget.style.color = "var(--color-primary)";
+    evt.currentTarget.style.borderBottom = "2px solid var(--color-primary)";
+    evt.currentTarget.style.fontWeight = "600";
+  }
+};
+
 window.PageControllers = window.PageControllers || {};
 window.PageControllers['settings'] = {
   init: function() {
     var self = this;
+    if (window.StateCodes) {
+      var selectState = document.getElementById('s-business_state');
+      if (selectState) {
+        selectState.innerHTML = '<option value="">Select State</option>';
+        window.StateCodes.forEach(function(st) {
+          var opt = document.createElement('option');
+          opt.value = st.name;
+          opt.textContent = st.name + ' (' + st.code + ')';
+          selectState.appendChild(opt);
+        });
+      }
+    }
     window.api.getAllSettings().then(function(s) {
       // Populate all fields from settings
       var fields = ['business_name','gstin','business_address','business_city',

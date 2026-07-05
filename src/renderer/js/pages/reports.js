@@ -1,3 +1,25 @@
+window.switchReportsTab = function(evt, tabId) {
+  var tabPanes = document.getElementsByClassName("reports-tab-pane");
+  for (var i = 0; i < tabPanes.length; i++) {
+    tabPanes[i].style.display = "none";
+  }
+  var tabLinks = document.querySelectorAll(".tab-nav .tab-link");
+  for (var i = 0; i < tabLinks.length; i++) {
+    tabLinks[i].classList.remove("active");
+    tabLinks[i].style.color = "var(--color-text-muted)";
+    tabLinks[i].style.borderBottom = "none";
+    tabLinks[i].style.fontWeight = "500";
+  }
+  var target = document.getElementById(tabId);
+  if (target) target.style.display = "block";
+  if (evt && evt.currentTarget) {
+    evt.currentTarget.classList.add("active");
+    evt.currentTarget.style.color = "var(--color-primary)";
+    evt.currentTarget.style.borderBottom = "2px solid var(--color-primary)";
+    evt.currentTarget.style.fontWeight = "600";
+  }
+};
+
 window.PageControllers = window.PageControllers || {};
 window.PageControllers['reports'] = {
   _customers: [],

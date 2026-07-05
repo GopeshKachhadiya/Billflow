@@ -38,20 +38,25 @@ function callWebhook(webhookKey, payload) {
 }
 
 function buildBillPayload(bill, customer, items, business) {
+  var s = settings.getAllSettings();
   return {
     bill: bill,
     customer: customer,
     items: items || [],
     business: {
-      name:         business.business_name || '',
-      gstin:        business.gstin || '',
-      address:      business.business_address || '',
-      state:        business.business_state || '',
-      bank_name:    business.bank_name || '',
-      bank_account: business.bank_account || '',
-      bank_ifsc:    business.bank_ifsc || '',
-      owner_email:  business.owner_email || '',
-      owner_phone:  business.owner_phone || ''
+      name:           s.business_name || '',
+      gstin:          s.gstin || '',
+      address:        s.business_address || '',
+      state:          s.business_state || '',
+      bank_name:      s.bank_name || '',
+      bank_account:   s.bank_account || '',
+      bank_ifsc:      s.bank_ifsc || '',
+      owner_email:    s.owner_email || '',
+      owner_phone:    s.owner_phone || '',
+      wati_api_url:   s.wati_api_url || '',
+      wati_api_token: s.wati_api_token || '',
+      msg91_auth_key: s.msg91_auth_key || '',
+      msg91_sender_id: s.msg91_sender_id || ''
     }
   };
 }
@@ -87,11 +92,19 @@ module.exports = {
   },
 
   customerSaved: function(operation, customer, business) {
+    var s = settings.getAllSettings();
     callWebhook('/webhook/customer-saved', {
       event: 'customer_saved',
       operation: operation,
       customer: customer,
-      business: { name: business.business_name, owner_email: business.owner_email }
+      business: {
+        name:           s.business_name || '',
+        owner_email:    s.owner_email || '',
+        wati_api_url:   s.wati_api_url || '',
+        wati_api_token: s.wati_api_token || '',
+        msg91_auth_key: s.msg91_auth_key || '',
+        msg91_sender_id: s.msg91_sender_id || ''
+      }
     });
   },
 

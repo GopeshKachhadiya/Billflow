@@ -1,0 +1,2856 @@
+{
+  "id": "billflowcore0001",
+  "name": "BillFlow Core Automation (10 Workflows)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bill-created",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf01-node-01",
+      "name": "WF-01: Webhook: Bill Created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "originalName": "Webhook: Bill Created"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "bill_id",
+              "value": "={{ $json.body.bill.id }}"
+            },
+            {
+              "name": "bill_number",
+              "value": "={{ $json.body.bill.bill_number }}"
+            },
+            {
+              "name": "bill_date",
+              "value": "={{ $json.body.bill.bill_date }}"
+            },
+            {
+              "name": "due_date",
+              "value": "={{ $json.body.bill.due_date }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.body.bill.status }}"
+            },
+            {
+              "name": "grand_total",
+              "value": "={{ $json.body.bill.grand_total }}"
+            },
+            {
+              "name": "total_cgst",
+              "value": "={{ $json.body.bill.total_cgst }}"
+            },
+            {
+              "name": "total_sgst",
+              "value": "={{ $json.body.bill.total_sgst }}"
+            },
+            {
+              "name": "total_igst",
+              "value": "={{ $json.body.bill.total_igst }}"
+            },
+            {
+              "name": "supply_type",
+              "value": "={{ $json.body.bill.supply_type }}"
+            },
+            {
+              "name": "customer_id",
+              "value": "={{ $json.body.customer.id }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.name }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $json.body.customer.email }}"
+            },
+            {
+              "name": "customer_phone",
+              "value": "={{ $json.body.customer.phone }}"
+            },
+            {
+              "name": "customer_gstin",
+              "value": "={{ $json.body.customer.gstin }}"
+            },
+            {
+              "name": "customer_state",
+              "value": "={{ $json.body.customer.state }}"
+            },
+            {
+              "name": "business_name",
+              "value": "={{ $json.body.business.name }}"
+            },
+            {
+              "name": "business_gstin",
+              "value": "={{ $json.body.business.gstin }}"
+            },
+            {
+              "name": "owner_email",
+              "value": "={{ $json.body.business.owner_email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf01-node-02",
+      "name": "WF-01: Extract Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "originalName": "Extract Variables"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/bills",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ id: $json.bill_id, bill_number: $json.bill_number, bill_date: $json.bill_date, due_date: $json.due_date, status: $json.status, grand_total: parseFloat($json.grand_total), total_cgst: parseFloat($json.total_cgst), total_sgst: parseFloat($json.total_sgst), total_igst: parseFloat($json.total_igst), supply_type: $json.supply_type, customer_id: $json.customer_id }) }}",
+        "options": {}
+      },
+      "id": "wf01-node-03",
+      "name": "WF-01: Supabase Upsert Bill",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        680,
+        300
+      ],
+      "originalName": "Supabase Upsert Bill"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/customers",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ id: $('WF-01: Webhook: Bill Created').item.json.body.customer.id, name: $('WF-01: Webhook: Bill Created').item.json.body.customer.name, email: $('WF-01: Webhook: Bill Created').item.json.body.customer.email, phone: $('WF-01: Webhook: Bill Created').item.json.body.customer.phone, gstin: $('WF-01: Webhook: Bill Created').item.json.body.customer.gstin, state: $('WF-01: Webhook: Bill Created').item.json.body.customer.state }) }}",
+        "options": {}
+      },
+      "id": "wf01-node-04",
+      "name": "WF-01: Supabase Upsert Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        900,
+        300
+      ],
+      "originalName": "Supabase Upsert Customer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/tax_records",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ bill_id: $('WF-01: Extract Variables').item.json.bill_id, bill_date: $('WF-01: Extract Variables').item.json.bill_date, supply_type: $('WF-01: Extract Variables').item.json.supply_type, total_cgst: parseFloat($('WF-01: Extract Variables').item.json.total_cgst), total_sgst: parseFloat($('WF-01: Extract Variables').item.json.total_sgst), total_igst: parseFloat($('WF-01: Extract Variables').item.json.total_igst) }) }}",
+        "options": {}
+      },
+      "id": "wf01-node-05",
+      "name": "WF-01: Supabase Upsert Tax Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1120,
+        300
+      ],
+      "originalName": "Supabase Upsert Tax Record"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('WF-01: Webhook: Bill Created').item.json.body.bill.status }}",
+              "operation": "equals",
+              "value2": "sent"
+            }
+          ]
+        }
+      },
+      "id": "wf01-node-06",
+      "name": "WF-01: Bill Status = Sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        300
+      ],
+      "originalName": "Bill Status = Sent?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": true, \"message\": \"Bill created and synced\", \"bill_id\": \"{{ $('WF-01: Extract Variables').item.json.bill_id }}\" }",
+        "options": {}
+      },
+      "id": "wf01-node-08",
+      "name": "WF-01: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        400
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bill-send",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf02-node-01",
+      "name": "WF-02: Webhook: Bill Send",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        2740,
+        400
+      ],
+      "originalName": "Webhook: Bill Send"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "bill_id",
+              "value": "={{ $json.body.bill.id }}"
+            },
+            {
+              "name": "bill_number",
+              "value": "={{ $json.body.bill.bill_number }}"
+            },
+            {
+              "name": "due_date",
+              "value": "={{ $json.body.bill.due_date }}"
+            },
+            {
+              "name": "grand_total",
+              "value": "={{ $json.body.bill.grand_total }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.name }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $json.body.customer.email }}"
+            },
+            {
+              "name": "customer_phone",
+              "value": "={{ $json.body.customer.phone }}"
+            },
+            {
+              "name": "business_name",
+              "value": "={{ $json.body.business.name }}"
+            },
+            {
+              "name": "business_gstin",
+              "value": "={{ $json.body.business.gstin }}"
+            },
+            {
+              "name": "owner_email",
+              "value": "={{ $json.body.business.owner_email }}"
+            },
+            {
+              "name": "owner_phone",
+              "value": "={{ $json.body.business.owner_phone }}"
+            },
+            {
+              "name": "pdf_base64",
+              "value": "={{ $json.body.pdf_base64 }}"
+            },
+            {
+              "name": "bank_name",
+              "value": "={{ $json.body.business.bank_name }}"
+            },
+            {
+              "name": "bank_account",
+              "value": "={{ $json.body.business.bank_account }}"
+            },
+            {
+              "name": "bank_ifsc",
+              "value": "={{ $json.body.business.bank_ifsc }}"
+            }
+          ],
+          "boolean": [
+            {
+              "name": "send_email",
+              "value": "={{ ($json.body.send_channels || ['email']).includes('email') }}"
+            },
+            {
+              "name": "send_whatsapp",
+              "value": "={{ ($json.body.send_channels || []).includes('whatsapp') }}"
+            },
+            {
+              "name": "send_sms",
+              "value": "={{ ($json.body.send_channels || []).includes('sms') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf02-node-02",
+      "name": "WF-02: Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        2960,
+        400
+      ],
+      "originalName": "Set Variables"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/bills?id=eq.{{ $json.bill_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"status\": \"sent\", \"updated_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf02-node-03",
+      "name": "WF-02: Supabase: Mark Sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3180,
+        400
+      ],
+      "originalName": "Supabase: Mark Sent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('WF-02: Set Variables').item.json.send_email }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "wf02-node-04",
+      "name": "WF-02: Send Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        3400,
+        400
+      ],
+      "originalName": "Send Email?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('WF-02: Set Variables').item.json.send_whatsapp }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "wf02-node-06",
+      "name": "WF-02: Send WhatsApp?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        3840,
+        400
+      ],
+      "originalName": "Send WhatsApp?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('WF-02: Set Variables').item.json.business.wati_api_url }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-02: Set Variables').item.json.customer_phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('WF-02: Set Variables').item.json.business.wati_api_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_invoice_sent', broadcast_name: 'bill_sent_' + $('WF-02: Set Variables').item.json.bill_id, parameters: [ { name: '1', value: $('WF-02: Set Variables').item.json.customer_name }, { name: '2', value: $('WF-02: Set Variables').item.json.bill_number }, { name: '3', value: String($('WF-02: Set Variables').item.json.grand_total) }, { name: '4', value: $('WF-02: Set Variables').item.json.business_name }, { name: '5', value: $('WF-02: Set Variables').item.json.due_date } ] }) }}",
+        "options": {}
+      },
+      "id": "wf02-node-07",
+      "name": "WF-02: WATI: Invoice Sent WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        4060,
+        280
+      ],
+      "originalName": "WATI: Invoice Sent WA"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('WF-02: Set Variables').item.json.send_sms }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "wf02-node-08",
+      "name": "WF-02: Send SMS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        4060,
+        500
+      ],
+      "originalName": "Send SMS?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.msg91.com/api/v5/flow/",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "authkey",
+              "value": "={{ $('WF-02: Set Variables').item.json.business.msg91_auth_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ flow_id: 'SMS-01-FLOW-ID', sender: $('WF-02: Set Variables').item.json.business.msg91_sender_id, mobiles: $('WF-02: Set Variables').item.json.customer_phone, VAR1: $('WF-02: Set Variables').item.json.customer_name, VAR2: $('WF-02: Set Variables').item.json.bill_number, VAR3: String($('WF-02: Set Variables').item.json.grand_total), VAR4: $('WF-02: Set Variables').item.json.business_name, VAR5: $('WF-02: Set Variables').item.json.due_date, VAR6: $('WF-02: Set Variables').item.json.business_name }) }}",
+        "options": {}
+      },
+      "id": "wf02-node-09",
+      "name": "WF-02: MSG91: Bill Sent SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        4280,
+        500
+      ],
+      "originalName": "MSG91: Bill Sent SMS"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Bill sent via all selected channels\"}",
+        "options": {}
+      },
+      "id": "wf02-node-11",
+      "name": "WF-02: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        4500,
+        400
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bill-paid",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf03-node-01",
+      "name": "WF-03: Webhook: Bill Paid",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        5240,
+        400
+      ],
+      "originalName": "Webhook: Bill Paid"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "bill_id",
+              "value": "={{ $json.body.bill.id }}"
+            },
+            {
+              "name": "bill_number",
+              "value": "={{ $json.body.bill.bill_number }}"
+            },
+            {
+              "name": "grand_total",
+              "value": "={{ $json.body.bill.grand_total }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.name }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $json.body.customer.email }}"
+            },
+            {
+              "name": "customer_phone",
+              "value": "={{ $json.body.customer.phone }}"
+            },
+            {
+              "name": "business_name",
+              "value": "={{ $json.body.business.name }}"
+            },
+            {
+              "name": "owner_email",
+              "value": "={{ $json.body.business.owner_email }}"
+            },
+            {
+              "name": "owner_phone",
+              "value": "={{ $json.body.business.owner_phone }}"
+            },
+            {
+              "name": "amount_paid",
+              "value": "={{ $json.body.payment.amount_paid }}"
+            },
+            {
+              "name": "payment_date",
+              "value": "={{ $json.body.payment.payment_date }}"
+            },
+            {
+              "name": "payment_method",
+              "value": "={{ $json.body.payment.payment_method }}"
+            },
+            {
+              "name": "payment_reference",
+              "value": "={{ $json.body.payment.payment_reference }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf03-node-02",
+      "name": "WF-03: Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        5460,
+        400
+      ],
+      "originalName": "Set Variables"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/bills?id=eq.{{ $json.bill_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ status: 'paid', payment_date: $json.payment_date, payment_method: $json.payment_method, payment_reference: $json.payment_reference, updated_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "wf03-node-03",
+      "name": "WF-03: Supabase: Mark Paid",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5680,
+        400
+      ],
+      "originalName": "Supabase: Mark Paid"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/payment_log",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ bill_id: $('WF-03: Set Variables').item.json.bill_id, amount_paid: parseFloat($('WF-03: Set Variables').item.json.amount_paid), payment_date: $('WF-03: Set Variables').item.json.payment_date, payment_method: $('WF-03: Set Variables').item.json.payment_method, payment_reference: $('WF-03: Set Variables').item.json.payment_reference, recorded_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "wf03-node-04",
+      "name": "WF-03: Supabase: Log Payment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5900,
+        400
+      ],
+      "originalName": "Supabase: Log Payment"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $vars.NOTIFY_OWNER_WHATSAPP }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "wf03-node-06",
+      "name": "WF-03: Owner WA Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        6120,
+        500
+      ],
+      "originalName": "Owner WA Enabled?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('WF-03: Set Variables').item.json.business.wati_api_url }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-03: Set Variables').item.json.customer_phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('WF-03: Set Variables').item.json.business.wati_api_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_payment_received', broadcast_name: 'paid_' + $('WF-03: Set Variables').item.json.bill_id, parameters: [ { name: '1', value: $('WF-03: Set Variables').item.json.customer_name }, { name: '2', value: String($('WF-03: Set Variables').item.json.amount_paid) }, { name: '3', value: $('WF-03: Set Variables').item.json.bill_number }, { name: '4', value: $('WF-03: Set Variables').item.json.payment_reference }, { name: '5', value: $('WF-03: Set Variables').item.json.business_name } ] }) }}",
+        "options": {}
+      },
+      "id": "wf03-node-07",
+      "name": "WF-03: WATI: Payment Received WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        6340,
+        400
+      ],
+      "originalName": "WATI: Payment Received WA"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Payment recorded and receipts sent\"}",
+        "options": {}
+      },
+      "id": "wf03-node-09",
+      "name": "WF-03: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        6560,
+        400
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bill-cancelled",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf04-node-01",
+      "name": "WF-04: Webhook: Bill Cancelled",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        7740,
+        300
+      ],
+      "originalName": "Webhook: Bill Cancelled"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "bill_id",
+              "value": "={{ $json.body.bill.id }}"
+            },
+            {
+              "name": "bill_number",
+              "value": "={{ $json.body.bill.bill_number }}"
+            },
+            {
+              "name": "bill_date",
+              "value": "={{ $json.body.bill.bill_date }}"
+            },
+            {
+              "name": "grand_total",
+              "value": "={{ $json.body.bill.grand_total }}"
+            },
+            {
+              "name": "prev_status",
+              "value": "={{ $json.body.bill.status }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.name }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $json.body.customer.email }}"
+            },
+            {
+              "name": "customer_phone",
+              "value": "={{ $json.body.customer.phone }}"
+            },
+            {
+              "name": "business_name",
+              "value": "={{ $json.body.business.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf04-node-02",
+      "name": "WF-04: Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        7960,
+        300
+      ],
+      "originalName": "Set Variables"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/bills?id=eq.{{ $json.bill_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"status\": \"cancelled\", \"updated_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf04-node-03",
+      "name": "WF-04: Supabase: Mark Cancelled",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        8180,
+        300
+      ],
+      "originalName": "Supabase: Mark Cancelled"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('WF-04: Set Variables').item.json.prev_status }}",
+              "operation": "equals",
+              "value2": "sent"
+            }
+          ]
+        }
+      },
+      "id": "wf04-node-04",
+      "name": "WF-04: Was Previously Sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        8400,
+        300
+      ],
+      "originalName": "Was Previously Sent?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('WF-04: Set Variables').item.json.business.wati_api_url }}/api/v1/sendSessionMessage?whatsappNumber={{ $('WF-04: Set Variables').item.json.customer_phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('WF-04: Set Variables').item.json.business.wati_api_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ messageText: 'Hi ' + $('WF-04: Set Variables').item.json.customer_name + ', Invoice ' + $('WF-04: Set Variables').item.json.bill_number + ' for ₹' + $('WF-04: Set Variables').item.json.grand_total + ' from ' + $('WF-04: Set Variables').item.json.business_name + ' has been cancelled. Please contact us if you have any queries.' }) }}",
+        "options": {}
+      },
+      "id": "wf04-node-06",
+      "name": "WF-04: WATI: Cancellation WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        8620,
+        380
+      ],
+      "originalName": "WATI: Cancellation WA"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Bill cancelled and customer notified\"}",
+        "options": {}
+      },
+      "id": "wf04-node-07",
+      "name": "WF-04: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        8840,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customer-saved",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf05-node-01",
+      "name": "WF-05: Webhook: Customer Saved",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        10240,
+        300
+      ],
+      "originalName": "Webhook: Customer Saved"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "UPDATE"
+            }
+          ]
+        }
+      },
+      "id": "wf05-node-02",
+      "name": "WF-05: Route: Insert or Update",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        10460,
+        300
+      ],
+      "originalName": "Route: Insert or Update"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/customers",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($('WF-05: Webhook: Customer Saved').item.json.body.customer) }}",
+        "options": {}
+      },
+      "id": "wf05-node-03",
+      "name": "WF-05: Supabase: Insert Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        10680,
+        180
+      ],
+      "originalName": "Supabase: Insert Customer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('WF-05: Webhook: Customer Saved').item.json.body.customer.email }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "wf05-node-04",
+      "name": "WF-05: Has Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        10900,
+        180
+      ],
+      "originalName": "Has Email?"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/customers?id=eq.{{ $('WF-05: Webhook: Customer Saved').item.json.body.customer.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($('WF-05: Webhook: Customer Saved').item.json.body.customer) }}",
+        "options": {}
+      },
+      "id": "wf05-node-06",
+      "name": "WF-05: Supabase: Update Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        10680,
+        420
+      ],
+      "originalName": "Supabase: Update Customer"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Customer synced\"}",
+        "options": {}
+      },
+      "id": "wf05-node-07",
+      "name": "WF-05: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        11340,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "item-saved",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf06-node-01",
+      "name": "WF-06: Webhook: Item Saved",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        12740,
+        300
+      ],
+      "originalName": "Webhook: Item Saved"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "UPDATE"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.operation }}",
+                    "operation": "equals",
+                    "value2": "DELETE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "DELETE"
+            }
+          ]
+        }
+      },
+      "id": "wf06-node-02",
+      "name": "WF-06: Route: Operation Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        12960,
+        300
+      ],
+      "originalName": "Route: Operation Type"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/items",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($('WF-06: Webhook: Item Saved').item.json.body.item) }}",
+        "options": {}
+      },
+      "id": "wf06-node-03",
+      "name": "WF-06: Supabase: Insert Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        13180,
+        180
+      ],
+      "originalName": "Supabase: Insert Item"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/items?id=eq.{{ $('WF-06: Webhook: Item Saved').item.json.body.item.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($('WF-06: Webhook: Item Saved').item.json.body.item) }}",
+        "options": {}
+      },
+      "id": "wf06-node-04",
+      "name": "WF-06: Supabase: Update Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        13180,
+        300
+      ],
+      "originalName": "Supabase: Update Item"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/items?id=eq.{{ $('WF-06: Webhook: Item Saved').item.json.body.item.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"deleted_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf06-node-05",
+      "name": "WF-06: Supabase: Soft Delete Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        13180,
+        420
+      ],
+      "originalName": "Supabase: Soft Delete Item"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Item catalog synced\"}",
+        "options": {}
+      },
+      "id": "wf06-node-06",
+      "name": "WF-06: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        13400,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sync-push",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf07-node-01",
+      "name": "WF-07: Webhook: Sync Push",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        15240,
+        300
+      ],
+      "originalName": "Webhook: Sync Push"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.sync_items",
+        "options": {
+          "batchSize": 10
+        }
+      },
+      "id": "wf07-node-02",
+      "name": "WF-07: Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        15460,
+        300
+      ],
+      "originalName": "Split In Batches"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "bills_INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "bills_INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "bills_UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "bills_UPDATE"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "customers_INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "customers_INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "customers_UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "customers_UPDATE"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.table_name + '_' + $json.operation }}",
+                    "operation": "equals",
+                    "value2": "items_INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "items_any"
+            }
+          ]
+        }
+      },
+      "id": "wf07-node-03",
+      "name": "WF-07: Route by Table+Operation",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        15680,
+        300
+      ],
+      "originalName": "Route by Table+Operation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "wf07-node-04",
+      "name": "WF-07: Supabase: Upsert Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        15900,
+        180
+      ],
+      "originalName": "Supabase: Upsert Record"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}?id=eq.{{ $json.record_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "wf07-node-05",
+      "name": "WF-07: Supabase: Patch Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        15900,
+        360
+      ],
+      "originalName": "Supabase: Patch Record"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Sync completed\", \"processed\": {{ $('WF-07: Split In Batches').context.totalItems }} }",
+        "options": {}
+      },
+      "id": "wf07-node-06",
+      "name": "WF-07: Respond with Summary",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        16120,
+        300
+      ],
+      "originalName": "Respond with Summary"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "report-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf08-node-01",
+      "name": "WF-08: Webhook: Report Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        17740,
+        300
+      ],
+      "originalName": "Webhook: Report Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.report_type }}",
+                    "operation": "equals",
+                    "value2": "gst_monthly"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "gst_monthly"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.report_type }}",
+                    "operation": "equals",
+                    "value2": "revenue"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "revenue"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.body.report_type }}",
+                    "operation": "equals",
+                    "value2": "overdue"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "overdue"
+            }
+          ]
+        }
+      },
+      "id": "wf08-node-02",
+      "name": "WF-08: Route by Report Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        17960,
+        300
+      ],
+      "originalName": "Route by Report Type"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/tax_records?bill_date=gte.{{ $('WF-08: Webhook: Report Request').item.json.body.period + '-01' }}&bill_date=lte.{{ $('WF-08: Webhook: Report Request').item.json.body.period + '-31' }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf08-node-03",
+      "name": "WF-08: Fetch: GST Tax Records",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        18180,
+        100
+      ],
+      "originalName": "Fetch: GST Tax Records"
+    },
+    {
+      "parameters": {
+        "jsCode": "const records = $input.all();\nconst period = $('WF-08: Webhook: Report Request').item.json.body.period;\nlet totalTaxable = 0, totalCGST = 0, totalSGST = 0, totalIGST = 0;\nconst byRate = {};\nrecords.forEach(r => {\n  const d = r.json;\n  totalCGST += parseFloat(d.total_cgst || 0);\n  totalSGST += parseFloat(d.total_sgst || 0);\n  totalIGST += parseFloat(d.total_igst || 0);\n});\ntotalTaxable = (totalCGST + totalSGST + totalIGST) * 2;\nconst fmt = n => '₹' + parseFloat(n).toFixed(2);\nconst html = `<h2>GST Summary — ${period}</h2><table border='1' cellpadding='8' style='border-collapse:collapse'><tr><th>Total Taxable</th><td>${fmt(totalTaxable)}</td></tr><tr><th>Total CGST</th><td>${fmt(totalCGST)}</td></tr><tr><th>Total SGST</th><td>${fmt(totalSGST)}</td></tr><tr><th>Total IGST</th><td>${fmt(totalIGST)}</td></tr><tr><th>Total Tax</th><td>${fmt(totalCGST+totalSGST+totalIGST)}</td></tr></table><p><em>Auto-generated by BillFlow. Verify with accountant before filing.</em></p>`;\nreturn [{ json: { html_report: html, period, totalCGST, totalSGST, totalIGST, totalTaxable, record_count: records.length } }];"
+      },
+      "id": "wf08-node-04",
+      "name": "WF-08: Build GST Report HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18400,
+        100
+      ],
+      "originalName": "Build GST Report HTML"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/bills?status=eq.paid&bill_date=gte.{{ $('WF-08: Webhook: Report Request').item.json.body.period + '-01' }}&bill_date=lte.{{ $('WF-08: Webhook: Report Request').item.json.body.period + '-31' }}&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf08-node-06",
+      "name": "WF-08: Fetch: Revenue Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        18180,
+        300
+      ],
+      "originalName": "Fetch: Revenue Bills"
+    },
+    {
+      "parameters": {
+        "jsCode": "const bills = $input.all();\nconst period = $('WF-08: Webhook: Report Request').item.json.body.period;\nlet total = 0;\nbills.forEach(b => { total += parseFloat(b.json.grand_total || 0); });\nconst html = `<h2>Revenue Report — ${period}</h2><p>Total Revenue: ₹${total.toFixed(2)}</p><p>Bills Paid: ${bills.length}</p><p><em>Auto-generated by BillFlow</em></p>`;\nreturn [{ json: { html_report: html, period, total_revenue: total, bill_count: bills.length } }];"
+      },
+      "id": "wf08-node-07",
+      "name": "WF-08: Build Revenue Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18400,
+        300
+      ],
+      "originalName": "Build Revenue Report"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/bills?status=eq.overdue&select=*",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf08-node-09",
+      "name": "WF-08: Fetch: Overdue Bills",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        18180,
+        500
+      ],
+      "originalName": "Fetch: Overdue Bills"
+    },
+    {
+      "parameters": {
+        "jsCode": "const bills = $input.all();\nlet total = 0;\nconst rows = bills.map(b => { total += parseFloat(b.json.grand_total || 0); return `<tr><td>${b.json.bill_number}</td><td>₹${b.json.grand_total}</td><td>${b.json.due_date}</td></tr>`; }).join('');\nconst html = `<h2>Overdue Bills Report</h2><table border='1' cellpadding='8' style='border-collapse:collapse'><tr><th>Invoice</th><th>Amount</th><th>Due Date</th></tr>${rows}</table><p>Total Outstanding: ₹${total.toFixed(2)} across ${bills.length} bills.</p>`;\nreturn [{ json: { html_report: html, total_overdue: total, count: bills.length } }];"
+      },
+      "id": "wf08-node-10",
+      "name": "WF-08: Build Overdue Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18400,
+        500
+      ],
+      "originalName": "Build Overdue Report"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Report emailed\"}",
+        "options": {}
+      },
+      "id": "wf08-node-12",
+      "name": "WF-08: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        18840,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "settings-updated",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf09-node-01",
+      "name": "WF-09: Webhook: Settings Updated",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        20240,
+        300
+      ],
+      "originalName": "Webhook: Settings Updated"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/profiles?id=eq.{{ $json.body.owner_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ business_name: $json.body.business_name, gstin: $json.body.gstin, business_state: $json.body.business_state, business_state_code: $json.body.business_state_code, updated_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "wf09-node-02",
+      "name": "WF-09: Supabase: Update Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        20460,
+        300
+      ],
+      "originalName": "Supabase: Update Profile"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Business profile synced\"}",
+        "options": {}
+      },
+      "id": "wf09-node-03",
+      "name": "WF-09: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        20680,
+        300
+      ],
+      "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "wf21-node-01",
+      "name": "WF-21: Cron: Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        50240,
+        300
+      ],
+      "originalName": "Cron: Every 15 Minutes"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/sync_events?processed=eq.false&limit=50&select=*&order=created_at.asc",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf21-node-02",
+      "name": "WF-21: Fetch: Unprocessed Sync Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        50460,
+        300
+      ],
+      "originalName": "Fetch: Unprocessed Sync Events"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "wf21-node-03",
+      "name": "WF-21: Any Pending Events?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        50680,
+        300
+      ],
+      "originalName": "Any Pending Events?"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "",
+        "options": {
+          "batchSize": 10
+        }
+      },
+      "id": "wf21-node-04",
+      "name": "WF-21: Batch Process Events",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        50900,
+        200
+      ],
+      "originalName": "Batch Process Events"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.operation }}",
+                    "operation": "equals",
+                    "value2": "INSERT"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "INSERT"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.operation }}",
+                    "operation": "equals",
+                    "value2": "UPDATE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "UPDATE"
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.operation }}",
+                    "operation": "equals",
+                    "value2": "DELETE"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "DELETE"
+            }
+          ]
+        }
+      },
+      "id": "wf21-node-05",
+      "name": "WF-21: Route: Operation",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        51120,
+        200
+      ],
+      "originalName": "Route: Operation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "wf21-node-06",
+      "name": "WF-21: Supabase: Upsert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        51340,
+        100
+      ],
+      "originalName": "Supabase: Upsert"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}?id=eq.{{ $json.record_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "wf21-node-07",
+      "name": "WF-21: Supabase: Patch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        51340,
+        260
+      ],
+      "originalName": "Supabase: Patch"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/{{ $json.table_name }}?id=eq.{{ $json.record_id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"deleted_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf21-node-08",
+      "name": "WF-21: Supabase: Soft Delete",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        51340,
+        420
+      ],
+      "originalName": "Supabase: Soft Delete"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/sync_events?id=eq.{{ $json.id }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\"processed\": true, \"processed_at\": \"{{ new Date().toISOString() }}\"}",
+        "options": {}
+      },
+      "id": "wf21-node-09",
+      "name": "WF-21: Mark Event Processed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        51560,
+        260
+      ],
+      "originalName": "Mark Event Processed"
+    }
+  ],
+  "connections": {
+    "WF-01: Webhook: Bill Created": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Extract Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Extract Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Supabase Upsert Bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Supabase Upsert Bill": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Supabase Upsert Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Supabase Upsert Customer": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Supabase Upsert Tax Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Supabase Upsert Tax Record": {
+      "main": [
+        [
+          {
+            "node": "WF-01: Bill Status = Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-01: Bill Status = Sent?": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-01: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Webhook: Bill Send": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Set Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Supabase: Mark Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Supabase: Mark Sent": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Send Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Send Email?": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Send WhatsApp?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Send WhatsApp?": {
+      "main": [
+        [
+          {
+            "node": "WF-02: WATI: Invoice Sent WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-02: Send SMS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: WATI: Invoice Sent WA": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Send SMS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: Send SMS?": {
+      "main": [
+        [
+          {
+            "node": "WF-02: MSG91: Bill Sent SMS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-02: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-02: MSG91: Bill Sent SMS": {
+      "main": [
+        [
+          {
+            "node": "WF-02: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Webhook: Bill Paid": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Set Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Supabase: Mark Paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Supabase: Mark Paid": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Supabase: Log Payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Supabase: Log Payment": {
+      "main": [
+        [
+          {
+            "node": "WF-03: Owner WA Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-03: Owner WA Enabled?": {
+      "main": [
+        [
+          {
+            "node": "WF-03: WATI: Payment Received WA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: Webhook: Bill Cancelled": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: Set Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Supabase: Mark Cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: Supabase: Mark Cancelled": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Was Previously Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: Was Previously Sent?": {
+      "main": [
+        [
+          {
+            "node": "WF-04: WATI: Cancellation WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-04: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-04: WATI: Cancellation WA": {
+      "main": [
+        [
+          {
+            "node": "WF-04: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Webhook: Customer Saved": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Route: Insert or Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Route: Insert or Update": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Supabase: Insert Customer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-05: Supabase: Update Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Supabase: Insert Customer": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Has Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Has Email?": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-05: Supabase: Update Customer": {
+      "main": [
+        [
+          {
+            "node": "WF-05: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Webhook: Item Saved": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Route: Operation Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Route: Operation Type": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Supabase: Insert Item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-06: Supabase: Update Item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-06: Supabase: Soft Delete Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Supabase: Insert Item": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Supabase: Update Item": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-06: Supabase: Soft Delete Item": {
+      "main": [
+        [
+          {
+            "node": "WF-06: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Webhook: Sync Push": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Route by Table+Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Route by Table+Operation": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Supabase: Upsert Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-07: Supabase: Patch Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-07: Supabase: Upsert Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-07: Supabase: Patch Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-07: Supabase: Upsert Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Supabase: Upsert Record": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Respond with Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-07: Supabase: Patch Record": {
+      "main": [
+        [
+          {
+            "node": "WF-07: Respond with Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Webhook: Report Request": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Route by Report Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Route by Report Type": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Fetch: GST Tax Records",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-08: Fetch: Revenue Bills",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-08: Fetch: Overdue Bills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Fetch: GST Tax Records": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Build GST Report HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Fetch: Revenue Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Build Revenue Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-08: Fetch: Overdue Bills": {
+      "main": [
+        [
+          {
+            "node": "WF-08: Build Overdue Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-09: Webhook: Settings Updated": {
+      "main": [
+        [
+          {
+            "node": "WF-09: Supabase: Update Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-09: Supabase: Update Profile": {
+      "main": [
+        [
+          {
+            "node": "WF-09: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Cron: Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Fetch: Unprocessed Sync Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Fetch: Unprocessed Sync Events": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Any Pending Events?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Any Pending Events?": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Batch Process Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Batch Process Events": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Route: Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Route: Operation": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Supabase: Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-21: Supabase: Patch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-21: Supabase: Soft Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Supabase: Upsert": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Mark Event Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Supabase: Patch": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Mark Event Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Supabase: Soft Delete": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Mark Event Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-21: Mark Event Processed": {
+      "main": [
+        [
+          {
+            "node": "WF-21: Batch Process Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

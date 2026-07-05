@@ -148,8 +148,8 @@ export function Footer() {
           {/* Brand Column */}
           <motion.div className="max-w-xs" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
             <a href="#/" className="flex items-center gap-3 mb-6 group" aria-label="BillFlow Home">
-              <div className="w-12 h-12 rounded-paper-lg flex items-center justify-center relative overflow-hidden bg-brand-primary border border-border group-hover:border-brand-accent transition-colors">
-                <span className="font-serif font-black text-2xl text-surface-elevated select-none group-hover:scale-110 transition-transform">B</span>
+              <div className="w-12 h-12 rounded-paper-lg flex items-start justify-start pt-1 pl-2 relative overflow-hidden bg-surface-elevated border-[1.5px] border-brand-primary group-hover:border-brand-accent transition-colors shadow-paper">
+                <span className="font-serif font-black text-[27px] text-brand-primary select-none group-hover:scale-110 transition-transform leading-none">B</span>
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-brand-accent/15 to-transparent" />
               </div>
               <div className="flex flex-col">

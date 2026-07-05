@@ -213,8 +213,8 @@ window.PageControllers['customer-edit'] = {
     if (!name) {
       return Toast.show('Customer name is required', 'error');
     }
-    if (!state) {
-      return Toast.show('Customer state is required', 'error');
+    if (!phone) {
+      return Toast.show('Phone number is required', 'error');
     }
     
     // Validate GSTIN format if entered

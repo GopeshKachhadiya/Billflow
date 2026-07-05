@@ -200,38 +200,3 @@
 
   </div>
 </div>
-
-<script>
-function switchSettingsTab(evt, tabId) {
-  var tabPanes = document.getElementsByClassName("settings-tab-pane");
-  for (var i = 0; i < tabPanes.length; i++) {
-    tabPanes[i].style.display = "none";
-  }
-  var tabLinks = document.getElementsByClassName("tab-link");
-  for (var i = 0; i < tabLinks.length; i++) {
-    tabLinks[i].classList.remove("active");
-    tabLinks[i].style.color = "var(--color-text-muted)";
-    tabLinks[i].style.borderBottom = "none";
-    tabLinks[i].style.fontWeight = "500";
-  }
-  document.getElementById(tabId).style.display = "block";
-  evt.currentTarget.classList.add("active");
-  evt.currentTarget.style.color = "var(--color-primary)";
-  evt.currentTarget.style.borderBottom = "2px solid var(--color-primary)";
-  evt.currentTarget.style.fontWeight = "600";
-}
-
-// Load states database settings list mapping if state codes exists
-if (window.StateCodes) {
-  var selectState = document.getElementById('s-business_state');
-  if (selectState) {
-    selectState.innerHTML = '<option value="">Select State</option>';
-    window.StateCodes.forEach(function(st) {
-      var opt = document.createElement('option');
-      opt.value = st.name;
-      opt.textContent = st.name + ' (' + st.code + ')';
-      selectState.appendChild(opt);
-    });
-  }
-}
-</script>

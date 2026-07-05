@@ -6,6 +6,7 @@ import { HowItWorksPreview } from "../components/home/HowItWorksPreview";
 import { ProductDemoSection } from "../components/home/ProductDemoSection";
 import { TestimonialsSection } from "../components/TestimonialsSection";
 import { StatsBar } from "../components/home/StatsBar";
+import { ComparisonSection } from "../components/home/ComparisonSection";
 import { PricingSection } from "../components/PricingSection";
 import { CTASection } from "../components/CTASection";
 
@@ -20,6 +21,7 @@ export function HomePage() {
       <ProductDemoSection />
       <TestimonialsSection />
       <StatsBar />
+      <ComparisonSection />
       <PricingSection />
       <CTASection />
     </div>
