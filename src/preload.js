@@ -54,6 +54,7 @@ contextBridge.exposeInMainWorld('api', {
   getMonthlyGST:   function(year)      { return ipc('db:taxrecords:monthly', { year:year }); },
   exportGSTR1:     function(year, month) { return ipc('gst:gstr1Export', { year:year, month:month }); },
   fetchGSTINDetails: function(gstin) { return ipc('gst:fetchDetails', { gstin: gstin }); },
+  cacheGSTINBulk:    function(records) { return ipc('gst:cacheBulk', { records: records }); },
 
 
   // Sync

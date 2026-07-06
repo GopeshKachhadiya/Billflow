@@ -100,6 +100,7 @@ ipcMain.handle('db:taxrecords:summary', function(e, a) { return getModules().tax
 ipcMain.handle('db:taxrecords:monthly', function(e, a) { return getModules().taxRecords.getMonthlyGSTSummary(a.year); });
 ipcMain.handle('gst:gstr1Export', function(e, a) { return require('./gst/gstr1-export').exportGSTR1(a.year, a.month); });
 ipcMain.handle('gst:fetchDetails', function(e, a) { return require('./gst/lookup').fetchDetails(a.gstin); });
+ipcMain.handle('gst:cacheBulk', function(e, a) { return require('./gst/lookup').cacheBulk(a.records); });
 
 
 // ── SYNC ──────────────────────────────────────────────────────────────────────

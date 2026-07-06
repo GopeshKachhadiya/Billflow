@@ -26,6 +26,27 @@ function runMigrations() {
   try {
     db.prepare("ALTER TABLE users_local ADD COLUMN trial_end_date TEXT").run();
   } catch (e) {}
+
+  // Ensure gstin_cache table exists in local SQLite database
+  try {
+    db.exec(
+      'CREATE TABLE IF NOT EXISTS gstin_cache (' +
+      '  gstin           TEXT PRIMARY KEY,' +
+      '  name            TEXT NOT NULL,' +
+      '  type            TEXT DEFAULT "Business",' +
+      '  state           TEXT DEFAULT "",' +
+      '  state_code      TEXT DEFAULT "",' +
+      '  billing_address TEXT DEFAULT "",' +
+      '  billing_city    TEXT DEFAULT "",' +
+      '  billing_pin     TEXT DEFAULT "",' +
+      '  status          TEXT DEFAULT "Active",' +
+      '  created_at      TEXT DEFAULT (datetime("now")),' +
+      '  updated_at      TEXT DEFAULT (datetime("now"))' +
+      ');'
+    );
+  } catch (e) {
+    console.error('[migrate] Failed to create gstin_cache local table:', e.message);
+  }
 }
 
 module.exports = { runMigrations: runMigrations };

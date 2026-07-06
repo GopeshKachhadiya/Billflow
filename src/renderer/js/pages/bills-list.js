@@ -13,6 +13,13 @@ window.PageControllers['bills-list'] = {
       });
     }
 
+    var importBtn = document.getElementById('btn-import-bills');
+    if (importBtn) {
+      importBtn.addEventListener('click', function() {
+        window.loadPage('bills-import');
+      });
+    }
+
     var statusFilter = document.getElementById('filter-status');
     var searchInput  = document.getElementById('filter-search');
     var dateFrom     = document.getElementById('filter-date-from');

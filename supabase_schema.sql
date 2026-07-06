@@ -252,4 +252,36 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
+-- ═══════════════════════════════════════════════════
+-- 6. Shared GSTIN Cache
+-- ═══════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS public.gstin_cache (
+    gstin TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT DEFAULT 'Business',
+    state TEXT,
+    state_code TEXT,
+    billing_address TEXT,
+    billing_city TEXT,
+    billing_pin TEXT,
+    status TEXT DEFAULT 'Active',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.gstin_cache ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow select for authenticated users" ON public.gstin_cache;
+CREATE POLICY "Allow select for authenticated users" ON public.gstin_cache
+    FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow insert for authenticated users" ON public.gstin_cache;
+CREATE POLICY "Allow insert for authenticated users" ON public.gstin_cache
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow update for authenticated users" ON public.gstin_cache;
+CREATE POLICY "Allow update for authenticated users" ON public.gstin_cache
+    FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
 

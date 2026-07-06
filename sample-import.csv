@@ -1,0 +1,4 @@
+bill_number,item_name,bill_date,item_qty,customer_name,item_rate,customer_state,item_gst_rate,customer_gstin,item_hsn,customer_address,item_discount,customer_phone,due_date
+INV-2026-9001,Premium Web Services,2026-07-01,2,Tata Consultancy Services,50000,Maharashtra,18,27AAACR4849R1ZL,998313,Nariman Point Mumbai,0,9876543210,2026-07-31
+INV-2026-9001,Cloud Server Setup,2026-07-01,1,Tata Consultancy Services,12000,Maharashtra,18,27AAACR4849R1ZL,998311,Nariman Point Mumbai,10,9876543210,2026-07-31
+INV-2026-9002,Office Furniture Consult,2026-07-02,5,Acme Corp Delhi,1500,Delhi,18,07AAAAA0000A1Z5,998312,Connaught Place Delhi,5,9999999999,2026-08-01

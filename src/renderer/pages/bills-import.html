@@ -1,0 +1,63 @@
+<div class="bills-import-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <h1>Import Bills</h1>
+  <button id="btn-back-to-list" class="btn">← Back to Bills</button>
+</div>
+
+<div class="card" style="margin-bottom: 24px; max-width: 800px;">
+  <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--color-primary);">CSV Import Guidelines</h3>
+  <p style="font-size: 13px; color: var(--color-text-muted); line-height: 1.5; margin-bottom: 16px;">
+    To import bills from previous platforms like Tally, Odoo, Zoho, or Miracle, please export your invoices to a CSV file. The columns in your CSV should map to the fields below. A single bill with multiple line items should have the same <code>bill_number</code> across multiple rows.
+  </p>
+  
+  <div style="background: #F9FAFB; border: 1px solid var(--color-border); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+    <h4 style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 8px;">Supported CSV Headers:</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: monospace; font-size: 12px; color: #333;">
+      <div><strong>bill_number</strong> (Required)</div>
+      <div><strong>item_name</strong> (Required)</div>
+      <div><strong>bill_date</strong> (Required, YYYY-MM-DD)</div>
+      <div><strong>item_qty</strong> (Required, number)</div>
+      <div><strong>customer_name</strong> (Required)</div>
+      <div><strong>item_rate</strong> (Required, number)</div>
+      <div><strong>customer_state</strong> (Required)</div>
+      <div><strong>item_gst_rate</strong> (Required, e.g. 18)</div>
+      <div><strong>customer_gstin</strong> (Optional)</div>
+      <div><strong>item_hsn</strong> (Optional)</div>
+      <div><strong>customer_address</strong> (Optional)</div>
+      <div><strong>item_discount</strong> (Optional, %)</div>
+      <div><strong>customer_phone</strong> (Optional)</div>
+      <div><strong>due_date</strong> (Optional, YYYY-MM-DD)</div>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-bottom: 0;">
+    <label style="font-weight: 600;">Choose CSV File</label>
+    <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+      <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+      <button id="btn-select-file" class="btn" style="border: 1px dashed var(--color-border); padding: 12px 24px; width: 100%; text-align: center; background: #fff;">
+        Click to select file...
+      </button>
+    </div>
+    <span id="selected-filename" style="display: none; font-size: 12px; font-weight: 600; color: var(--color-success); margin-top: 8px;">No file selected</span>
+  </div>
+</div>
+
+<div class="card" style="max-width: 800px; display: none;" id="import-progress-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <span style="font-size: 14px; font-weight: 600;" id="import-status-text">Processing...</span>
+    <span style="font-size: 12px; color: var(--color-text-muted);" id="import-stats">0 / 0 rows</span>
+  </div>
+  
+  <!-- Progress Bar -->
+  <div style="background: #E5E7EB; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; margin-bottom: 16px;">
+    <div id="import-progress-bar" style="background: var(--color-primary); height: 100%; width: 0%; transition: width 0.1s ease;"></div>
+  </div>
+
+  <!-- Terminal log output -->
+  <div id="import-log-console" style="background: #1E1E1E; color: #34D399; font-family: monospace; font-size: 11px; padding: 12px; border-radius: 6px; height: 250px; overflow-y: auto; line-height: 1.5; white-space: pre-wrap;">
+    Console initialized... ready.
+  </div>
+  
+  <div style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 12px;">
+    <button id="btn-import-submit" class="btn btn-primary" disabled>Start Import</button>
+  </div>
+</div>

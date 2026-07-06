@@ -35,6 +35,20 @@ window.PageControllers['bill-view'] = {
         self.downloadPDF();
       });
     }
+
+    var sendWhatsAppBtn = document.getElementById('btn-send-whatsapp');
+    if (sendWhatsAppBtn) {
+      sendWhatsAppBtn.addEventListener('click', function() {
+        self.sendBill(['whatsapp']);
+      });
+    }
+
+    var printSendBtn = document.getElementById('btn-print-send');
+    if (printSendBtn) {
+      printSendBtn.addEventListener('click', function() {
+        self.sendBill(['email', 'whatsapp'], true);
+      });
+    }
     
     // Load data
     Promise.all([
@@ -45,6 +59,12 @@ window.PageControllers['bill-view'] = {
       self._settings = results[1];
       
       self.renderInvoice();
+
+      if (params && params.print) {
+        setTimeout(function() {
+          window.print();
+        }, 500);
+      }
     }).catch(function(err) {
       Toast.show('Failed to load invoice details: ' + err.message, 'error');
       window.loadPage('bills-list');
@@ -202,6 +222,57 @@ window.PageControllers['bill-view'] = {
       Toast.show('PDF downloaded successfully', 'success');
     }).catch(function(err) {
       Toast.show('Failed to generate PDF: ' + err.message, 'error');
+    });
+  },
+
+  sendBill: function(channels, triggerPrint) {
+    var self = this;
+    if (!self._data || !self._data.bill) {
+      return Toast.show('Invoice data not loaded yet', 'warning');
+    }
+    
+    Toast.show('Generating PDF & sending...', 'info');
+    
+    window.api.generatePDF({
+      bill: self._data.bill,
+      items: self._data.items,
+      customer: self._data.customer,
+      settings: self._settings
+    }).then(function(pdfBuffer) {
+      var binary = '';
+      var bytes = new Uint8Array(pdfBuffer);
+      var len = bytes.byteLength;
+      for (var i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      var pdfBase64 = window.btoa(binary);
+
+      var b = self._data.bill;
+      var taxRecord = {
+        bill_date:           b.bill_date,
+        bill_number:         b.bill_number,
+        customer_name:       self._data.customer ? self._data.customer.name : 'Walk-in Customer',
+        customer_gstin:      self._data.customer ? self._data.customer.gstin : '',
+        customer_state:      self._data.customer ? self._data.customer.state : '',
+        customer_state_code: self._data.customer ? self._data.customer.state_code : '',
+        total_taxable:       b.total_taxable,
+        total_cgst:          b.total_cgst,
+        total_sgst:          b.total_sgst,
+        total_igst:          b.total_igst,
+        total_tax:           (b.total_cgst||0) + (b.total_sgst||0) + (b.total_igst||0),
+        grand_total:         b.grand_total,
+        rate_wise_breakdown: [],
+        hsn_wise_breakdown:  []
+      };
+
+      return window.api.billSent(b, self._data.customer, self._data.items, taxRecord, pdfBase64, channels).then(function() {
+        Toast.show('Bill sent successfully!', 'success');
+        if (triggerPrint) {
+          window.print();
+        }
+      });
+    }).catch(function(err) {
+      Toast.show('Failed to send bill: ' + err.message, 'error');
     });
   }
 };

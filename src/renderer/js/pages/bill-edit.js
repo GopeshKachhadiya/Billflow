@@ -100,16 +100,23 @@ window.PageControllers['bill-edit'] = {
 
     // Bind action buttons
     var saveDraft = document.getElementById('btn-save-draft');
-    var saveSend  = document.getElementById('btn-save-send');
+    var sendWhatsApp = document.getElementById('btn-send-whatsapp');
+    var printSend  = document.getElementById('btn-print-send');
+    
     if (saveDraft) {
       saveDraft.replaceWith(saveDraft.cloneNode(true));
       saveDraft = document.getElementById('btn-save-draft');
-      saveDraft.addEventListener('click', function() { self.saveBill('draft'); });
+      saveDraft.addEventListener('click', function() { self.saveBill('draft', ['email']); });
     }
-    if (saveSend) {
-      saveSend.replaceWith(saveSend.cloneNode(true));
-      saveSend = document.getElementById('btn-save-send');
-      saveSend.addEventListener('click',  function() { self.saveBill('sent');  });
+    if (sendWhatsApp) {
+      sendWhatsApp.replaceWith(sendWhatsApp.cloneNode(true));
+      sendWhatsApp = document.getElementById('btn-send-whatsapp');
+      sendWhatsApp.addEventListener('click', function() { self.saveBill('sent', ['whatsapp']); });
+    }
+    if (printSend) {
+      printSend.replaceWith(printSend.cloneNode(true));
+      printSend = document.getElementById('btn-print-send');
+      printSend.addEventListener('click', function() { self.saveBill('sent', ['email', 'whatsapp'], true); });
     }
 
     var addItemBtn = document.getElementById('btn-add-item');
@@ -354,7 +361,7 @@ window.PageControllers['bill-edit'] = {
     return results;
   },
 
-  saveBill: function(status) {
+  saveBill: function(status, channels, triggerPrint) {
     var self    = this;
     if (!self._customer) {
       return Toast.show('Please select a customer', 'error');
@@ -445,6 +452,7 @@ window.PageControllers['bill-edit'] = {
     }
 
     promise.then(function(result) {
+      var finalBillId = self._billId || (result && result.id);
       if (status === 'sent') {
         // Generate PDF then fire n8n webhook
         window.api.generatePDF({ bill: billData, items: items,
@@ -459,14 +467,18 @@ window.PageControllers['bill-edit'] = {
             }
             var pdfBase64 = window.btoa(binary);
 
-            window.api.billSent(billData, self._customer, items, billData.taxRecord, pdfBase64, ['email']);
+            window.api.billSent(billData, self._customer, items, billData.taxRecord, pdfBase64, channels || ['email']);
           });
-        Toast.show('Bill sent!', 'success');
+        Toast.show('Bill sent successfully!', 'success');
       } else {
         Toast.show('Draft saved', 'info');
       }
       clearInterval(self._autoSaveTimer);
-      window.loadPage('bills-list');
+      if (triggerPrint && finalBillId) {
+        window.loadPage('bill-view', { billId: finalBillId, print: true });
+      } else {
+        window.loadPage('bills-list');
+      }
     }).catch(function(err) {
       Toast.show('Save failed: ' + err.message, 'error');
     });
