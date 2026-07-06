@@ -76,7 +76,7 @@ window.PageControllers['bills-list'] = {
             '<td class="actions" style="text-align: right; padding-right: 24px;">' +
               '<button class="btn btn-sm btn-view" style="margin-right: 6px;">View</button>' +
               '<button class="btn btn-sm btn-edit" style="margin-right: 6px;">Edit</button>' +
-              (bill.status === 'sent' || bill.status === 'overdue' ? '<button class="btn btn-sm btn-success btn-paid" style="margin-right: 6px;">Paid</button>' : '') +
+              (bill.status === 'sent' || bill.status === 'overdue' ? '<button class="btn btn-sm btn-warning btn-remind" style="margin-right: 6px; background-color: var(--color-warning); color: #fff; border: none;">Remind</button><button class="btn btn-sm btn-success btn-paid" style="margin-right: 6px;">Paid</button>' : '') +
               (bill.status === 'draft' ? '<button class="btn btn-sm btn-danger btn-del">Del</button>' : '') +
             '</td>';
 
@@ -102,6 +102,13 @@ window.PageControllers['bills-list'] = {
                 Toast.show('Bill marked as paid', 'success');
                 self.loadBills();
               });
+            });
+          }
+
+          var remindBtn = tr.querySelector('.btn-remind');
+          if (remindBtn) {
+            remindBtn.addEventListener('click', function() {
+              self.triggerPaymentReminder(bill.id, bill.bill_number);
             });
           }
 
@@ -143,5 +150,120 @@ window.PageControllers['bills-list'] = {
     var a    = document.createElement('a');
     a.href = url; a.download = 'bills-export.csv'; a.click();
     URL.revokeObjectURL(url);
+  },
+
+  triggerPaymentReminder: function(billId, billNumber) {
+    var self = this;
+    
+    // Create custom overlay
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    
+    var box = document.createElement('div');
+    box.className = 'modal-box';
+    box.style.maxWidth = '400px';
+    
+    var title = document.createElement('h3');
+    title.textContent = 'Send Payment Reminder';
+    title.style.marginBottom = '12px';
+    title.style.fontFamily = 'var(--font-serif)';
+    box.appendChild(title);
+    
+    var msg = document.createElement('p');
+    msg.textContent = 'Choose delivery channels to send the payment reminder for bill ' + billNumber + ':';
+    msg.style.marginBottom = '20px';
+    msg.style.fontSize = '13px';
+    box.appendChild(msg);
+    
+    var btnWA = document.createElement('button');
+    btnWA.className = 'btn btn-primary';
+    btnWA.textContent = 'WhatsApp Only';
+    btnWA.style.backgroundColor = '#25D366';
+    btnWA.style.border = 'none';
+    btnWA.style.marginRight = '8px';
+    btnWA.onclick = function() {
+      document.body.removeChild(overlay);
+      self.sendReminder(billId, ['whatsapp']);
+    };
+    box.appendChild(btnWA);
+    
+    var btnBoth = document.createElement('button');
+    btnBoth.className = 'btn btn-primary';
+    btnBoth.textContent = 'Email & WhatsApp';
+    btnBoth.style.marginRight = '8px';
+    btnBoth.onclick = function() {
+      document.body.removeChild(overlay);
+      self.sendReminder(billId, ['email', 'whatsapp']);
+    };
+    box.appendChild(btnBoth);
+    
+    var btnCancel = document.createElement('button');
+    btnCancel.className = 'btn';
+    btnCancel.textContent = 'Cancel';
+    btnCancel.onclick = function() {
+      document.body.removeChild(overlay);
+    };
+    box.appendChild(btnCancel);
+    
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+  sendReminder: function(billId, channels) {
+    var self = this;
+    Toast.show('Fetching bill details...', 'info');
+    
+    Promise.all([
+      window.api.getBill(billId),
+      window.api.getBillItems(billId),
+      window.api.getTaxRecord(billId),
+      window.api.getAllSettings()
+    ]).then(function(results) {
+      var bill = results[0];
+      var items = results[1];
+      var taxRecord = results[2] || {};
+      var settings = results[3];
+      
+      if (!bill) {
+        throw new Error('Bill not found');
+      }
+      
+      return window.api.getCustomer(bill.customer_id).then(function(customer) {
+        if (!customer) {
+          throw new Error('Customer not found');
+        }
+        
+        Toast.show('Generating Invoice PDF...', 'info');
+        return window.api.generatePDF({
+          bill: bill,
+          items: items,
+          customer: customer,
+          settings: settings
+        }).then(function(pdfBuffer) {
+          var binary = '';
+          var bytes = new Uint8Array(pdfBuffer);
+          var len = bytes.byteLength;
+          for (var i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          var base64 = window.btoa(binary);
+          
+          Toast.show('Triggering payment reminder via n8n...', 'info');
+          return window.api.paymentReminder(
+            bill,
+            customer,
+            items,
+            taxRecord,
+            base64,
+            channels
+          );
+        });
+      });
+    }).then(function() {
+      Toast.show('Payment reminder sent successfully!', 'success');
+    }).catch(function(err) {
+      console.error(err);
+      Toast.show('Failed to send reminder: ' + err.message, 'error');
+    });
   }
 };

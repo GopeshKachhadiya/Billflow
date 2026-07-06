@@ -72,5 +72,8 @@ contextBridge.exposeInMainWorld('api', {
   billSent:         function(b, c, items, tax, pdf, channels) {
     return ipc('webhook:billSent', { bill:b, customer:c, items:items, taxRecord:tax, pdfBase64:pdf, channels:channels });
   },
+  paymentReminder:  function(b, c, items, tax, pdf, channels) {
+    return ipc('webhook:paymentReminder', { bill:b, customer:c, items:items, taxRecord:tax, pdfBase64:pdf, channels:channels });
+  },
   settingsUpdated:  function(s) { return ipc('webhook:settingsUpdated', s); }
 });

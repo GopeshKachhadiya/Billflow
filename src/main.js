@@ -131,6 +131,11 @@ ipcMain.handle('webhook:billSent', function(e, a) {
   m.webhooks.billSent(a.bill, a.customer, a.items, a.taxRecord, a.pdfBase64, a.channels);
   return { ok: true };
 });
+ipcMain.handle('webhook:paymentReminder', function(e, a) {
+  var m = getModules();
+  m.webhooks.paymentReminder(a.bill, a.customer, a.items, a.taxRecord, a.pdfBase64, a.channels);
+  return { ok: true };
+});
 ipcMain.handle('webhook:settingsUpdated', function(e, a) {
   getModules().webhooks.settingsUpdated(a);
   return { ok: true };

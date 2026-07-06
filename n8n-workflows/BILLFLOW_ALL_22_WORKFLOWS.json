@@ -4729,6 +4729,293 @@
         300
       ],
       "originalName": "Supabase: Insert Comm Log"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "payment-reminder",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf23-node-01",
+      "name": "WF-23: Webhook: Payment Reminder",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        55000,
+        300
+      ],
+      "originalName": "Webhook: Payment Reminder"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "bill_id",
+              "value": "={{ $json.body.bill.id }}"
+            },
+            {
+              "name": "bill_number",
+              "value": "={{ $json.body.bill.bill_number }}"
+            },
+            {
+              "name": "due_date",
+              "value": "={{ $json.body.bill.due_date }}"
+            },
+            {
+              "name": "grand_total",
+              "value": "={{ $json.body.bill.grand_total }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.name }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $json.body.customer.email }}"
+            },
+            {
+              "name": "customer_phone",
+              "value": "={{ $json.body.customer.phone }}"
+            },
+            {
+              "name": "business_name",
+              "value": "={{ $json.body.business.name }}"
+            },
+            {
+              "name": "business_gstin",
+              "value": "={{ $json.body.business.gstin }}"
+            },
+            {
+              "name": "owner_email",
+              "value": "={{ $json.body.business.owner_email }}"
+            },
+            {
+              "name": "owner_phone",
+              "value": "={{ $json.body.business.owner_phone }}"
+            },
+            {
+              "name": "pdf_base64",
+              "value": "={{ $json.body.pdf_base64 }}"
+            },
+            {
+              "name": "bank_name",
+              "value": "={{ $json.body.business.bank_name }}"
+            },
+            {
+              "name": "bank_account",
+              "value": "={{ $json.body.business.bank_account }}"
+            },
+            {
+              "name": "bank_ifsc",
+              "value": "={{ $json.body.business.bank_ifsc }}"
+            }
+          ],
+          "boolean": [
+            {
+              "name": "send_email",
+              "value": "={{ ($json.body.send_channels || ['email']).includes('email') }}"
+            },
+            {
+              "name": "send_whatsapp",
+              "value": "={{ ($json.body.send_channels || []).includes('whatsapp') }}"
+            },
+            {
+              "name": "send_sms",
+              "value": "={{ ($json.body.send_channels || []).includes('sms') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf23-node-02",
+      "name": "WF-23: Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        55220,
+        300
+      ],
+      "originalName": "Set Variables"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.send_email }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "wf23-node-03",
+      "name": "WF-23: Send Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        55440,
+        300
+      ],
+      "originalName": "Send Email?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $('WF-23: Set Variables').item.json.customer_email }}",
+        "subject": "=Payment Reminder: Invoice {{ $('WF-23: Set Variables').item.json.bill_number }} — ₹{{ $('WF-23: Set Variables').item.json.grand_total }}",
+        "html": "=<p>Dear {{ $('WF-23: Set Variables').item.json.customer_name }},</p><p>This is a reminder that <strong>Invoice {{ $('WF-23: Set Variables').item.json.bill_number }}</strong> for ₹{{ $('WF-23: Set Variables').item.json.grand_total }} is currently outstanding and unpaid.</p><p><strong>Due Date:</strong> {{ $('WF-23: Set Variables').item.json.due_date }}</p><p>Please arrange payment to our bank account details below:<br>Bank: {{ $('WF-23: Set Variables').item.json.bank_name }}<br>Account: {{ $('WF-23: Set Variables').item.json.bank_account }}<br>IFSC: {{ $('WF-23: Set Variables').item.json.bank_ifsc }}</p><p>Thank you for your prompt attention.<br><strong>{{ $('WF-23: Set Variables').item.json.business_name }}</strong></p>",
+        "attachmentsUi": {
+          "attachmentsValues": [
+            {
+              "type": "base64",
+              "fileContent": "={{ $('WF-23: Set Variables').item.json.pdf_base64 }}",
+              "fileName": "=Invoice_{{ $('WF-23: Set Variables').item.json.bill_number }}.pdf",
+              "mimeType": "application/pdf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf23-node-04",
+      "name": "WF-23: Email: Payment Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        55660,
+        180
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Payment Reminder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.send_whatsapp }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "wf23-node-05",
+      "name": "WF-23: Send WhatsApp?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        55880,
+        300
+      ],
+      "originalName": "Send WhatsApp?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-23: Set Variables').item.json.customer_phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_reminder_3day', broadcast_name: 'manual_rem_' + $('WF-23: Set Variables').item.json.bill_id, parameters: [ { name: '1', value: $('WF-23: Set Variables').item.json.customer_name }, { name: '2', value: $('WF-23: Set Variables').item.json.bill_number }, { name: '3', value: String($('WF-23: Set Variables').item.json.grand_total) }, { name: '4', value: $('WF-23: Set Variables').item.json.due_date }, { name: '5', value: $('WF-23: Set Variables').item.json.business_name }, { name: '6', value: $('WF-23: Set Variables').item.json.bank_account }, { name: '7', value: $('WF-23: Set Variables').item.json.bank_ifsc } ] }) }}",
+        "options": {}
+      },
+      "id": "wf23-node-06",
+      "name": "WF-23: WATI: Payment Reminder WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        56100,
+        180
+      ],
+      "originalName": "WATI: Payment Reminder WA"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.send_sms }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "wf23-node-07",
+      "name": "WF-23: Send SMS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        56320,
+        300
+      ],
+      "originalName": "Send SMS?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.msg91.com/api/v5/flow/",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "authkey",
+              "value": "={{ $env.MSG91_AUTH_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ flow_id: 'SMS-02-FLOW-ID', sender: $env.MSG91_SENDER_ID, mobiles: $('WF-23: Set Variables').item.json.customer_phone, VAR1: $('WF-23: Set Variables').item.json.customer_name, VAR2: $('WF-23: Set Variables').item.json.bill_number, VAR3: String($('WF-23: Set Variables').item.json.grand_total), VAR4: $('WF-23: Set Variables').item.json.due_date, VAR5: $('WF-23: Set Variables').item.json.business_name, VAR6: $('WF-23: Set Variables').item.json.bank_account, VAR7: $('WF-23: Set Variables').item.json.bank_ifsc }) }}",
+        "options": {}
+      },
+      "id": "wf23-node-08",
+      "name": "WF-23: MSG91: Payment Reminder SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        56540,
+        180
+      ],
+      "originalName": "MSG91: Payment Reminder SMS"
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "responseMode": "finalNode",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Reminder processed\"\n}",
+        "options": {}
+      },
+      "id": "wf23-node-09",
+      "name": "WF-23: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        56760,
+        300
+      ],
+      "originalName": "Respond 200 OK"
     }
   ],
   "connections": {
@@ -6677,6 +6964,115 @@
         [
           {
             "node": "WF-22: Supabase: Insert Comm Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-23: Webhook: Payment Reminder": {
+      "main": [
+        [
+          {
+            "node": "WF-23: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-23: Set Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-23: Send Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-23: Send Email?": {
+      "main": [
+        [
+          {
+            "node": "WF-23: Email: Payment Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-23: Send WhatsApp?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-23: Email: Payment Reminder": {
+      "main": [
+        [
+          {
+            "node": "WF-23: Send WhatsApp?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-23: Send WhatsApp?": {
+      "main": [
+        [
+          {
+            "node": "WF-23: WATI: Payment Reminder WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-23: Send SMS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-23: WATI: Payment Reminder WA": {
+      "main": [
+        [
+          {
+            "node": "WF-23: Send SMS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-23: Send SMS?": {
+      "main": [
+        [
+          {
+            "node": "WF-23: MSG91: Payment Reminder SMS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-23: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-23: MSG91: Payment Reminder SMS": {
+      "main": [
+        [
+          {
+            "node": "WF-23: Respond 200 OK",
             "type": "main",
             "index": 0
           }

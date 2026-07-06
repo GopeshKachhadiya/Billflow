@@ -77,6 +77,14 @@ module.exports = {
     callWebhook('/webhook/bill-send', payload);
   },
 
+  paymentReminder: function(bill, customer, items, business, pdfBase64, channels) {
+    var payload = buildBillPayload(bill, customer, items, business);
+    payload.event = 'payment_reminder';
+    payload.pdf_base64 = pdfBase64 || '';
+    payload.send_channels = channels || ['whatsapp'];
+    callWebhook('/webhook/payment-reminder', payload);
+  },
+
   billPaid: function(bill, customer, business, payment) {
     var payload = buildBillPayload(bill, customer, [], business);
     payload.event = 'bill_paid';

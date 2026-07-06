@@ -49,6 +49,13 @@ window.PageControllers['bill-view'] = {
         self.sendBill(['email', 'whatsapp'], true);
       });
     }
+
+    var reminderBtn = document.getElementById('btn-send-reminder');
+    if (reminderBtn) {
+      reminderBtn.addEventListener('click', function() {
+        self.triggerPaymentReminder();
+      });
+    }
     
     // Load data
     Promise.all([
@@ -77,6 +84,16 @@ window.PageControllers['bill-view'] = {
     var items = self._data.items || [];
     var cust = self._data.customer;
     var s = self._settings || {};
+    
+    // Show/hide Send Reminder button based on status
+    var reminderBtn = document.getElementById('btn-send-reminder');
+    if (reminderBtn) {
+      if (b.status === 'sent' || b.status === 'overdue') {
+        reminderBtn.style.display = 'inline-block';
+      } else {
+        reminderBtn.style.display = 'none';
+      }
+    }
     
     // Business details
     document.getElementById('biz-name').textContent = s.business_name || 'My Business';
@@ -273,6 +290,125 @@ window.PageControllers['bill-view'] = {
       });
     }).catch(function(err) {
       Toast.show('Failed to send bill: ' + err.message, 'error');
+    });
+  },
+
+  triggerPaymentReminder: function() {
+    var self = this;
+    if (!self._data || !self._data.bill) {
+      return Toast.show('Invoice data not loaded yet', 'warning');
+    }
+    
+    var billNumber = self._data.bill.bill_number;
+    
+    // Create custom overlay
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    
+    var box = document.createElement('div');
+    box.className = 'modal-box';
+    box.style.maxWidth = '400px';
+    
+    var title = document.createElement('h3');
+    title.textContent = 'Send Payment Reminder';
+    title.style.marginBottom = '12px';
+    title.style.fontFamily = 'var(--font-serif)';
+    box.appendChild(title);
+    
+    var msg = document.createElement('p');
+    msg.textContent = 'Choose delivery channels to send the payment reminder for bill ' + billNumber + ':';
+    msg.style.marginBottom = '20px';
+    msg.style.fontSize = '13px';
+    box.appendChild(msg);
+    
+    var btnWA = document.createElement('button');
+    btnWA.className = 'btn btn-primary';
+    btnWA.textContent = 'WhatsApp Only';
+    btnWA.style.backgroundColor = '#25D366';
+    btnWA.style.border = 'none';
+    btnWA.style.marginRight = '8px';
+    btnWA.onclick = function() {
+      document.body.removeChild(overlay);
+      self.sendReminder(['whatsapp']);
+    };
+    box.appendChild(btnWA);
+    
+    var btnBoth = document.createElement('button');
+    btnBoth.className = 'btn btn-primary';
+    btnBoth.textContent = 'Email & WhatsApp';
+    btnBoth.style.marginRight = '8px';
+    btnBoth.onclick = function() {
+      document.body.removeChild(overlay);
+      self.sendReminder(['email', 'whatsapp']);
+    };
+    box.appendChild(btnBoth);
+    
+    var btnCancel = document.createElement('button');
+    btnCancel.className = 'btn';
+    btnCancel.textContent = 'Cancel';
+    btnCancel.onclick = function() {
+      document.body.removeChild(overlay);
+    };
+    box.appendChild(btnCancel);
+    
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+  sendReminder: function(channels) {
+    var self = this;
+    if (!self._data || !self._data.bill) {
+      return Toast.show('Invoice data not loaded yet', 'warning');
+    }
+    
+    Toast.show('Generating Invoice PDF...', 'info');
+    
+    window.api.generatePDF({
+      bill: self._data.bill,
+      items: self._data.items,
+      customer: self._data.customer,
+      settings: self._settings
+    }).then(function(pdfBuffer) {
+      var binary = '';
+      var bytes = new Uint8Array(pdfBuffer);
+      var len = bytes.byteLength;
+      for (var i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      var pdfBase64 = window.btoa(binary);
+      
+      var b = self._data.bill;
+      var taxRecord = {
+        bill_date:           b.bill_date,
+        bill_number:         b.bill_number,
+        customer_name:       self._data.customer ? self._data.customer.name : 'Walk-in Customer',
+        customer_gstin:      self._data.customer ? self._data.customer.gstin : '',
+        customer_state:      self._data.customer ? self._data.customer.state : '',
+        customer_state_code: self._data.customer ? self._data.customer.state_code : '',
+        total_taxable:       b.total_taxable,
+        total_cgst:          b.total_cgst,
+        total_sgst:          b.total_sgst,
+        total_igst:          b.total_igst,
+        total_tax:           (b.total_cgst||0) + (b.total_sgst||0) + (b.total_igst||0),
+        grand_total:         b.grand_total,
+        rate_wise_breakdown: [],
+        hsn_wise_breakdown:  []
+      };
+
+      Toast.show('Triggering payment reminder via n8n...', 'info');
+      return window.api.paymentReminder(
+        b,
+        self._data.customer,
+        self._data.items,
+        taxRecord,
+        pdfBase64,
+        channels
+      );
+    }).then(function() {
+      Toast.show('Payment reminder sent successfully!', 'success');
+    }).catch(function(err) {
+      console.error(err);
+      Toast.show('Failed to send reminder: ' + err.message, 'error');
     });
   }
 };
