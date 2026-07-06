@@ -12,6 +12,7 @@ import { DownloadPage } from "./pages/DownloadPage";
 import { AboutPage } from "./pages/AboutPage";
 import { ContactPage } from "./pages/ContactPage";
 import { BlogPage } from "./pages/BlogPage";
+import { SupportChatbot } from "./components/SupportChatbot";
 
 function App() {
   const [currentHash, setCurrentHash] = useState(window.location.hash || "#/");
@@ -75,6 +76,7 @@ function App() {
         </AnimatePresence>
       </main>
       <Footer />
+      <SupportChatbot />
     </div>
   );
 }

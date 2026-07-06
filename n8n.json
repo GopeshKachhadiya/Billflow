@@ -2421,6 +2421,191 @@
         300
       ],
       "originalName": "Respond 200 OK"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "support-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf24-node-01",
+      "name": "WF-24: Webhook: Support Ticket",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        58000,
+        300
+      ],
+      "originalName": "Webhook: Support Ticket"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "name",
+              "value": "={{ $json.body.name }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.body.phone }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.body.email || '' }}"
+            },
+            {
+              "name": "topic",
+              "value": "={{ $json.body.topic }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.body.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf24-node-02",
+      "name": "WF-24: Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        58220,
+        300
+      ],
+      "originalName": "Set Variables"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/support_tickets",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={\n  \"name\": \"{{ $('WF-24: Set Variables').item.json.name }}\",\n  \"phone\": \"{{ $('WF-24: Set Variables').item.json.phone }}\",\n  \"email\": \"{{ $('WF-24: Set Variables').item.json.email }}\",\n  \"topic\": \"{{ $('WF-24: Set Variables').item.json.topic }}\",\n  \"message\": \"{{ $('WF-24: Set Variables').item.json.message }}\",\n  \"status\": \"Open\"\n}",
+        "options": {}
+      },
+      "id": "wf24-node-03",
+      "name": "WF-24: Supabase: Insert Ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        58440,
+        300
+      ],
+      "originalName": "Supabase: Insert Ticket"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM_ADDRESS }}",
+        "toEmail": "={{ $env.ADMIN_OWNER_EMAIL || 'support@billflow.in' }}",
+        "subject": "=New Support Ticket: {{ $('WF-24: Set Variables').item.json.topic }} from {{ $('WF-24: Set Variables').item.json.name }}",
+        "html": "=<h3>New Support Ticket Raised</h3><p><strong>Name:</strong> {{ $('WF-24: Set Variables').item.json.name }}</p><p><strong>Phone:</strong> {{ $('WF-24: Set Variables').item.json.phone }}</p><p><strong>Email:</strong> {{ $('WF-24: Set Variables').item.json.email }}</p><p><strong>Topic:</strong> {{ $('WF-24: Set Variables').item.json.topic }}</p><p><strong>Message:</strong></p><blockquote style=\"background:#f9f9f9;border-left:5px solid #ccc;margin:1.5em 10px;padding:0.5em 10px;\">{{ $('WF-24: Set Variables').item.json.message }}</blockquote><p>Please call back this customer as soon as possible.</p>",
+        "options": {}
+      },
+      "id": "wf24-node-04",
+      "name": "WF-24: Email: Owner Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        58660,
+        180
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-cred",
+          "name": "SMTP BillFlow"
+        }
+      },
+      "originalName": "Email: Owner Alert"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('WF-24: Set Variables').item.json.phone }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "wf24-node-05",
+      "name": "WF-24: Has Phone?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        58880,
+        300
+      ],
+      "originalName": "Has Phone?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WATI_API_URL }}/api/v1/sendTemplateMessage?whatsappNumber={{ $('WF-24: Set Variables').item.json.phone }}",
+        "sendHeaders": true,
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WATI_AUTH_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyType": "json",
+        "jsonBody": "={{ JSON.stringify({ template_name: 'billflow_support_confirm', broadcast_name: 'ticket_' + new Date().getTime(), parameters: [ { name: '1', value: $('WF-24: Set Variables').item.json.name }, { name: '2', value: $('WF-24: Set Variables').item.json.topic }, { name: '3', value: $('WF-24: Set Variables').item.json.phone } ] }) }}",
+        "options": {}
+      },
+      "id": "wf24-node-06",
+      "name": "WF-24: WATI: Ticket Confirmation WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        59100,
+        180
+      ],
+      "originalName": "WATI: Ticket Confirmation WA"
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "responseMode": "finalNode",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Support ticket raised successfully\"\n}",
+        "options": {}
+      },
+      "id": "wf24-node-07",
+      "name": "WF-24: Respond 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        59320,
+        300
+      ],
+      "originalName": "Respond 200 OK"
     }
   ],
   "connections": {
@@ -3237,6 +3422,79 @@
         [
           {
             "node": "WF-23: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-24: Webhook: Support Ticket": {
+      "main": [
+        [
+          {
+            "node": "WF-24: Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-24: Set Variables": {
+      "main": [
+        [
+          {
+            "node": "WF-24: Supabase: Insert Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-24: Supabase: Insert Ticket": {
+      "main": [
+        [
+          {
+            "node": "WF-24: Email: Owner Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-24: Email: Owner Alert": {
+      "main": [
+        [
+          {
+            "node": "WF-24: Has Phone?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-24: Has Phone?": {
+      "main": [
+        [
+          {
+            "node": "WF-24: WATI: Ticket Confirmation WA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WF-24: Respond 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF-24: WATI: Ticket Confirmation WA": {
+      "main": [
+        [
+          {
+            "node": "WF-24: Respond 200 OK",
             "type": "main",
             "index": 0
           }

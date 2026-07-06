@@ -284,4 +284,30 @@ DROP POLICY IF EXISTS "Allow update for authenticated users" ON public.gstin_cac
 CREATE POLICY "Allow update for authenticated users" ON public.gstin_cache
     FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
 
+-- ═══════════════════════════════════════════════════
+-- 7. Support Tickets Table
+-- ═══════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS public.support_tickets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT,
+    topic TEXT NOT NULL,
+    message TEXT NOT NULL,
+    status TEXT DEFAULT 'Open',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow select for authenticated users" ON public.support_tickets;
+CREATE POLICY "Allow select for authenticated users" ON public.support_tickets
+    FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow insert for anyone" ON public.support_tickets;
+CREATE POLICY "Allow insert for anyone" ON public.support_tickets
+    FOR INSERT TO anon, authenticated WITH CHECK (true);
+
 
