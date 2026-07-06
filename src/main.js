@@ -105,13 +105,19 @@ ipcMain.handle('gst:cacheBulk', function(e, a) { return require('./gst/lookup').
 
 // ── SYNC ──────────────────────────────────────────────────────────────────────
 ipcMain.handle('sync:now', function() {
-  var syncQueue = require('./db/queries/sync-queue');
-  var pending = syncQueue.getPendingQueue();
-  if (pending.length > 0) {
-    var webhooks = require('./n8n/webhooks');
-    webhooks.syncPush(pending);
-  }
-  return { pending: pending.length };
+  return new Promise(function(resolve) {
+    var sync = require('./supabase/sync');
+    sync.isOnline(function(online) {
+      if (online) {
+        sync.flushSyncQueue();
+        var settings = require('./db/queries/settings');
+        settings.setSetting('last_sync_at', new Date().toISOString());
+        resolve({ success: true, online: true });
+      } else {
+        resolve({ success: false, online: false });
+      }
+    });
+  });
 });
 
 ipcMain.handle('db:sync:pending',   function() { return getModules().syncQueue.getPendingCount(); });
