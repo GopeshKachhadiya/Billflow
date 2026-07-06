@@ -25,23 +25,10 @@ window.PageControllers['customer-edit'] = {
     var fetchBtn = document.getElementById('btn-fetch-gstin');
     if (gstinInput) {
       gstinInput.addEventListener('input', function() {
-        var val = this.value.trim().toUpperCase();
-        if (val.length === 15 && self.isValidGSTIN(val)) {
-          var nameInput = document.getElementById('c-name');
-          if (!nameInput.value.trim()) {
-            self.fetchGSTDetails();
-          } else {
-            self.validateGSTINInput();
-          }
-        }
+        self.validateGSTINInput();
       });
       gstinInput.addEventListener('blur', function() {
         self.validateGSTINInput();
-        var val = this.value.trim().toUpperCase();
-        var nameInput = document.getElementById('c-name');
-        if (self.isValidGSTIN(val) && !nameInput.value.trim()) {
-          self.fetchGSTDetails();
-        }
       });
       gstinInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
