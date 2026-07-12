@@ -27,6 +27,17 @@ function runMigrations() {
     db.prepare("ALTER TABLE users_local ADD COLUMN trial_end_date TEXT").run();
   } catch (e) {}
 
+  // Ensure bill_items has lot_no, grade, and cartons columns for yarn invoice layout
+  try {
+    db.prepare("ALTER TABLE bill_items ADD COLUMN lot_no TEXT").run();
+  } catch (e) {}
+  try {
+    db.prepare("ALTER TABLE bill_items ADD COLUMN grade TEXT").run();
+  } catch (e) {}
+  try {
+    db.prepare("ALTER TABLE bill_items ADD COLUMN cartons REAL").run();
+  } catch (e) {}
+
   // Ensure gstin_cache table exists in local SQLite database
   try {
     db.exec(

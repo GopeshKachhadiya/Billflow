@@ -234,11 +234,15 @@ window.PageControllers['bill-edit'] = {
 
     tr.innerHTML =
       '<td><input class="item-desc" list="catalog-items-list" value="' + (data.description||'') + '"></td>' +
-      '<td><input class="item-hsn"      value="' + (data.hsn_sac||'') + '" style="width:100px"></td>' +
-      '<td><input class="item-qty"  type="number" value="' + (data.quantity||1) + '" style="width:80px"></td>' +
-      '<td><input class="item-price" type="number" value="' + (data.unit_price||0) + '" style="width:110px"></td>' +
-      '<td><input class="item-disc"  type="number" value="' + (data.discount_percent||0) + '" style="width:80px"></td>' +
-      '<td><select class="item-gst" style="width:100px">' +
+      '<td><input class="item-hsn"      value="' + (data.hsn_sac||'') + '" style="width:80px"></td>' +
+      '<td><input class="item-lot"      value="' + (data.lot_no||'') + '" style="width:90px"></td>' +
+      '<td><input class="item-grade"    value="' + (data.grade||'') + '" style="width:80px"></td>' +
+      '<td><input class="item-cartons"  type="number" value="' + (data.cartons||0) + '" style="width:70px"></td>' +
+      '<td><input class="item-qty"  type="number" value="' + (data.quantity||1) + '" style="width:85px"></td>' +
+      '<td><input class="item-unit"     value="' + (data.unit||'KGS') + '" style="width:70px"></td>' +
+      '<td><input class="item-price" type="number" value="' + (data.unit_price||0) + '" style="width:90px"></td>' +
+      '<td><input class="item-disc"  type="number" value="' + (data.discount_percent||0) + '" style="width:60px"></td>' +
+      '<td><select class="item-gst" style="width:85px">' +
         [0,5,12,18,28].map(function(r) {
           return '<option value="'+r+'"'+(r===(data.gst_rate||(self._settings && parseInt(self._settings.default_gst_rate,10))||18)?' selected':'')+'>'+r+'%</option>';
         }).join('') +
@@ -344,7 +348,7 @@ window.PageControllers['bill-edit'] = {
         sort_order:       i,
         description:      tr.querySelector('.item-desc').value  || '',
         hsn_sac:          tr.querySelector('.item-hsn').value   || '',
-        unit:             'Nos',
+        unit:             tr.querySelector('.item-unit').value  || 'KGS',
         quantity:         r.quantity,
         unit_price:       r.unitPrice,
         discount_percent: r.discountPercent,
@@ -355,7 +359,10 @@ window.PageControllers['bill-edit'] = {
         cgst_rate:        r.cgstRate,  cgst_amount: r.cgstAmount,
         sgst_rate:        r.sgstRate,  sgst_amount: r.sgstAmount,
         igst_rate:        r.igstRate,  igst_amount: r.igstAmount,
-        line_total:       r.lineTotal
+        line_total:       r.lineTotal,
+        lot_no:           tr.querySelector('.item-lot').value   || '',
+        grade:            tr.querySelector('.item-grade').value || '',
+        cartons:          parseFloat(tr.querySelector('.item-cartons').value) || 0
       });
     }
     return results;
@@ -407,6 +414,25 @@ window.PageControllers['bill-edit'] = {
       amount_paid:     status === 'paid' ? (totals.grandTotal || 0) : 0,
       notes:           (document.getElementById('bill-notes')||{}).value  || '',
       terms:           (document.getElementById('bill-terms')||{}).value  || '',
+      order_number:    (document.getElementById('order-number')||{}).value || '',
+      order_date:      (document.getElementById('order-date')||{}).value   || '',
+      due_days:        parseInt((document.getElementById('due-days')||{}).value, 10) || 0,
+      party_name:      (document.getElementById('party-name')||{}).value || '',
+      party_phone:     (document.getElementById('party-phone')||{}).value || '',
+      consignee_name:  (document.getElementById('consignee-name')||{}).value || '',
+      consignee_address:(document.getElementById('consignee-address')||{}).value || '',
+      consignee_gstin: (document.getElementById('consignee-gstin')||{}).value || '',
+      consignee_state: (document.getElementById('consignee-state')||{}).value || '',
+      transporter:     (document.getElementById('transporter')||{}).value || '',
+      lr_number:       (document.getElementById('lr-number')||{}).value || '',
+      vehicle_number:  (document.getElementById('vehicle-number')||{}).value || '',
+      transporter_gst: (document.getElementById('transporter-gst')||{}).value || '',
+      lr_date:         (document.getElementById('lr-date')||{}).value || '',
+      company_name:    (document.getElementById('company-name')||{}).value || '',
+      company_bill_no: (document.getElementById('company-bill-no')||{}).value || '',
+      ack_no:          (document.getElementById('ack-no')||{}).value || '',
+      ack_dt:          (document.getElementById('ack-dt')||{}).value || '',
+      irn_no:          (document.getElementById('irn-no')||{}).value || '',
       items:           items,
       taxRecord: {
         bill_date:           (document.getElementById('bill-date')||{}).value || DateUtils.today(),
@@ -500,6 +526,25 @@ window.PageControllers['bill-edit'] = {
     setVal('due-date',    bill.due_date);
     setVal('bill-notes',  bill.notes);
     setVal('bill-terms',  bill.terms);
+    setVal('order-number', bill.order_number);
+    setVal('order-date',  bill.order_date);
+    setVal('due-days',    bill.due_days);
+    setVal('party-name',  bill.party_name);
+    setVal('party-phone', bill.party_phone);
+    setVal('consignee-name', bill.consignee_name);
+    setVal('consignee-address', bill.consignee_address);
+    setVal('consignee-gstin', bill.consignee_gstin);
+    setVal('consignee-state', bill.consignee_state);
+    setVal('transporter',  bill.transporter);
+    setVal('lr-number',    bill.lr_number);
+    setVal('vehicle-number', bill.vehicle_number);
+    setVal('transporter-gst', bill.transporter_gst);
+    setVal('lr-date',      bill.lr_date);
+    setVal('company-name', bill.company_name);
+    setVal('company-bill-no', bill.company_bill_no);
+    setVal('ack-no',       bill.ack_no);
+    setVal('ack-dt',       bill.ack_dt);
+    setVal('irn-no',       bill.irn_no);
 
     if (data.customer) { self.selectCustomer(data.customer); }
 

@@ -17,8 +17,8 @@ function replaceItemsForBill(billId, items) {
       'quantity, unit_price, discount_percent, gst_rate, ' +
       'base_amount, discount_amount, taxable_amount, ' +
       'cgst_rate, cgst_amount, sgst_rate, sgst_amount, igst_rate, igst_amount, ' +
-      "line_total, is_nil_rated, created_at) " +
-      "VALUES (lower(hex(randomblob(16))),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))"
+      'line_total, is_nil_rated, lot_no, grade, cartons, created_at) ' +
+      "VALUES (lower(hex(randomblob(16))),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))"
     );
 
     for (var i = 0; i < items.length; i++) {
@@ -44,7 +44,10 @@ function replaceItemsForBill(billId, items) {
         parseFloat(item.igst_rate)       || 0,
         parseFloat(item.igst_amount)     || 0,
         parseFloat(item.line_total)      || 0,
-        item.is_nil_rated ? 1 : 0
+        item.is_nil_rated ? 1 : 0,
+        item.lot_no            || '',
+        item.grade             || '',
+        parseFloat(item.cartons) || 0
       );
     }
   });

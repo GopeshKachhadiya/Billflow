@@ -94,126 +94,251 @@ window.PageControllers['bill-view'] = {
         reminderBtn.style.display = 'none';
       }
     }
-    
-    // Business details
-    document.getElementById('biz-name').textContent = s.business_name || 'My Business';
+
+    // Business Profile
+    document.getElementById('biz-name').textContent = s.business_name || 'SUTARIYA YARN';
     
     var bizAddr = [s.business_address, s.business_city, s.business_pin].filter(Boolean).join(', ');
     document.getElementById('biz-address').textContent = bizAddr || 'Address not configured';
-    document.getElementById('biz-gstin').textContent = s.gstin || '—';
     
-    // Bill details
+    var contactParts = [];
+    if (s.business_phone) contactParts.push('MO : ' + s.business_phone);
+    if (s.business_email) contactParts.push(s.business_email);
+    document.getElementById('biz-contact').textContent = contactParts.join(' | ') || '—';
+    
+    // GSTIN & PAN & State
+    document.getElementById('biz-gstin').textContent = s.gstin || '—';
+    document.getElementById('biz-pan').textContent = s.pan || '—';
+    var bizStateSpan = document.getElementById('biz-state');
+    if (bizStateSpan) {
+      bizStateSpan.textContent = s.business_state || '24 GUJARAT';
+    }
+    
+    // Logo
+    var logoImg = document.getElementById('logo');
+    if (logoImg) {
+      if (s.logo_data) {
+        logoImg.src = s.logo_data;
+        logoImg.style.display = 'block';
+      } else {
+        logoImg.style.display = 'none';
+      }
+    }
+    
+    // Invoice Details & Order Details
     document.getElementById('inv-number').textContent = b.bill_number;
     document.getElementById('inv-date').textContent = DateUtils.toDisplay(b.bill_date);
     document.getElementById('inv-due-date').textContent = b.due_date ? DateUtils.toDisplay(b.due_date) : '—';
     
-    // Customer details
+    var setElText = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+    setElText('inv-order-no', b.order_number);
+    setElText('inv-order-date', b.order_date ? DateUtils.toDisplay(b.order_date) : '—');
+    setElText('inv-due-days', b.due_days);
+    setElText('inv-party-name', b.party_name);
+    setElText('inv-party-phone', b.party_phone);
+
+    // Billed To Details
     document.getElementById('cust-name').textContent = cust ? cust.name : 'Walk-in Customer';
-    
-    var custAddr = cust ? cust.address : '';
-    document.getElementById('cust-address').textContent = custAddr || '';
-    
-    var custContact = [];
-    if (cust && cust.phone) custContact.push('Phone: ' + cust.phone);
-    if (cust && cust.email) custContact.push('Email: ' + cust.email);
-    document.getElementById('cust-contact').textContent = custContact.join(' | ') || '—';
+    document.getElementById('cust-address').textContent = cust ? cust.address : '';
+    var custPhoneSpan = document.getElementById('cust-phone');
+    if (custPhoneSpan) {
+      custPhoneSpan.textContent = (cust && cust.phone) ? 'Mo: ' + cust.phone : 'Mo: —';
+    }
     document.getElementById('cust-gstin').textContent = (cust && cust.gstin) ? cust.gstin : '—';
     
-    // Place of Supply & Supply Type
     var stateDisplay = '—';
     if (cust && cust.state) {
       stateDisplay = cust.state + (cust.state_code ? ' (' + cust.state_code + ')' : '');
     }
-    document.getElementById('place-of-supply').textContent = stateDisplay;
-    document.getElementById('supply-type').textContent = b.supply_type === 'intrastate' ? 'Intrastate (CGST + SGST)' : 'Interstate (IGST)';
+    var custStateEl = document.getElementById('cust-state');
+    if (custStateEl) {
+      custStateEl.textContent = stateDisplay;
+    }
+
+    // Consignee Details (Default to customer details if not specified)
+    setElText('consignee-name', b.consignee_name || (cust ? cust.name : 'Walk-in Customer'));
+    setElText('consignee-address', b.consignee_address || (cust ? cust.address : ''));
+    setElText('consignee-gstin', b.consignee_gstin || (cust ? cust.gstin : '—'));
     
-    // Items Table
+    var consigneeStateDisplay = '—';
+    if (b.consignee_state) {
+      consigneeStateDisplay = b.consignee_state;
+    } else if (cust && cust.state) {
+      consigneeStateDisplay = cust.state + (cust.state_code ? ' (' + cust.state_code + ')' : '');
+    }
+    setElText('consignee-state', consigneeStateDisplay);
+
+    // Transporter Details
+    setElText('transporter-val', b.transporter);
+    setElText('transporter-gst-val', b.transporter_gst);
+    setElText('lr-number-val', b.lr_number);
+    setElText('lr-date-val', b.lr_date ? DateUtils.toDisplay(b.lr_date) : '—');
+    setElText('vehicle-number-val', b.vehicle_number);
+
+    // E-Invoice Reference details
+    setElText('company-name-val', b.company_name);
+    setElText('company-bill-no-val', b.company_bill_no);
+    setElText('ack-no-val', b.ack_no);
+    setElText('ack-dt-val', b.ack_dt ? DateUtils.toDisplay(b.ack_dt) : '—');
+    setElText('irn-no-val', b.irn_no || b.irn_number);
+
+    // Table Body
     var tbody = document.getElementById('items-tbody');
     tbody.innerHTML = '';
+    
+    var totalQty = 0;
+    var totalCartons = 0;
+    var lastUnit = 'KGS';
     
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
       var tr = document.createElement('tr');
+      tr.style.height = '24px';
+      tr.style.borderBottom = '1px solid #000';
       
-      var taxesLabel = '—';
-      if (b.supply_type === 'intrastate') {
-        var cgst = item.cgst_amount || 0;
-        var sgst = item.sgst_amount || 0;
-        taxesLabel = 'C: ' + cgst.toFixed(2) + '<br>S: ' + sgst.toFixed(2);
-      } else {
-        var igst = item.igst_amount || 0;
-        taxesLabel = 'I: ' + igst.toFixed(2);
-      }
+      totalQty += item.quantity || 0;
+      totalCartons += item.cartons || 0;
+      if (item.unit) lastUnit = item.unit;
       
       tr.innerHTML = 
-        '<td style="text-align: center;">' + (i + 1) + '</td>' +
-        '<td style="font-weight: 500;">' + item.description + '</td>' +
-        '<td style="text-align: center;">' + (item.hsn_sac || '—') + '</td>' +
-        '<td style="text-align: center;">' + item.quantity + ' ' + (item.unit || 'Nos') + '</td>' +
-        '<td style="text-align: right;">' + item.unit_price.toFixed(2) + '</td>' +
-        '<td style="text-align: right;">' + (item.discount_percent || 0) + '%</td>' +
-        '<td style="text-align: right;">' + item.taxable_amount.toFixed(2) + '</td>' +
-        '<td style="text-align: center;">' + (item.gst_rate || 0) + '%</td>' +
-        '<td style="text-align: right; font-size: 11px; line-height: 1.2;">' + taxesLabel + '</td>' +
-        '<td style="text-align: right; font-weight: 600;">' + item.line_total.toFixed(2) + '</td>';
+        '<td style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 35px;">' + (i + 1) + '</td>' +
+        '<td style="border-right: 1px solid #000; padding: 5px; text-align: left; font-weight: bold;">' + item.description + '</td>' +
+        '<td style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 75px;">' + (item.hsn_sac || '—') + '</td>' +
+        '<td style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 95px;">' + (item.lot_no || '—') + '</td>' +
+        '<td style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 65px;">' + (item.grade || '—') + '</td>' +
+        '<td style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 50px;">' + (item.cartons || 0) + '</td>' +
+        '<td style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 80px;">' + (item.quantity || 0).toFixed(3) + '</td>' +
+        '<td style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 50px;">' + (item.unit || 'KGS') + '</td>' +
+        '<td style="border-right: 1px solid #000; padding: 5px; text-align: right; width: 75px;">' + (item.unit_price || 0).toFixed(2) + '</td>' +
+        '<td style="padding: 5px; text-align: right; width: 85px; font-weight: bold;">' + (item.taxable_amount || 0).toFixed(2) + '</td>';
       tbody.appendChild(tr);
     }
     
-    // Summary
-    document.getElementById('total-subtotal').textContent = FormatCurrency.toRupees(b.subtotal || 0);
+    // Fill remaining rows if items count is small to keep print layout stable
+    var minRows = 8;
+    if (items.length < minRows) {
+      for (var k = items.length; k < minRows; k++) {
+        var trSpacer = document.createElement('tr');
+        trSpacer.style.height = '24px';
+        trSpacer.style.borderBottom = '1px solid #000';
+        trSpacer.innerHTML = 
+          '<td style="border-right: 1px solid #000;"></td>' +
+          '<td style="border-right: 1px solid #000;"></td>' +
+          '<td style="border-right: 1px solid #000;"></td>' +
+          '<td style="border-right: 1px solid #000;"></td>' +
+          '<td style="border-right: 1px solid #000;"></td>' +
+          '<td style="border-right: 1px solid #000;"></td>' +
+          '<td style="border-right: 1px solid #000;"></td>' +
+          '<td style="border-right: 1px solid #000;"></td>' +
+          '<td style="border-right: 1px solid #000;"></td>' +
+          '<td></td>';
+        tbody.appendChild(trSpacer);
+      }
+    }
+    
+    // Update footer total values
+    document.getElementById('total-cartons').textContent = totalCartons;
+    document.getElementById('total-qty').textContent = totalQty.toFixed(3);
+    document.getElementById('total-unit').textContent = lastUnit;
+    document.getElementById('total-subtotal').textContent = (b.subtotal || 0).toFixed(2);
+    
+    // Dynamic Net Rate display
+    var netRateVal = totalQty > 0 ? (b.grand_total / totalQty) : 0;
+    document.getElementById('net-rate').textContent = netRateVal.toFixed(2);
+    
+    // Summary & Amounts
+    var summarySubtotalEl = document.getElementById('summary-subtotal');
+    if (summarySubtotalEl) {
+      summarySubtotalEl.textContent = FormatCurrency.toRupees(b.subtotal || 0);
+    }
     
     if (b.total_discount > 0) {
-      document.getElementById('row-discount').style.display = '';
+      document.getElementById('row-discount').style.display = 'flex';
       document.getElementById('total-discount').textContent = '-' + FormatCurrency.toRupees(b.total_discount);
     } else {
       document.getElementById('row-discount').style.display = 'none';
     }
     
-    document.getElementById('total-taxable').textContent = FormatCurrency.toRupees(b.total_taxable || 0);
+    // Dynamic GST Rate label and values
+    var mainGstRate = (items.length > 0) ? (items[0].gst_rate || 0) : 0;
     
     if (b.supply_type === 'intrastate') {
-      document.getElementById('row-cgst').style.display = '';
-      document.getElementById('row-sgst').style.display = '';
+      document.getElementById('row-cgst').style.display = 'flex';
+      document.getElementById('row-sgst').style.display = 'flex';
       document.getElementById('row-igst').style.display = 'none';
+      
       document.getElementById('total-cgst').textContent = FormatCurrency.toRupees(b.total_cgst || 0);
       document.getElementById('total-sgst').textContent = FormatCurrency.toRupees(b.total_sgst || 0);
+      
+      var cgstPercentEl = document.getElementById('cgst-rate-percent');
+      var sgstPercentEl = document.getElementById('sgst-rate-percent');
+      if (cgstPercentEl) cgstPercentEl.textContent = (mainGstRate / 2).toFixed(2);
+      if (sgstPercentEl) sgstPercentEl.textContent = (mainGstRate / 2).toFixed(2);
     } else {
       document.getElementById('row-cgst').style.display = 'none';
       document.getElementById('row-sgst').style.display = 'none';
-      document.getElementById('row-igst').style.display = '';
+      document.getElementById('row-igst').style.display = 'flex';
+      
       document.getElementById('total-igst').textContent = FormatCurrency.toRupees(b.total_igst || 0);
+      
+      var igstPercentEl = document.getElementById('igst-rate-percent');
+      if (igstPercentEl) igstPercentEl.textContent = mainGstRate.toFixed(2);
     }
     
     document.getElementById('total-roundoff').textContent = FormatCurrency.toRupees(b.round_off || 0);
-    document.getElementById('total-grand').textContent = FormatCurrency.toRupees(b.grand_total || 0);
+    
+    // Set Grand Total (Net payable)
+    var grandTotalEls = document.querySelectorAll('#total-grand');
+    for (var j = 0; j < grandTotalEls.length; j++) {
+      grandTotalEls[j].textContent = FormatCurrency.toRupees(b.grand_total || 0);
+    }
     document.getElementById('amount-words').textContent = AmountToWords.toWords(b.grand_total || 0);
     
-    // Notes & Terms
-    if (b.notes) {
-      document.getElementById('notes-container').style.display = 'block';
-      document.getElementById('inv-notes').textContent = b.notes;
-    } else {
-      document.getElementById('notes-container').style.display = 'none';
-    }
-    
-    if (b.terms) {
-      document.getElementById('terms-container').style.display = 'block';
-      document.getElementById('inv-terms').textContent = b.terms;
-    } else {
-      document.getElementById('terms-container').style.display = 'none';
-    }
+    // Terms
+    document.getElementById('inv-terms').textContent = b.terms || '—';
     
     // Bank details
-    if (s.bank_name || s.bank_account || s.bank_ifsc) {
-      var bankStr = [
-        s.bank_name ? 'Bank: ' + s.bank_name : '',
-        s.bank_account ? 'A/C: ' + s.bank_account : '',
-        s.bank_ifsc ? 'IFSC: ' + s.bank_ifsc : ''
-      ].filter(Boolean).join(' | ');
-      document.getElementById('bank-container').style.display = 'block';
-      document.getElementById('bank-details').textContent = bankStr;
+    setElText('bank-name-val', s.bank_name);
+    setElText('bank-account-val', s.bank_account);
+    setElText('bank-ifsc-val', s.bank_ifsc);
+    setElText('bank-branch-val', s.bank_branch);
+    setElText('upi-id-val', s.upi_id);
+    
+    // Signatures
+    var sigImg = document.getElementById('signature');
+    if (sigImg) {
+      if (s.signature_data) {
+        sigImg.src = s.signature_data;
+        sigImg.style.display = 'block';
+      } else {
+        sigImg.style.display = 'none';
+      }
+    }
+    
+    var sellerLabel = document.getElementById('seller-name-label');
+    if (sellerLabel) {
+      sellerLabel.textContent = s.business_name || 'SUTARIYA YARN';
+    }
+    
+    // UPI QR Code
+    var upiContainer = document.getElementById('upi-qrcode');
+    upiContainer.innerHTML = '';
+    if (s.upi_id && typeof QRCode !== 'undefined') {
+      var upiStr = 'upi://pay?pa=' + encodeURIComponent(s.upi_id) +
+                   '&pn=' + encodeURIComponent(s.business_name || 'Business') +
+                   '&am=' + b.grand_total.toFixed(2) +
+                   '&cu=INR';
+      new QRCode(upiContainer, {
+        text: upiStr,
+        width: 76,
+        height: 76,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.M
+      });
+      upiContainer.style.display = 'flex';
     } else {
-      document.getElementById('bank-container').style.display = 'none';
+      upiContainer.style.display = 'none';
     }
   },
   
