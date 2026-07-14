@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Users, CreditCard, BarChart3,
-  Clock, FileText, Settings
+  Clock, FileText, Settings, MessageSquare
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
@@ -13,6 +13,7 @@ const nav = [
   { to: '/billing',   icon: CreditCard,      label: 'Billing'     },
   { to: '/analytics', icon: BarChart3,       label: 'Analytics'   },
   { to: '/logs',      icon: FileText,        label: 'Activity Logs'},
+  { to: '/support',   icon: MessageSquare,   label: 'Support Tickets'},
   { to: '/settings',  icon: Settings,        label: 'Settings'     },
 ]
 

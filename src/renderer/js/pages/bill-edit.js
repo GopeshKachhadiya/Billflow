@@ -493,7 +493,55 @@ window.PageControllers['bill-edit'] = {
             }
             var pdfBase64 = window.btoa(binary);
 
-            window.api.billSent(billData, self._customer, items, billData.taxRecord, pdfBase64, channels || ['email']);
+            window.api.waGetStatus().then(function(waState) {
+              var isLocalWaLinked = (waState && waState.status === 'linked');
+
+              var sendToN8n = [];
+              var sendLocalWa = false;
+              var openWaRedirect = false;
+              var chs = channels || ['email'];
+
+              for (var i = 0; i < chs.length; i++) {
+                if (chs[i] === 'whatsapp') {
+                  if (self._settings && self._settings.wati_enabled === '1') {
+                    sendToN8n.push('whatsapp');
+                  } else if (isLocalWaLinked) {
+                    sendLocalWa = true;
+                  } else {
+                    openWaRedirect = true;
+                  }
+                } else {
+                  sendToN8n.push(chs[i]);
+                }
+              }
+
+              if (sendLocalWa) {
+                var customerPhone = (self._customer && self._customer.phone) || billData.party_phone;
+                var businessName = self._settings ? self._settings.business_name : '';
+                var text = "Dear Customer,\n\n" +
+                           "Please find your invoice " + billData.bill_number + " from " + (businessName || 'us') + ".\n" +
+                           "Total Amount: " + billData.grand_total.toFixed(2) + ".\n\n" +
+                           "Thank you!";
+                var filename = 'Invoice_' + billData.bill_number + '.pdf';
+                
+                Toast.show('Sending invoice PDF via local WhatsApp...', 'info');
+                window.api.waSendBill(customerPhone, text, pdfBase64, filename).then(function() {
+                  Toast.show('WhatsApp invoice sent automatically!', 'success');
+                }).catch(function(waErr) {
+                  console.error('[wa] auto-send failed:', waErr.message);
+                  Toast.show('Auto-send failed. Falling back to WhatsApp Web redirect...', 'warning');
+                  self.openWhatsAppRedirect(customerPhone, billData.bill_number, billData.grand_total, businessName);
+                });
+              } else if (openWaRedirect) {
+                var customerPhone = (self._customer && self._customer.phone) || billData.party_phone;
+                var businessName = self._settings ? self._settings.business_name : '';
+                self.openWhatsAppRedirect(customerPhone, billData.bill_number, billData.grand_total, businessName);
+              }
+
+              if (sendToN8n.length > 0) {
+                window.api.billSent(billData, self._customer, items, billData.taxRecord, pdfBase64, sendToN8n);
+              }
+            });
           });
         Toast.show('Bill sent successfully!', 'success');
       } else {
@@ -557,5 +605,22 @@ window.PageControllers['bill-edit'] = {
     for (var i = 0; i < items.length; i++) {
       self.addItemRow(items[i]);
     }
+  },
+
+  openWhatsAppRedirect: function(phone, billNumber, grandTotal, businessName) {
+    if (!phone) {
+      Toast.show('Customer phone number not available for WhatsApp', 'warning');
+      return;
+    }
+    var cleanedPhone = phone.replace(/\D/g, '');
+    if (cleanedPhone.length === 10) {
+      cleanedPhone = '91' + cleanedPhone;
+    }
+    var text = "Dear Customer,\n\n" +
+               "Please find your invoice " + billNumber + " from " + (businessName || 'us') + ".\n" +
+               "Total Amount: " + grandTotal.toFixed(2) + ".\n\n" +
+               "Thank you!";
+    var url = "https://api.whatsapp.com/send?phone=" + cleanedPhone + "&text=" + encodeURIComponent(text);
+    window.api.openExternal(url);
   }
 };

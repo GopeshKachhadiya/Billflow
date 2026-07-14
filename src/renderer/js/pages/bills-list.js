@@ -248,22 +248,97 @@ window.PageControllers['bills-list'] = {
           }
           var base64 = window.btoa(binary);
           
-          Toast.show('Triggering payment reminder via n8n...', 'info');
-          return window.api.paymentReminder(
-            bill,
-            customer,
-            items,
-            taxRecord,
-            base64,
-            channels
-          );
+          return window.api.waGetStatus().then(function(waState) {
+            var isLocalWaLinked = (waState && waState.status === 'linked');
+
+            var sendToN8n = [];
+            var sendLocalWa = false;
+            var openWaRedirect = false;
+
+            for (var i = 0; i < channels.length; i++) {
+              if (channels[i] === 'whatsapp') {
+                if (settings && settings.wati_enabled === '1') {
+                  sendToN8n.push('whatsapp');
+                } else if (isLocalWaLinked) {
+                  sendLocalWa = true;
+                } else {
+                  openWaRedirect = true;
+                }
+              } else {
+                sendToN8n.push(channels[i]);
+              }
+            }
+
+            var promiseChain = Promise.resolve();
+
+            if (sendLocalWa) {
+              var customerPhone = customer.phone || bill.party_phone;
+              var businessName = settings ? settings.business_name : '';
+              var text = "Dear Customer,\n\n" +
+                         "This is a friendly reminder that payment for invoice " + bill.bill_number + " is outstanding.\n" +
+                         "Amount Due: " + bill.amount_due.toFixed(2) + ".\n\n" +
+                         "Please make the payment as soon as possible. Thank you!\n" +
+                         (businessName || '');
+              var filename = 'Reminder_' + bill.bill_number + '.pdf';
+              
+              Toast.show('Sending payment reminder via local WhatsApp...', 'info');
+              promiseChain = promiseChain.then(function() {
+                return window.api.waSendBill(customerPhone, text, base64, filename).then(function() {
+                  Toast.show('WhatsApp reminder sent automatically!', 'success');
+                }).catch(function(waErr) {
+                  console.error('[wa] reminder auto-send failed:', waErr.message);
+                  Toast.show('Auto-send failed. Falling back to WhatsApp Web redirect...', 'warning');
+                  self.openWhatsAppReminderRedirect(customerPhone, bill.bill_number, bill.amount_due, businessName);
+                });
+              });
+            } else if (openWaRedirect) {
+              var customerPhone = customer.phone || bill.party_phone;
+              var businessName = settings ? settings.business_name : '';
+              self.openWhatsAppReminderRedirect(customerPhone, bill.bill_number, bill.amount_due, businessName);
+            }
+
+            if (sendToN8n.length > 0) {
+              promiseChain = promiseChain.then(function() {
+                Toast.show('Triggering payment reminder via n8n...', 'info');
+                return window.api.paymentReminder(
+                  bill,
+                  customer,
+                  items,
+                  taxRecord,
+                  base64,
+                  sendToN8n
+                );
+              });
+            }
+
+            return promiseChain;
+          });
         });
       });
     }).then(function() {
-      Toast.show('Payment reminder sent successfully!', 'success');
+      // Show success toast only if we actually triggered n8n
+      // For WA only, Toast is already shown or handled
     }).catch(function(err) {
       console.error(err);
       Toast.show('Failed to send reminder: ' + err.message, 'error');
     });
+  },
+
+  openWhatsAppReminderRedirect: function(phone, billNumber, amountDue, businessName) {
+    if (!phone) {
+      Toast.show('Customer phone number not available for WhatsApp', 'warning');
+      return;
+    }
+    var cleanedPhone = phone.replace(/\D/g, '');
+    if (cleanedPhone.length === 10) {
+      cleanedPhone = '91' + cleanedPhone;
+    }
+    var text = "Dear Customer,\n\n" +
+               "This is a friendly reminder that payment for invoice " + billNumber + " is outstanding.\n" +
+               "Amount Due: " + amountDue.toFixed(2) + ".\n\n" +
+               "Please make the payment as soon as possible. Thank you!\n" +
+               (businessName || '');
+    var url = "https://api.whatsapp.com/send?phone=" + cleanedPhone + "&text=" + encodeURIComponent(text);
+    window.api.openExternal(url);
   }
 };

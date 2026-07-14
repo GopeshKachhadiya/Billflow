@@ -77,7 +77,7 @@
 
     <!-- Tab 2: Bill Template -->
     <div id="tab-template" class="settings-tab-pane" style="display: none;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
         <div class="form-group">
           <label>Bill Prefix</label>
           <input type="text" id="s-bill_prefix" placeholder="e.g. INV-2026-">
@@ -91,6 +91,62 @@
             <option value="18" selected>18%</option>
             <option value="28">28%</option>
           </select>
+        </div>
+        <div class="form-group">
+          <label>UPI ID (for dynamic QR Code)</label>
+          <input type="text" id="s-upi_id" placeholder="e.g. business@okaxis">
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 16px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 8px; font-size: 15px;">Business Branding (Invoice)</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+        <div class="form-group">
+          <label>Business Logo</label>
+          <input type="file" id="logo-upload" accept="image/*" style="display: none;">
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <button type="button" class="btn" onclick="document.getElementById('logo-upload').click()">Choose Logo</button>
+            <span id="logo-preview-name" style="font-size: 12px; color: var(--color-text-muted);">No image selected</span>
+          </div>
+          <input type="hidden" id="s-logo_data">
+          <div style="margin-top: 8px;">
+            <img id="logo-preview-img" style="max-height: 50px; display: none; border: 1px solid var(--color-border); padding: 4px; border-radius: 4px;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Authorised Signature</label>
+          <input type="file" id="signature-upload" accept="image/*" style="display: none;">
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <button type="button" class="btn" onclick="document.getElementById('signature-upload').click()">Choose Signature</button>
+            <span id="signature-preview-name" style="font-size: 12px; color: var(--color-text-muted);">No image selected</span>
+          </div>
+          <input type="hidden" id="s-signature_data">
+          <div style="margin-top: 8px;">
+            <img id="signature-preview-img" style="max-height: 50px; display: none; border: 1px solid var(--color-border); padding: 4px; border-radius: 4px;">
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 16px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 8px; font-size: 15px;">Additional GST Invoice Details</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label>Business Mobile No.</label>
+          <input type="text" id="s-business_phone" placeholder="e.g. 9879044810">
+        </div>
+        <div class="form-group">
+          <label>Business Email</label>
+          <input type="email" id="s-business_email" placeholder="e.g. info@business.com">
+        </div>
+        <div class="form-group">
+          <label>Udyam Registration Number</label>
+          <input type="text" id="s-business_udyam" placeholder="e.g. UDYAM-GJ-22-XXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>Business Category</label>
+          <input type="text" id="s-business_category" placeholder="e.g. Manufacturing">
+        </div>
+        <div class="form-group">
+          <label>Business Status</label>
+          <input type="text" id="s-business_status" placeholder="e.g. MICRO">
         </div>
       </div>
     </div>
@@ -126,6 +182,24 @@
         <div class="form-group">
           <label>Accountant CC Email</label>
           <input type="email" id="s-accountant_email" placeholder="accountant@acme.com">
+        </div>
+      </div>
+
+      <h3 style="border-top: 1px solid var(--color-border); padding-top: 24px; margin-bottom: 16px; font-size: 15px;">WhatsApp Local Link (Free & Automated)</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; background: #FAF9F6; border: 1px solid var(--color-border); border-radius: 8px; padding: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; font-size: 13px;">Link Personal WhatsApp Account</div>
+            <div id="wa-link-status" style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">Checking connection status...</div>
+          </div>
+          <div>
+            <button type="button" id="btn-wa-connect" class="btn btn-primary" style="background-color: #25D366; border-color: #25D366; color: white;">Link Account</button>
+            <button type="button" id="btn-wa-disconnect" class="btn btn-danger" style="display: none;">Disconnect</button>
+          </div>
+        </div>
+        <div id="wa-qr-container" style="display: none; align-items: center; justify-content: center; flex-direction: column; padding: 16px; border-top: 1px dashed var(--color-border); margin-top: 12px;">
+          <div style="font-weight: bold; margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted);">Scan this QR Code with WhatsApp (Linked Devices)</div>
+          <div id="wa-qr-code" style="padding: 10px; background: white; border: 1px solid var(--color-border); border-radius: 4px; display: inline-block;"></div>
         </div>
       </div>
 

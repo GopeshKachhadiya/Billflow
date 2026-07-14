@@ -5,3 +5,8 @@ data.db
 *.log
 __pycache__/
 *.pyc
+sbox_live_key.csv
+audit_report.txt
+audit_report_utf8.txt
+Billflow-website/vite.config.mjs.timestamp-*
+ChatGPT Image Jul 5, 2026, 11_16_31 PM.png

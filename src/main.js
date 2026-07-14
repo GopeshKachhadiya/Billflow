@@ -3,6 +3,25 @@ var app           = electron.app;
 var BrowserWindow = electron.BrowserWindow;
 var ipcMain       = electron.ipcMain;
 var path          = require('path');
+var fs            = require('fs');
+
+// Baileys WhatsApp integration dynamic variables
+var makeWASocket          = null;
+var useMultiFileAuthState = null;
+var DisconnectReason      = null;
+var pino                  = null;
+
+async function loadBaileys() {
+  if (makeWASocket) return;
+  var baileys = await import('@whiskeysockets/baileys');
+  makeWASocket = baileys.default || baileys.makeWASocket;
+  useMultiFileAuthState = baileys.useMultiFileAuthState;
+  DisconnectReason = baileys.DisconnectReason;
+  pino = require('pino');
+}
+
+var waSessionPath = path.join(app.getPath('userData'), 'wa-session');
+
 
 function getModules() {
   return {
@@ -35,8 +54,132 @@ app.on('ready', function() {
     }
   });
   mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
-  mainWindow.once('ready-to-show', function() { mainWindow.show(); });
+  mainWindow.once('ready-to-show', function() {
+    mainWindow.show();
+    // Auto-connect WhatsApp if credentials exist
+    if (fs.existsSync(waSessionPath)) {
+      initWhatsApp(function(channel, arg) {
+        if (mainWindow) mainWindow.webContents.send(channel, arg);
+      });
+    }
+  });
 });
+
+var waSock = null;
+var waStatus = 'disconnected'; // 'connecting', 'qr', 'linked', 'disconnected'
+var waQR = '';
+var waUser = '';
+
+async function initWhatsApp(eventToSend) {
+  await loadBaileys();
+  if (waSock) return;
+  waStatus = 'connecting';
+  if (eventToSend) eventToSend('wa:status-change', { status: waStatus });
+
+  try {
+    var auth = await useMultiFileAuthState(waSessionPath);
+    var state = auth.state;
+    var saveCreds = auth.saveCreds;
+
+    waSock = makeWASocket({
+      auth: state,
+      logger: pino({ level: 'silent' }),
+      printQRInTerminal: false
+    });
+
+    waSock.ev.on('creds.update', saveCreds);
+
+    waSock.ev.on('connection.update', function(update) {
+      var connection = update.connection;
+      var lastDisconnect = update.lastDisconnect;
+      var qr = update.qr;
+
+      if (qr) {
+        waStatus = 'qr';
+        waQR = qr;
+        if (eventToSend) eventToSend('wa:status-change', { status: waStatus, qr: qr });
+      }
+
+      if (connection === 'close') {
+        var shouldReconnect = lastDisconnect && lastDisconnect.error && lastDisconnect.error.output && lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut;
+        console.log('[wa] connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect);
+        waSock = null;
+        waQR = '';
+        waUser = '';
+        
+        if (shouldReconnect) {
+          waStatus = 'connecting';
+          if (eventToSend) eventToSend('wa:status-change', { status: waStatus });
+          initWhatsApp(eventToSend);
+        } else {
+          waStatus = 'disconnected';
+          if (eventToSend) eventToSend('wa:status-change', { status: waStatus });
+        }
+      } else if (connection === 'open') {
+        console.log('[wa] opened connection');
+        waStatus = 'linked';
+        waQR = '';
+        waUser = waSock.user && waSock.user.id ? waSock.user.id.split(':')[0] : '';
+        if (eventToSend) eventToSend('wa:status-change', { status: waStatus, user: waUser });
+      }
+    });
+  } catch (err) {
+    console.error('[wa] failed to init:', err);
+    waStatus = 'disconnected';
+    if (eventToSend) eventToSend('wa:status-change', { status: waStatus });
+  }
+}
+
+async function waDisconnect() {
+  await loadBaileys();
+  if (waSock) {
+    try {
+      await waSock.logout();
+    } catch (e) {}
+    try {
+      waSock.end();
+    } catch (e) {}
+    waSock = null;
+  }
+  waStatus = 'disconnected';
+  waQR = '';
+  waUser = '';
+  
+  if (fs.existsSync(waSessionPath)) {
+    try {
+      fs.rmSync(waSessionPath, { recursive: true, force: true });
+    } catch (e) {
+      console.error('[wa] failed to delete session path:', e.message);
+    }
+  }
+  return { ok: true };
+}
+
+async function waSendBill(phone, text, pdfBase64, filename) {
+  await loadBaileys();
+  if (!waSock || waStatus !== 'linked') {
+    throw new Error('WhatsApp not linked');
+  }
+  var jid = phone.replace(/\D/g, '');
+  if (jid.length === 10) jid = '91' + jid;
+  jid = jid + '@s.whatsapp.net';
+
+  var messageOptions = {};
+  if (pdfBase64) {
+    var buffer = Buffer.from(pdfBase64, 'base64');
+    messageOptions = {
+      document: buffer,
+      mimetype: 'application/pdf',
+      fileName: filename || 'Invoice.pdf',
+      caption: text
+    };
+  } else {
+    messageOptions = { text: text };
+  }
+
+  return waSock.sendMessage(jid, messageOptions);
+}
+
 
 app.on('before-quit', function() {
   require('./db/connection').closeDB();
@@ -93,9 +236,11 @@ ipcMain.handle('db:bills:dashboard',    function()     { return getModules().bil
 
 // ── BILL ITEMS ────────────────────────────────────────────────────────────────
 ipcMain.handle('db:billitems:replace', function(e, a) { return getModules().billItems.replaceItemsForBill(a.billId, a.items); });
+ipcMain.handle('db:billitems:get',     function(e, a) { return getModules().billItems.getItemsForBill(a.billId); });
 
 // ── TAX RECORDS ───────────────────────────────────────────────────────────────
 ipcMain.handle('db:taxrecords:upsert',  function(e, a) { getModules().taxRecords.upsertTaxRecord(a.billId, a.data); return { ok:true }; });
+ipcMain.handle('db:taxrecords:get',     function(e, a) { return getModules().taxRecords.getTaxRecord(a.billId); });
 ipcMain.handle('db:taxrecords:summary', function(e, a) { return getModules().taxRecords.getTaxSummary(a); });
 ipcMain.handle('db:taxrecords:monthly', function(e, a) { return getModules().taxRecords.getMonthlyGSTSummary(a.year); });
 ipcMain.handle('gst:gstr1Export', function(e, a) { return require('./gst/gstr1-export').exportGSTR1(a.year, a.month); });
@@ -146,3 +291,38 @@ ipcMain.handle('webhook:settingsUpdated', function(e, a) {
   getModules().webhooks.settingsUpdated(a);
   return { ok: true };
 });
+
+ipcMain.handle('shell:openExternal', function(e, a) {
+  if (a.url && (a.url.startsWith('http://') || a.url.startsWith('https://') || a.url.startsWith('whatsapp://'))) {
+    require('electron').shell.openExternal(a.url);
+    return { ok: true };
+  }
+  return { ok: false, error: 'Invalid URL scheme' };
+});
+
+// ── LOCAL WHATSAPP ────────────────────────────────────────────────────────────
+ipcMain.handle('wa:getStatus', function() {
+  return { status: waStatus, qr: waQR, user: waUser };
+});
+
+ipcMain.handle('wa:connect', function() {
+  initWhatsApp(function(channel, arg) {
+    if (mainWindow) mainWindow.webContents.send(channel, arg);
+  });
+  return { status: waStatus, qr: waQR, user: waUser };
+});
+
+ipcMain.handle('wa:disconnect', function() {
+  return waDisconnect().then(function(res) {
+    if (mainWindow) mainWindow.webContents.send('wa:status-change', { status: 'disconnected' });
+    return res;
+  });
+});
+
+ipcMain.handle('wa:sendBill', function(e, a) {
+  return waSendBill(a.phone, a.text, a.pdfBase64, a.filename).then(function() {
+    return { ok: true };
+  });
+});
+
+

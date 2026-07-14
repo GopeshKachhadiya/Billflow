@@ -47,9 +47,11 @@ contextBridge.exposeInMainWorld('api', {
 
   // Bill items
   replaceBillItems: function(billId, items) { return ipc('db:billitems:replace', { billId:billId, items:items }); },
+  getBillItems:     function(billId)        { return ipc('db:billitems:get',     { billId:billId }); },
 
   // Tax records
   upsertTaxRecord: function(billId, d) { return ipc('db:taxrecords:upsert',  { billId:billId, data:d }); },
+  getTaxRecord:    function(billId)    { return ipc('db:taxrecords:get',     { billId:billId }); },
   getTaxSummary:   function(f)         { return ipc('db:taxrecords:summary', f || {}); },
   getMonthlyGST:   function(year)      { return ipc('db:taxrecords:monthly', { year:year }); },
   exportGSTR1:     function(year, month) { return ipc('gst:gstr1Export', { year:year, month:month }); },
@@ -75,5 +77,19 @@ contextBridge.exposeInMainWorld('api', {
   paymentReminder:  function(b, c, items, tax, pdf, channels) {
     return ipc('webhook:paymentReminder', { bill:b, customer:c, items:items, taxRecord:tax, pdfBase64:pdf, channels:channels });
   },
-  settingsUpdated:  function(s) { return ipc('webhook:settingsUpdated', s); }
+  settingsUpdated:  function(s) { return ipc('webhook:settingsUpdated', s); },
+  openExternal:     function(url) { return ipc('shell:openExternal', { url:url }); },
+  
+  // Local WhatsApp
+  waGetStatus:      function() { return ipc('wa:getStatus', {}); },
+  waConnect:        function() { return ipc('wa:connect', {}); },
+  waDisconnect:     function() { return ipc('wa:disconnect', {}); },
+  waSendBill:       function(phone, text, pdf, filename) { return ipc('wa:sendBill', { phone:phone, text:text, pdfBase64:pdf, filename:filename }); },
+  onWaStatusChange: function(callback) {
+    var subscription = function(event, value) { callback(value); };
+    ipcRenderer.on('wa:status-change', subscription);
+    return function() {
+      ipcRenderer.removeListener('wa:status-change', subscription);
+    };
+  }
 });

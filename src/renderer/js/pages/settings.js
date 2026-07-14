@@ -25,6 +25,84 @@ window.PageControllers = window.PageControllers || {};
 window.PageControllers['settings'] = {
   init: function() {
     var self = this;
+    // WhatsApp Local Link Setup
+    var connectBtn = document.getElementById('btn-wa-connect');
+    var disconnectBtn = document.getElementById('btn-wa-disconnect');
+    
+    if (connectBtn) {
+      connectBtn.onclick = function() {
+        connectBtn.disabled = true;
+        connectBtn.textContent = 'Connecting...';
+        window.api.waConnect();
+      };
+    }
+    
+    if (disconnectBtn) {
+      disconnectBtn.onclick = function() {
+        if (confirm('Are you sure you want to disconnect your WhatsApp account?')) {
+          disconnectBtn.disabled = true;
+          window.api.waDisconnect().then(function() {
+            disconnectBtn.disabled = false;
+          });
+        }
+      };
+    }
+
+    if (window._waStatusUnsubscribe) {
+      window._waStatusUnsubscribe();
+    }
+    window._waStatusUnsubscribe = window.api.onWaStatusChange(function(update) {
+      self.updateWaUI(update);
+    });
+
+    // Initial status check
+    window.api.waGetStatus().then(function(res) {
+      self.updateWaUI(res);
+    });
+
+    // Logo & Signature upload event handlers
+    var logoUpload = document.getElementById('logo-upload');
+    if (logoUpload) {
+      logoUpload.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+          var reader = new FileReader();
+          reader.onload = function(evt) {
+            var base64 = evt.target.result;
+            document.getElementById('s-logo_data').value = base64;
+            document.getElementById('logo-preview-name').textContent = file.name;
+            var preview = document.getElementById('logo-preview-img');
+            if (preview) {
+              preview.src = base64;
+              preview.style.display = 'block';
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    var sigUpload = document.getElementById('signature-upload');
+    if (sigUpload) {
+      sigUpload.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+          var reader = new FileReader();
+          reader.onload = function(evt) {
+            var base64 = evt.target.result;
+            document.getElementById('s-signature_data').value = base64;
+            document.getElementById('signature-preview-name').textContent = file.name;
+            var preview = document.getElementById('signature-preview-img');
+            if (preview) {
+              preview.src = base64;
+              preview.style.display = 'block';
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
     if (window.StateCodes) {
       var selectState = document.getElementById('s-business_state');
       if (selectState) {
@@ -45,11 +123,33 @@ window.PageControllers['settings'] = {
                     'email_from_name','email_from_address','smtp_host','smtp_port',
                     'smtp_user','accountant_email',
                     'n8n_base_url','n8n_secret',
-                    'notify_owner_phone','wati_api_url','msg91_sender_id'];
+                    'notify_owner_phone','wati_api_url','msg91_sender_id',
+                    'logo_data', 'signature_data',
+                    'business_phone', 'business_email', 'business_udyam',
+                    'business_category', 'business_status', 'upi_id'];
       for (var i = 0; i < fields.length; i++) {
         var el = document.getElementById('s-' + fields[i]);
         if (el) el.value = s[fields[i]] || '';
       }
+
+      // Update image previews if data exists
+      if (s.logo_data) {
+        var logoPreview = document.getElementById('logo-preview-img');
+        if (logoPreview) {
+          logoPreview.src = s.logo_data;
+          logoPreview.style.display = 'block';
+          document.getElementById('logo-preview-name').textContent = 'Saved logo';
+        }
+      }
+      if (s.signature_data) {
+        var sigPreview = document.getElementById('signature-preview-img');
+        if (sigPreview) {
+          sigPreview.src = s.signature_data;
+          sigPreview.style.display = 'block';
+          document.getElementById('signature-preview-name').textContent = 'Saved signature';
+        }
+      }
+
       // Toggles
       function setToggle(id, key) {
         var el = document.getElementById(id);
@@ -87,7 +187,10 @@ window.PageControllers['settings'] = {
                   'email_from_name','email_from_address','smtp_host','smtp_port',
                   'smtp_user','smtp_pass','accountant_email',
                   'n8n_base_url','n8n_secret','notify_owner_phone',
-                  'wati_api_url','wati_api_token','msg91_auth_key','msg91_sender_id'];
+                  'wati_api_url','wati_api_token','msg91_auth_key','msg91_sender_id',
+                  'logo_data', 'signature_data',
+                  'business_phone', 'business_email', 'business_udyam',
+                  'business_category', 'business_status', 'upi_id'];
     var toggles = [
       { el: 's-wati-enabled',         key: 'wati_enabled' },
       { el: 's-sms-enabled',          key: 'sms_enabled' },
@@ -139,5 +242,67 @@ window.PageControllers['settings'] = {
     }
     window.api.setMultipleSettings(obj);
     Toast.show('n8n webhook URLs updated', 'info');
+  },
+
+  updateWaUI: function(res) {
+    var statusEl = document.getElementById('wa-link-status');
+    var connectBtn = document.getElementById('btn-wa-connect');
+    var disconnectBtn = document.getElementById('btn-wa-disconnect');
+    var qrContainer = document.getElementById('wa-qr-container');
+    var qrCodeEl = document.getElementById('wa-qr-code');
+
+    if (!statusEl) return;
+
+    if (res.status === 'linked') {
+      statusEl.textContent = 'Linked to phone number: ' + (res.user || 'connected');
+      statusEl.style.color = '#2c5f2e'; // ledger-green
+      if (connectBtn) connectBtn.style.display = 'none';
+      if (disconnectBtn) {
+        disconnectBtn.style.display = 'inline-block';
+        disconnectBtn.disabled = false;
+      }
+      if (qrContainer) qrContainer.style.display = 'none';
+    } else if (res.status === 'qr') {
+      statusEl.textContent = 'Awaiting scan...';
+      statusEl.style.color = '#8b7233'; // aged-gold
+      if (connectBtn) connectBtn.style.display = 'none';
+      if (disconnectBtn) disconnectBtn.style.display = 'inline-block';
+      if (qrContainer) {
+        qrContainer.style.display = 'flex';
+        qrCodeEl.innerHTML = '';
+        if (typeof QRCode !== 'undefined') {
+          new QRCode(qrCodeEl, {
+            text: res.qr,
+            width: 128,
+            height: 128,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        } else {
+          qrCodeEl.textContent = res.qr;
+        }
+      }
+    } else if (res.status === 'connecting') {
+      statusEl.textContent = 'Connecting to WhatsApp Web...';
+      statusEl.style.color = '#7a6850'; // ink-500
+      if (connectBtn) {
+        connectBtn.style.display = 'inline-block';
+        connectBtn.disabled = true;
+        connectBtn.textContent = 'Connecting...';
+      }
+      if (disconnectBtn) disconnectBtn.style.display = 'none';
+      if (qrContainer) qrContainer.style.display = 'none';
+    } else {
+      statusEl.textContent = 'Not linked. Click Link Account to scan QR code.';
+      statusEl.style.color = '#8b3a2a'; // rubber-red
+      if (connectBtn) {
+        connectBtn.style.display = 'inline-block';
+        connectBtn.disabled = false;
+        connectBtn.textContent = 'Link Account';
+      }
+      if (disconnectBtn) disconnectBtn.style.display = 'none';
+      if (qrContainer) qrContainer.style.display = 'none';
+    }
   }
 };

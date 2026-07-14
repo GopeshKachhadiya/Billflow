@@ -1,10 +1,19 @@
 var SupportChatbot = (function() {
   var isOpen = false;
+  var chatMode = 'ai'; // 'ai' or 'ticket'
   var step = 1; // 1: Name, 2: Phone, 3: Topic, 4: Message, 5: Submitting, 6: Success
+  var isTyping = false;
   var ticketData = { name: '', phone: '', topic: '', message: '' };
   
   var SUPABASE_URL = "https://brpigwqhbqeqpxynhixf.supabase.co";
   var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJycGlnd3FoYnFlcXB4eW5oaXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTY0ODksImV4cCI6MjA5NzI3MjQ4OX0.SB-o6Zpk4J5yJz2VhrTv2FvY-OXC6-AKRpnLznEp81I";
+
+  var messages = [
+    {
+      role: 'assistant',
+      content: 'Hello! Welcome to BillFlow Support 🤖. I am your AI assistant. How can I help you today? You can ask me questions about GST, offline billing, or printer configuration. If you need a phone callback, click the "Request Callback" button.'
+    }
+  ];
 
   function init() {
     var trigger = document.getElementById('btn-support-bot');
@@ -50,9 +59,62 @@ var SupportChatbot = (function() {
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') handleSend();
     });
+
+    renderBanner();
+    renderForm();
+    renderMessages();
   }
 
-  function appendMessage(sender, text) {
+  function renderBanner() {
+    var card = document.getElementById('support-bot-card');
+    var messagesDiv = document.getElementById('support-bot-messages');
+    if (!card || !messagesDiv) return;
+
+    var existingBanner = document.getElementById('support-bot-banner');
+    if (existingBanner) {
+      existingBanner.remove();
+    }
+
+    var banner = document.createElement('div');
+    banner.id = 'support-bot-banner';
+    banner.style.padding = '8px 16px';
+    banner.style.borderBottom = '1px solid var(--color-border)';
+    banner.style.fontSize = '11px';
+    banner.style.display = 'flex';
+    banner.style.justifyContent = 'space-between';
+    banner.style.alignItems = 'center';
+
+    if (chatMode === 'ai') {
+      banner.style.backgroundColor = 'rgba(235, 192, 45, 0.1)';
+      banner.innerHTML = '<span style="color: var(--color-text-muted);">Need a human?</span>' +
+        '<button id="btn-banner-action" style="padding: 2px 8px; background-color: var(--color-primary); color: #fff; border: none; border-radius: 3px; font-size: 10px; font-weight: bold; cursor: pointer;">📞 Request Callback</button>';
+      card.insertBefore(banner, messagesDiv);
+      document.getElementById('btn-banner-action').onclick = startTicketMode;
+    } else {
+      banner.style.backgroundColor = 'var(--color-surface-elevated)';
+      banner.innerHTML = '<span style="color: var(--color-text-muted);">Callback Setup</span>' +
+        '<button id="btn-banner-action" style="padding: 2px 8px; background-color: #fff; color: var(--color-text); border: 1px solid var(--color-border); border-radius: 3px; font-size: 10px; font-weight: bold; cursor: pointer;">⬅️ Back to AI Chat</button>';
+      card.insertBefore(banner, messagesDiv);
+      document.getElementById('btn-banner-action').onclick = cancelTicketMode;
+    }
+  }
+
+  function renderMessages() {
+    var container = document.getElementById('support-bot-messages');
+    if (!container) return;
+    container.innerHTML = '';
+
+    messages.forEach(function(m) {
+      appendMsgElement(m.role === 'user' ? 'user' : 'bot', m.content);
+    });
+
+    if (isTyping) {
+      appendTypingIndicator();
+    }
+    scrollToBottom();
+  }
+
+  function appendMsgElement(sender, text) {
     var container = document.getElementById('support-bot-messages');
     if (!container) return;
 
@@ -62,6 +124,7 @@ var SupportChatbot = (function() {
     msg.style.borderRadius = '8px';
     msg.style.fontSize = '12px';
     msg.style.lineHeight = '1.4';
+    msg.style.whiteSpace = 'pre-line';
 
     if (sender === 'user') {
       msg.style.alignSelf = 'flex-end';
@@ -78,7 +141,24 @@ var SupportChatbot = (function() {
 
     msg.textContent = text;
     container.appendChild(msg);
-    scrollToBottom();
+  }
+
+  function appendTypingIndicator() {
+    var container = document.getElementById('support-bot-messages');
+    if (!container) return;
+
+    var msg = document.createElement('div');
+    msg.style.maxWidth = '85%';
+    msg.style.padding = '8px 12px';
+    msg.style.borderRadius = '8px 8px 8px 0';
+    msg.style.fontSize = '12px';
+    msg.style.lineHeight = '1.4';
+    msg.style.alignSelf = 'flex-start';
+    msg.style.backgroundColor = 'var(--color-surface-elevated)';
+    msg.style.color = 'var(--color-text-muted)';
+    msg.style.border = '1px solid var(--color-border)';
+    msg.innerHTML = '<span style="display:inline-block; margin-right:6px;">⏳</span> AI is thinking...';
+    container.appendChild(msg);
   }
 
   function scrollToBottom() {
@@ -88,92 +168,61 @@ var SupportChatbot = (function() {
     }
   }
 
+  function callOpenRouter(chatHistory, callback) {
+    fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer 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",
+        "HTTP-Referer": "https://billflow.in",
+        "X-Title": "BillFlow Desktop Support Chatbot"
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful, professional customer support assistant for BillFlow, a local-first billing and GST management desktop app built for Indian SMBs.\n" +
+              "Your goals:\n" +
+              "1. Answer customer queries about BillFlow, GST compliance (CGST, SGST, IGST), invoicing, printer setup, Tally/Excel imports, data backups, and reports.\n" +
+              "2. BillFlow runs as a local-first desktop application using better-sqlite3 for local database operations and syncs data to Supabase cloud via n8n workflows.\n" +
+              "3. Be concise, polite, and format your text cleanly. Use bullet points for steps where appropriate.\n" +
+              "4. If the user indicates they want to talk to a human, raise a ticket, schedule a call back, or has a complex technical issue that requires manual intervention, invite them to click the 'Request Callback' button at the top/bottom to register their ticket directly in our support system."
+          }
+        ].concat(chatHistory)
+      })
+    })
+    .then(function(res) {
+      if (!res.ok) throw new Error("API response error");
+      return res.json();
+    })
+    .then(function(data) {
+      var content = data.choices[0].message.content;
+      callback(content);
+    })
+    .catch(function(err) {
+      console.error(err);
+      callback("I'm sorry, I'm having trouble connecting to my brain right now. Please try again in a moment, or click 'Request Callback' to speak directly with our support team.");
+    });
+  }
+
   function handleSend() {
     var input = document.getElementById('support-bot-input');
     var val = input.value.trim();
     if (!val) return;
 
-    appendMessage('user', val);
     input.value = '';
 
-    if (step === 1) {
-      ticketData.name = val;
-      appendMessage('bot', 'Thanks, ' + val + '! Please enter your WhatsApp number so our customer care team can call you back.');
-      input.placeholder = 'Type WhatsApp number...';
-      input.type = 'tel';
-      step = 2;
-    } else if (step === 2) {
-      var phoneRegex = /^[+]?[0-9\s-]{10,14}$/;
-      if (!phoneRegex.test(val)) {
-        appendMessage('bot', 'Oops! That phone number looks invalid. Please enter a valid mobile number (e.g., 9876543210).');
-        return;
-      }
-      ticketData.phone = val;
-      appendMessage('bot', 'Got it. Please select or type the topic of your technical query:');
-      showTopics();
-      step = 3;
-    } else if (step === 3) {
-      ticketData.topic = val;
-      appendMessage('bot', "Understood. Please describe the issue you are facing in detail.");
-      input.placeholder = 'Type details here...';
-      input.type = 'text';
-      hideTopics();
-      step = 4;
-    } else if (step === 4) {
-      ticketData.message = val;
-      appendMessage('bot', 'Raising support ticket and scheduling call back...');
-      step = 5;
-      submitTicket();
-    }
-  }
+    if (chatMode === 'ai') {
+      messages.push({ role: 'user', content: val });
+      isTyping = true;
+      renderMessages();
 
-  function showTopics() {
-    var topicsDiv = document.getElementById('support-bot-topics');
-    var input = document.getElementById('support-bot-input');
-    if (!topicsDiv) return;
-
-    topicsDiv.style.display = 'flex';
-    topicsDiv.innerHTML = '';
-
-    var options = [
-      'POS Printer Setup',
-      'GST Lookup Error',
-      'Tally/Excel Migration',
-      'SaaS Subscription Billing',
-      'Other Technical Query'
-    ];
-
-    options.forEach(function(opt) {
-      var btn = document.createElement('button');
-      btn.textContent = '💡 ' + opt;
-      btn.style.textAlign = 'left';
-      btn.style.width = '100%';
-      btn.style.padding = '6px 12px';
-      btn.style.backgroundColor = '#fff';
-      btn.style.border = '1px solid var(--color-border)';
-      btn.style.borderRadius = '4px';
-      btn.style.fontSize = '11px';
-      btn.style.cursor = 'pointer';
-      btn.style.fontWeight = '600';
-      btn.style.color = 'var(--color-text-muted)';
-      btn.onclick = function() {
-        appendMessage('user', opt);
-        ticketData.topic = opt;
-        appendMessage('bot', "Understood. Please describe the issue you are facing in detail.");
-        input.placeholder = 'Type details here...';
-        input.type = 'text';
-        hideTopics();
-        step = 4;
-      };
-      topicsDiv.appendChild(btn);
-    });
-    scrollToBottom();
-  }
-
-  function hideTopics() {
-    var topicsDiv = document.getElementById('support-bot-topics');
-    if (topicsDiv) {
-      topicsDiv.style.display = 'none';
+      callOpenRouter(messages, function(reply) {
+        messages.push({ role: 'assistant', content: reply });
+        isTyping = false;
+        renderMessages();
+      });
     }
   }
 
@@ -184,7 +233,6 @@ var SupportChatbot = (function() {
     if (input) input.style.display = 'none';
     if (footer) footer.style.display = 'none';
 
-    // 1. Insert directly into Supabase (via anon key insert policy)
     fetch(SUPABASE_URL + "/rest/v1/support_tickets", {
       method: "POST",
       headers: {
@@ -196,8 +244,6 @@ var SupportChatbot = (function() {
     })
     .then(function(res) {
       if (!res.ok) console.error('Supabase ticket write failed:', res.statusText);
-      
-      // 2. Query n8n url from settings and trigger webhook
       if (window.api && window.api.getAllSettings) {
         return window.api.getAllSettings().then(function(settings) {
           var n8nBase = settings.n8n_base_url || 'http://localhost:5678';
@@ -212,12 +258,14 @@ var SupportChatbot = (function() {
       }
     })
     .then(function() {
-      appendMessage('bot', 'Success! 🎉 Support ticket raised. A priority callback is scheduled for ' + ticketData.phone + '. One of our support engineers will call you within 2 hours.');
+      var container = document.getElementById('support-bot-messages');
+      if (container) container.innerHTML = '';
+      appendMsgElement('bot', 'Success! 🎉 Support ticket raised. A priority callback is scheduled for ' + ticketData.phone + '. One of our support engineers will call you within 2 hours.');
       showResetButton();
     })
     .catch(function(err) {
       console.error(err);
-      appendMessage('bot', 'Your ticket was registered. However, we had trouble connecting to the n8n webhook. Our support desk will review the database log and contact you shortly.');
+      appendMsgElement('bot', 'Your ticket was registered. However, we had trouble connecting to the n8n webhook. Our support desk will review the database log and contact you shortly.');
       showResetButton();
     });
   }
@@ -231,29 +279,160 @@ var SupportChatbot = (function() {
     btnDiv.style.marginTop = '10px';
 
     var btn = document.createElement('button');
-    btn.textContent = 'Raise Another Ticket';
+    btn.textContent = 'Back to AI Chat';
     btn.className = 'btn';
     btn.style.fontSize = '11px';
     btn.style.padding = '4px 10px';
+    btn.style.cursor = 'pointer';
     btn.onclick = function() {
-      step = 1;
-      ticketData = { name: '', phone: '', topic: '', message: '' };
-      container.innerHTML = '';
-      
-      var input = document.getElementById('support-bot-input');
-      var footer = document.getElementById('support-bot-footer');
-      if (input) {
-        input.style.display = 'block';
-        input.placeholder = 'Type your name...';
-        input.type = 'text';
-      }
-      if (footer) footer.style.display = 'flex';
-      
-      appendMessage('bot', 'Hello! Welcome to priority support. 🤖 I can raise a support ticket and schedule a call back from customer care. To get started, please tell me your name.');
+      cancelTicketMode();
     };
     btnDiv.appendChild(btn);
     container.appendChild(btnDiv);
     scrollToBottom();
+  }
+
+  function startTicketMode() {
+    chatMode = 'ticket';
+    step = 1;
+    ticketData = { name: '', phone: '', topic: 'POS Printer Setup', message: '' };
+    
+    if (window.api && window.api.getSession) {
+      window.api.getSession().then(function(session) {
+        if (session && session.email) {
+          ticketData.name = session.email.split('@')[0];
+        }
+        renderForm();
+      }).catch(function() {
+        renderForm();
+      });
+    } else {
+      renderForm();
+    }
+    renderBanner();
+  }
+
+  function cancelTicketMode() {
+    chatMode = 'ai';
+    step = 1;
+    isTyping = false;
+    
+    var existingForm = document.getElementById('support-bot-form-el');
+    if (existingForm) {
+      existingForm.remove();
+    }
+
+    var input = document.getElementById('support-bot-input');
+    var footer = document.getElementById('support-bot-footer');
+    if (input) {
+      input.style.display = 'block';
+      input.placeholder = 'Ask me a question...';
+      input.type = 'text';
+      input.value = '';
+    }
+    
+    renderForm();
+    renderBanner();
+    renderMessages();
+  }
+
+  function renderForm() {
+    var card = document.getElementById('support-bot-card');
+    var messagesDiv = document.getElementById('support-bot-messages');
+    var footer = document.getElementById('support-bot-footer');
+    var topicsDiv = document.getElementById('support-bot-topics');
+    if (!card || !messagesDiv || !footer) return;
+
+    var existingForm = document.getElementById('support-bot-form-el');
+    if (existingForm) {
+      existingForm.remove();
+    }
+
+    if (chatMode === 'ticket' && step < 5) {
+      messagesDiv.style.display = 'none';
+      footer.style.display = 'none';
+      if (topicsDiv) topicsDiv.style.display = 'none';
+
+      var formContainer = document.createElement('div');
+      formContainer.id = 'support-bot-form-el';
+      formContainer.style.flex = '1';
+      formContainer.style.padding = '16px';
+      formContainer.style.overflowY = 'auto';
+      formContainer.style.backgroundColor = '#fdfbf7';
+      formContainer.style.display = 'flex';
+      formContainer.style.flexDirection = 'column';
+      formContainer.style.gap = '10px';
+      formContainer.style.fontSize = '12px';
+
+      formContainer.innerHTML = 
+        '<form id="support-ticket-form" style="display:flex; flex-direction:column; gap:10px;">' +
+        '  <div>' +
+        '    <label style="display:block; font-weight:bold; margin-bottom:4px; color:var(--color-text-muted);">Your Name</label>' +
+        '    <input type="text" id="t-name" required placeholder="Enter your name" style="width:100%; padding:6px 8px; border:1px solid var(--color-border); border-radius:4px; font-size:12px; background-color:#fff; color:var(--color-text);" />' +
+        '  </div>' +
+        '  <div>' +
+        '    <label style="display:block; font-weight:bold; margin-bottom:4px; color:var(--color-text-muted);">WhatsApp Number</label>' +
+        '    <input type="tel" id="t-phone" required placeholder="e.g. +91 98765 43210" style="width:100%; padding:6px 8px; border:1px solid var(--color-border); border-radius:4px; font-size:12px; background-color:#fff; color:var(--color-text);" />' +
+        '  </div>' +
+        '  <div>' +
+        '    <label style="display:block; font-weight:bold; margin-bottom:4px; color:var(--color-text-muted);">Topic</label>' +
+        '    <select id="t-topic" style="width:100%; padding:6px 8px; border:1px solid var(--color-border); border-radius:4px; font-size:12px; background-color:#fff; color:var(--color-text); cursor:pointer;">' +
+        '      <option value="POS Printer Setup">POS Printer Setup</option>' +
+        '      <option value="Excel/Tally Migration">Excel/Tally Migration</option>' +
+        '      <option value="GST Lookup Error">GST Lookup Error</option>' +
+        '      <option value="SaaS Subscriptions">SaaS Subscriptions</option>' +
+        '      <option value="Other Support Request">Other Support Request</option>' +
+        '    </select>' +
+        '  </div>' +
+        '  <div>' +
+        '    <label style="display:block; font-weight:bold; margin-bottom:4px; color:var(--color-text-muted);">Complaint Details (Optional)</label>' +
+        '    <textarea id="t-message" rows="3" placeholder="Describe your issue in detail..." style="width:100%; padding:6px 8px; border:1px solid var(--color-border); border-radius:4px; font-size:12px; background-color:#fff; color:var(--color-text); resize:none;"></textarea>' +
+        '  </div>' +
+        '  <button type="submit" class="btn" style="width:100%; padding:8px; font-weight:bold; cursor:pointer;">Submit Complaint</button>' +
+        '</form>';
+
+      card.insertBefore(formContainer, footer);
+
+      var nameInput = document.getElementById('t-name');
+      var phoneInput = document.getElementById('t-phone');
+      var topicInput = document.getElementById('t-topic');
+      var messageInput = document.getElementById('t-message');
+
+      if (nameInput) nameInput.value = ticketData.name || '';
+      if (phoneInput) phoneInput.value = ticketData.phone || '';
+      if (topicInput) topicInput.value = ticketData.topic || 'POS Printer Setup';
+      if (messageInput) messageInput.value = ticketData.message || '';
+
+      document.getElementById('support-ticket-form').onsubmit = function(e) {
+        e.preventDefault();
+        var phoneVal = phoneInput.value.trim();
+        var phoneRegex = /^[+]?[0-9\s-]{10,14}$/;
+        if (!phoneRegex.test(phoneVal)) {
+          alert('Please enter a valid WhatsApp number (e.g., 9876543210).');
+          return;
+        }
+
+        ticketData.name = nameInput.value.trim();
+        ticketData.phone = phoneVal;
+        ticketData.topic = topicInput.value;
+        ticketData.message = messageInput.value.trim() || 'No details provided';
+
+        formContainer.remove();
+        messagesDiv.style.display = 'flex';
+        messagesDiv.innerHTML = '';
+        appendMsgElement('bot', 'Filing support ticket and scheduling call back...');
+        
+        step = 5;
+        submitTicket();
+      };
+    } else {
+      messagesDiv.style.display = 'flex';
+      if (chatMode === 'ai' && !isTyping) {
+        footer.style.display = 'flex';
+      } else {
+        footer.style.display = 'none';
+      }
+    }
   }
 
   document.addEventListener('DOMContentLoaded', init);

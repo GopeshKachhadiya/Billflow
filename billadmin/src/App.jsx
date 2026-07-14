@@ -12,6 +12,7 @@ import Analytics from './pages/Analytics'
 import Trials from './pages/Trials'
 import ActivityLogs from './pages/ActivityLogs'
 import Settings from './pages/Settings'
+import SupportTickets from './pages/SupportTickets'
 
 function ProtectedRoute({ session, children }) {
   if (!session) return <Navigate to="/login" replace />
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="analytics" element={<Analytics />} />
           <Route path="trials" element={<Trials />} />
           <Route path="logs" element={<ActivityLogs />} />
+          <Route path="support" element={<SupportTickets />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
