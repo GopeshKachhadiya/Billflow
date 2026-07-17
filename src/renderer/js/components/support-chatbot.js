@@ -5,8 +5,8 @@ var SupportChatbot = (function() {
   var isTyping = false;
   var ticketData = { name: '', phone: '', topic: '', message: '' };
   
-  var SUPABASE_URL = "https://brpigwqhbqeqpxynhixf.supabase.co";
-  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJycGlnd3FoYnFlcXB4eW5oaXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTY0ODksImV4cCI6MjA5NzI3MjQ4OX0.SB-o6Zpk4J5yJz2VhrTv2FvY-OXC6-AKRpnLznEp81I";
+  var SUPABASE_URL = "https://tdjwytrtmgsxbfvlqjtl.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable_sg13WITxOmD5EMcPccuBXA_bu41qGJ3";
 
   var messages = [
     {
@@ -24,6 +24,15 @@ var SupportChatbot = (function() {
     var ping = document.getElementById('support-bot-ping');
 
     if (!trigger || !card) return;
+
+    if (window.api && window.api.getSetting) {
+      window.api.getSetting('supabase_url').then(function(val) {
+        if (val) SUPABASE_URL = val;
+      }).catch(function() {});
+      window.api.getSetting('supabase_anon_key').then(function(val) {
+        if (val) SUPABASE_ANON_KEY = val;
+      }).catch(function() {});
+    }
 
     // Pulse animation for ping
     if (ping) {

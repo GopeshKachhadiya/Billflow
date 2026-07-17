@@ -59,7 +59,7 @@ function saveToLocalCache(gstin, data) {
     db.prepare(
       'INSERT OR REPLACE INTO gstin_cache ' +
       '(gstin, name, type, state, state_code, billing_address, billing_city, billing_pin, status, updated_at) ' +
-      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime("now"))'
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime(\'now\'))'
     ).run(
       gstin,
       data.name,

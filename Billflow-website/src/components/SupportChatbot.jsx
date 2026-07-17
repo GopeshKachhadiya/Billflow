@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X, Send, Phone, User, Info, CheckCircle2, Loader2 } from "lucide-react";
 
-const SUPABASE_URL = "https://brpigwqhbqeqpxynhixf.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJycGlnd3FoYnFlcXB4eW5oaXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTY0ODksImV4cCI6MjA5NzI3MjQ4OX0.SB-o6Zpk4J5yJz2VhrTv2FvY-OXC6-AKRpnLznEp81I";
+const SUPABASE_URL = "https://tdjwytrtmgsxbfvlqjtl.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_sg13WITxOmD5EMcPccuBXA_bu41qGJ3";
 const N8N_WEBHOOK_URL = "http://localhost:5678/webhook/support-ticket"; // Fallback URL, updates dynamically if settings loaded
 
 export function SupportChatbot() {

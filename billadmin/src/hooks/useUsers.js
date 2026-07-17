@@ -67,7 +67,7 @@ export function useUser(id) {
 export async function createUser(data) {
   const { data: u, error } = await supabase
     .from('admin_users')
-    .insert([data])
+    .upsert([data], { onConflict: 'id' })
     .select()
     .single()
   if (error) throw error
@@ -126,14 +126,32 @@ export async function logActivity(userId, action, description, performedBy = 'sy
 }
 
 export async function deleteUser(id) {
+  // 1. Get user record before deleting to find their email
+  const { data: userRecord } = await supabase
+    .from('admin_users')
+    .select('email, id')
+    .eq('id', id)
+    .single()
+
   const { error: dbError } = await supabase
     .from('admin_users')
     .delete()
     .eq('id', id)
   if (dbError) throw dbError
 
-  const { error: authError } = await supabase.auth.admin.deleteUser(id)
-  if (authError) {
-    console.error('Failed to delete auth user:', authError.message)
+  // 2. Delete by ID first
+  await supabase.auth.admin.deleteUser(id).catch(() => {})
+
+  // 3. Delete by email if the ID didn't match the auth account ID
+  if (userRecord && userRecord.email) {
+    try {
+      const { data: { users: authUsers } } = await supabase.auth.admin.listUsers()
+      const matchingAuthUser = authUsers?.find(u => u.email?.toLowerCase() === userRecord.email.toLowerCase())
+      if (matchingAuthUser) {
+        await supabase.auth.admin.deleteUser(matchingAuthUser.id)
+      }
+    } catch (e) {
+      console.error('Failed to lookup and delete auth user by email:', e.message)
+    }
   }
 }

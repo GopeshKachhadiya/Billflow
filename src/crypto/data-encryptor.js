@@ -4,18 +4,39 @@ var encryptionKey = null;
 
 function setKey(key) {
   encryptionKey = key; // 32-byte Buffer
+  global.__billflow_encryption_key = key;
+  try { require('../db/connection').setDBKey(key); } catch(e) {}
 }
 
 function clearKey() {
   encryptionKey = null;
+  delete global.__billflow_encryption_key;
+}
+
+function getKey() {
+  if (encryptionKey) return encryptionKey;
+  if (global.__billflow_encryption_key) {
+    encryptionKey = global.__billflow_encryption_key;
+    return encryptionKey;
+  }
+  try {
+    var dbKey = require('../db/connection').getDBKey();
+    if (dbKey) {
+      encryptionKey = dbKey;
+      global.__billflow_encryption_key = dbKey;
+      return encryptionKey;
+    }
+  } catch(e) {}
+  return null;
 }
 
 function encrypt(text) {
-  if (!encryptionKey) {
+  var key = getKey();
+  if (!key) {
     throw new Error('Encryption key not set');
   }
   var iv = crypto.randomBytes(12);
-  var cipher = crypto.createCipheriv('aes-256-gcm', encryptionKey, iv);
+  var cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
   var encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   var authTag = cipher.getAuthTag().toString('hex');
@@ -27,12 +48,13 @@ function encrypt(text) {
 }
 
 function decrypt(encryptedData, ivHex, authTagHex) {
-  if (!encryptionKey) {
+  var key = getKey();
+  if (!key) {
     throw new Error('Encryption key not set');
   }
   var iv = Buffer.from(ivHex, 'hex');
   var authTag = Buffer.from(authTagHex, 'hex');
-  var decipher = crypto.createDecipheriv('aes-256-gcm', encryptionKey, iv);
+  var decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
   decipher.setAuthTag(authTag);
   var decrypted = decipher.update(encryptedData, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
@@ -129,6 +151,7 @@ function decryptBill(row, encryptedData, ivHex, authTagHex) {
 module.exports = {
   setKey: setKey,
   clearKey: clearKey,
+  getKey: getKey,
   encryptObject: encryptObject,
   decryptObject: decryptObject,
   encryptCustomer: encryptCustomer,

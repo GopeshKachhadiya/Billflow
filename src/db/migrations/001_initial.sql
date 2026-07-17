@@ -181,8 +181,8 @@ INSERT OR IGNORE INTO settings (key, value) VALUES
   ('bill_next_number', '1'),
   ('default_gst_rate', '18'),
   ('setup_complete', '0'),
-  ('supabase_url', ''),
-  ('supabase_anon_key', ''),
+  ('supabase_url', 'https://tdjwytrtmgsxbfvlqjtl.supabase.co'),
+  ('supabase_anon_key', 'sb_publishable_sg13WITxOmD5EMcPccuBXA_bu41qGJ3'),
   ('n8n_base_url', 'http://localhost:5678'),
   ('n8n_secret', ''),
   ('last_sync_at', '');

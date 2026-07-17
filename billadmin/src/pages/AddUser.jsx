@@ -65,16 +65,38 @@ export default function AddUser() {
     }
     setSaving(true)
     try {
-      // Step 1: Create the Supabase Auth account so the user can log into the consumer app
+      // Step 1: Create or recover the Supabase Auth account so the user can log into the consumer app
+      let authUserId = null
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: form.email,
         password: form.password,
-        email_confirm: true  // Auto-confirm email so user can log in immediately
+        email_confirm: true // Auto-confirm email so user can log in immediately
       })
-      if (authError) throw new Error('Failed to create auth account: ' + authError.message)
 
-      // Step 2: Insert into admin_users table (exclude password from DB record)
-      const userData = { ...form }
+      if (authError) {
+        // If account is already registered, find its ID and update password/status
+        if (authError.message?.toLowerCase().includes('already') || authError.message?.toLowerCase().includes('registered') || authError.status === 422 || authError.code === 'email_exists') {
+          const { data: { users: existingUsers }, error: listErr } = await supabase.auth.admin.listUsers()
+          if (listErr) throw new Error('Failed to check existing users: ' + listErr.message)
+          const existing = existingUsers?.find(u => u.email?.toLowerCase() === form.email.trim().toLowerCase())
+          if (existing) {
+            authUserId = existing.id
+            await supabase.auth.admin.updateUserById(existing.id, {
+              password: form.password,
+              email_confirm: true
+            })
+          } else {
+            throw new Error('Failed to create auth account: ' + authError.message)
+          }
+        } else {
+          throw new Error('Failed to create auth account: ' + authError.message)
+        }
+      } else {
+        authUserId = authData.user.id
+      }
+
+      // Step 2: Insert into admin_users table (ensure id equals authUserId so deletion stays synced)
+      const userData = { ...form, id: authUserId }
       delete userData.password
       
       // Dynamic configuration from environment variables

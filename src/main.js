@@ -43,7 +43,66 @@ function getModules() {
 
 var mainWindow = null;
 
+function syncEnvToSettings() {
+  try {
+    var fs = require('fs');
+    var path = require('path');
+    // Check root .env first, then billadmin/.env
+    var envPath = path.join(__dirname, '..', '.env');
+    if (!fs.existsSync(envPath)) {
+      envPath = path.join(__dirname, '..', 'billadmin', '.env');
+    }
+    if (fs.existsSync(envPath)) {
+      var envContent = fs.readFileSync(envPath, 'utf8');
+      var env = {};
+      envContent.split(/\r?\n/).forEach(function(line) {
+        var match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+        if (match) {
+          var value = match[2] ? match[2].trim() : '';
+          if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+          if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+          env[match[1]] = value;
+        }
+      });
+      
+      var settingsObj = {};
+      var url = env.SUPABASE_URL || env.VITE_SUPABASE_URL;
+      var key = env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY;
+      
+      if (url) settingsObj['supabase_url'] = url;
+      if (key) settingsObj['supabase_anon_key'] = key;
+      
+      if (Object.keys(settingsObj).length > 0) {
+        var conn = require('./db/connection');
+        var db = conn.getDB();
+        
+        // Ensure settings table exists first
+        var tableExists = db.prepare(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='settings'"
+        ).get();
+        
+        if (tableExists) {
+          var settings = require('./db/queries/settings');
+          settings.setMultiple(settingsObj);
+          console.log('[env-sync] Supabase settings successfully updated in SQLite from .env');
+        } else {
+          console.log('[env-sync] settings table does not exist yet. Sync deferred.');
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[env-sync] Failed to sync env to settings:', e.message);
+  }
+}
+
 app.on('ready', function() {
+  // Sync env to SQLite settings
+  try {
+    syncEnvToSettings();
+  } catch (e) {
+    console.error('[env-sync] Startup sync failed:', e.message);
+  }
+
   mainWindow = new BrowserWindow({
     width: 1280, height: 800, minWidth: 800, minHeight: 600,
     title: 'BillFlow', show: false,
@@ -56,11 +115,19 @@ app.on('ready', function() {
   mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
   mainWindow.once('ready-to-show', function() {
     mainWindow.show();
-    // Auto-connect WhatsApp if credentials exist
-    if (fs.existsSync(waSessionPath)) {
-      initWhatsApp(function(channel, arg) {
-        if (mainWindow) mainWindow.webContents.send(channel, arg);
-      });
+    // Auto-connect WhatsApp if credentials exist and are linked
+    var credsPath = path.join(waSessionPath, 'creds.json');
+    if (fs.existsSync(credsPath)) {
+      try {
+        var creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
+        if (creds && creds.me) {
+          initWhatsApp(function(channel, arg) {
+            if (mainWindow) mainWindow.webContents.send(channel, arg);
+          });
+        }
+      } catch (e) {
+        console.error('[wa] failed to read creds.json on startup:', e);
+      }
     }
   });
 });
@@ -101,8 +168,12 @@ async function initWhatsApp(eventToSend) {
       }
 
       if (connection === 'close') {
-        var shouldReconnect = lastDisconnect && lastDisconnect.error && lastDisconnect.error.output && lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut;
-        console.log('[wa] connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect);
+        var statusCode = lastDisconnect && lastDisconnect.error && lastDisconnect.error.output && lastDisconnect.error.output.statusCode;
+        var isLoggedOut = statusCode === DisconnectReason.loggedOut;
+        var isBadSession = statusCode === DisconnectReason.badSession;
+        var shouldReconnect = !isLoggedOut && !isBadSession;
+        
+        console.log('[wa] connection closed due to ', lastDisconnect && lastDisconnect.error, ', reconnecting ', shouldReconnect);
         waSock = null;
         waQR = '';
         waUser = '';
@@ -110,10 +181,21 @@ async function initWhatsApp(eventToSend) {
         if (shouldReconnect) {
           waStatus = 'connecting';
           if (eventToSend) eventToSend('wa:status-change', { status: waStatus });
-          initWhatsApp(eventToSend);
+          // Throttled reconnect to avoid infinite loop CPU spikes during network outages
+          setTimeout(function() {
+            initWhatsApp(eventToSend);
+          }, 5000);
         } else {
           waStatus = 'disconnected';
           if (eventToSend) eventToSend('wa:status-change', { status: waStatus });
+          // Clear session files if explicitly logged out or session is bad/corrupted
+          if (fs.existsSync(waSessionPath)) {
+            try {
+              fs.rmSync(waSessionPath, { recursive: true, force: true });
+            } catch (e) {
+              console.error('[wa] failed to delete session path on close:', e.message);
+            }
+          }
         }
       } else if (connection === 'open') {
         console.log('[wa] opened connection');
@@ -182,6 +264,12 @@ async function waSendBill(phone, text, pdfBase64, filename) {
 
 
 app.on('before-quit', function() {
+  if (waSock) {
+    try {
+      waSock.end();
+    } catch (e) {}
+    waSock = null;
+  }
   require('./db/connection').closeDB();
   require('./crypto/data-encryptor').clearKey();
 });
@@ -204,9 +292,27 @@ ipcMain.handle('db:migrate', function() {
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 ipcMain.handle('db:settings:get',    function(e, a) { return getModules().settings.getSetting(a.key); });
-ipcMain.handle('db:settings:set',    function(e, a) { getModules().settings.setSetting(a.key, a.value); return { ok:true }; });
+ipcMain.handle('db:settings:set',    function(e, a) { 
+  getModules().settings.setSetting(a.key, a.value); 
+  try {
+    var session = require('./supabase/auth').getSession();
+    if (session && session.id) {
+      require('./supabase/sync').pushSettingsToSupabase(session.id);
+    }
+  } catch(err) {}
+  return { ok:true }; 
+});
 ipcMain.handle('db:settings:getAll', function()     { return getModules().settings.getAllSettings(); });
-ipcMain.handle('db:settings:setMultiple', function(e, a) { getModules().settings.setMultiple(a); return { ok:true }; });
+ipcMain.handle('db:settings:setMultiple', function(e, a) { 
+  getModules().settings.setMultiple(a); 
+  try {
+    var session = require('./supabase/auth').getSession();
+    if (session && session.id) {
+      require('./supabase/sync').pushSettingsToSupabase(session.id);
+    }
+  } catch(err) {}
+  return { ok:true }; 
+});
 
 // ── CUSTOMERS ─────────────────────────────────────────────────────────────────
 ipcMain.handle('db:customers:list',   function(e, a) { return getModules().customers.listCustomers(a); });

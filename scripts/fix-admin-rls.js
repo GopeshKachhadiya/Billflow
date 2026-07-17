@@ -1,8 +1,35 @@
 // scripts/fix-admin-rls.js
+const fs = require('fs');
+const path = require('path');
 const { Client } = require('pg');
 
-const projectRef = 'brpigwqhbqeqpxynhixf';
-const dbPassword = 'Gopesh@007';
+// Load environment variables from billadmin/.env
+const envPath = path.join(__dirname, '..', 'billadmin', '.env');
+const envContent = fs.readFileSync(envPath, 'utf8');
+const env = {};
+envContent.split(/\r?\n/).forEach(line => {
+  const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+  if (match) {
+    let value = match[2] ? match[2].trim() : '';
+    if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+    if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+    env[match[1]] = value;
+  }
+});
+
+const SUPABASE_URL = env.VITE_SUPABASE_URL;
+if (!SUPABASE_URL) {
+  console.error('Error: VITE_SUPABASE_URL not found in billadmin/.env');
+  process.exit(1);
+}
+
+const projectRefMatch = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.(?:co|com)/);
+if (!projectRefMatch) {
+  console.error('Error: Could not parse project reference from VITE_SUPABASE_URL:', SUPABASE_URL);
+  process.exit(1);
+}
+const projectRef = projectRefMatch[1];
+const dbPassword = 'Aquamafia@007';
 
 const sql = `
 -- Drop existing policies if they exist to prevent duplication

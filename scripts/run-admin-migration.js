@@ -2,8 +2,34 @@
 const fs = require('fs');
 const path = require('path');
 
-const SUPABASE_URL = 'https://brpigwqhbqeqpxynhixf.supabase.co';
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJycGlnd3FoYnFlcXB4eW5oaXhmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTY5NjQ4OSwiZXhwIjoyMDk3MjcyNDg5fQ.VBADWtn6SsKsgGxyVWTisYEh20HVeI07sD5FHvs5md0';
+// Load environment variables from billadmin/.env
+const envPath = path.join(__dirname, '..', 'billadmin', '.env');
+const envContent = fs.readFileSync(envPath, 'utf8');
+const env = {};
+envContent.split(/\r?\n/).forEach(line => {
+  const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+  if (match) {
+    let value = match[2] ? match[2].trim() : '';
+    if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+    if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+    env[match[1]] = value;
+  }
+});
+
+const SUPABASE_URL = env.VITE_SUPABASE_URL;
+const SERVICE_ROLE_KEY = env.VITE_SUPABASE_SERVICE_KEY;
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error('Error: VITE_SUPABASE_URL or VITE_SUPABASE_SERVICE_KEY not found in billadmin/.env');
+  process.exit(1);
+}
+
+const projectRefMatch = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.(?:co|com)/);
+if (!projectRefMatch) {
+  console.error('Error: Could not parse project reference from VITE_SUPABASE_URL:', SUPABASE_URL);
+  process.exit(1);
+}
+const projectRef = projectRefMatch[1];
 
 const sqlFile = path.join(__dirname, '..', 'billadmin', 'supabase', 'admin-migrations', '001_admin_tables.sql');
 const fullSql = fs.readFileSync(sqlFile, 'utf8');
@@ -66,8 +92,8 @@ async function run() {
       host: host,
       port: 6543,
       database: 'postgres',
-      user: 'postgres.brpigwqhbqeqpxynhixf',
-      password: 'Gopesh@007',
+      user: `postgres.${projectRef}`,
+      password: 'Aquamafia@007',
       ssl: { rejectUnauthorized: false },
       connectionTimeoutMillis: 8000
     });
@@ -88,11 +114,11 @@ async function run() {
     // Try direct connection
     console.log('Trying direct connection to db.<ref>.supabase.co:5432...');
     client = new Client({
-      host: `db.brpigwqhbqeqpxynhixf.supabase.co`,
+      host: `db.${projectRef}.supabase.co`,
       port: 5432,
       database: 'postgres',
       user: 'postgres',
-      password: 'Gopesh@007',
+      password: 'Aquamafia@007',
       ssl: { rejectUnauthorized: false },
       connectionTimeoutMillis: 10000
     });
@@ -111,7 +137,7 @@ async function run() {
     console.log('❌ Could not connect to the PostgreSQL database.');
     console.log('');
     console.log('Please run the SQL migration manually:');
-    console.log('1. Open: https://supabase.com/dashboard/project/brpigwqhbqeqpxynhixf/sql/new');
+    console.log(`1. Open: https://supabase.com/dashboard/project/${projectRef}/sql/new`);
     console.log('2. Copy-paste the contents of: billadmin/supabase/admin-migrations/001_admin_tables.sql');
     console.log('3. Click "Run"');
     process.exit(1);

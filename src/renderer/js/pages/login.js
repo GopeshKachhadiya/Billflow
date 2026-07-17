@@ -6,18 +6,9 @@ window.PageControllers['login'] = {
     var btnEl    = document.getElementById('login-btn');
     var errorEl  = document.getElementById('login-error');
 
-    if (emailEl) emailEl.value = 'gopeshkachhadiya00005@gmail.com';
-    if (passEl) passEl.value = 'Gopesh@007';
-
     var manualLogout = localStorage.getItem('manual_logout');
     if (manualLogout === 'true') {
       localStorage.removeItem('manual_logout');
-    } else {
-      setTimeout(function() {
-        if (emailEl && passEl && emailEl.value && passEl.value && btnEl) {
-          btnEl.click();
-        }
-      }, 500);
     }
 
     function showError(msg) {

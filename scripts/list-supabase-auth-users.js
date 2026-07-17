@@ -1,10 +1,8 @@
 // scripts/list-supabase-auth-users.js
 const { createClient } = require('@supabase/supabase-js');
+const env = require('./get-env');
 
-const url = 'https://brpigwqhbqeqpxynhixf.supabase.co';
-const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJycGlnd3FoYnFlcXB4eW5oaXhmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTY5NjQ4OSwiZXhwIjoyMDk3MjcyNDg5fQ.VBADWtn6SsKsgGxyVWTisYEh20HVeI07sD5FHvs5md0';
-
-const supabase = createClient(url, key);
+const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY);
 
 async function listAuthUsers() {
   console.log('Fetching users from Supabase Auth (auth.users)...\n');

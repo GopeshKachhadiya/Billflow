@@ -64,6 +64,21 @@ function closeDB() {
 
 function setDBKey(key) {
   dbKey = key;
+  global.__billflow_db_key = key;
+  global.__billflow_encryption_key = key;
+}
+
+function getDBKey() {
+  if (dbKey) return dbKey;
+  if (global.__billflow_db_key) {
+    dbKey = global.__billflow_db_key;
+    return dbKey;
+  }
+  if (global.__billflow_encryption_key) {
+    dbKey = global.__billflow_encryption_key;
+    return dbKey;
+  }
+  return null;
 }
 
 function isOpen() {
@@ -74,5 +89,6 @@ module.exports = {
   getDB: getDB,
   closeDB: closeDB,
   setDBKey: setDBKey,
+  getDBKey: getDBKey,
   isOpen: isOpen
 };
