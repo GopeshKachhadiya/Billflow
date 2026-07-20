@@ -152,7 +152,7 @@ INSERT INTO public.admin_plans
   (name, display_name, monthly_price, half_yearly_price, yearly_price,
    max_bills_per_month, max_customers, whatsapp_enabled, sms_enabled, multi_user, priority_support)
 VALUES
-  ('standard', 'Standard', 1000.00, 5500.00, 10000.00, 999999, 999999, TRUE, TRUE, TRUE, TRUE)
+  ('standard', 'Standard', 700.00, 3600.00, 6000.00, 999999, 999999, TRUE, TRUE, TRUE, TRUE)
 ON CONFLICT(name) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════

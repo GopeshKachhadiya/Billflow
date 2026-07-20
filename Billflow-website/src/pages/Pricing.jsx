@@ -3,42 +3,44 @@ import { motion } from "framer-motion";
 export default function Pricing() {
   const plans = [
     {
-      name: "Basic",
-      price: "?499",
+      name: "Monthly Flex",
+      price: "₹700",
       period: "/ month",
       features: [
-        "Up to 100 invoices/month",
-        "GST calculation & invoicing",
-        "Expense tracking",
-        "Email support"
+        "Unlimited GST Invoices",
+        "Customer Khata & Ledger",
+        "1-Click WhatsApp & SMS Send",
+        "GSTR-1 JSON & Excel Export",
+        "100% Offline SQLite Storage"
       ],
       popular: false
     },
     {
-      name: "Professional",
-      price: "?999",
-      period: "/ month",
+      name: "6-Month Saver",
+      price: "₹600",
+      period: "/ month (₹3,600 total)",
       features: [
-        "Unlimited invoices",
-        "All Basic features",
-        "Advanced reporting",
-        "Multi-user access",
-        "Priority support",
-        "Bank reconciliation"
+        "Unlimited GST Invoices",
+        "Customer Khata & Ledger",
+        "1-Click WhatsApp & SMS Send",
+        "GSTR-1 JSON & Excel Export",
+        "100% Offline SQLite Storage",
+        "Priority CA Setup Assistance"
       ],
       popular: true
     },
     {
-      name: "Enterprise",
-      price: "Custom",
-      period: "/ month",
+      name: "Annual Pro",
+      price: "₹500",
+      period: "/ month (₹6,000 total)",
       features: [
-        "All Professional features",
-        "Dedicated account manager",
-        "Custom integrations",
-        "On-premise deployment",
-        "SLA guaranteed",
-        "24/7 phone support"
+        "Unlimited GST Invoices",
+        "Customer Khata & Ledger",
+        "1-Click WhatsApp & SMS Send",
+        "GSTR-1 JSON & Excel Export",
+        "100% Offline SQLite Storage",
+        "Priority CA Setup Assistance",
+        "Multi-User Role Permissions"
       ],
       popular: false
     }

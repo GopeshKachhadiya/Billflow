@@ -5,7 +5,7 @@ import { generateLicenseKey, callAdminWebhook } from '../lib/utils'
 import { supabase } from '../lib/supabase'
 
 const PLANS = [
-  { id: 'standard',      name: 'Standard',      price: 1000,  desc: 'Unlimited bills, unlimited customers, Email + WhatsApp + SMS automations, Multi-user support' }
+  { id: 'standard',      name: 'Standard',      price: 700,  desc: 'Unlimited bills, unlimited customers, Email + WhatsApp + SMS automations, Multi-user support' }
 ]
 
 export default function AddUser() {
@@ -22,7 +22,7 @@ export default function AddUser() {
     state:            '',
     plan:             'standard',
     billing_cycle:    'monthly',
-    plan_price:       1000,
+    plan_price:       700,
     status:           'trial',
     trial_days:       14,
     trial_start_date: new Date().toISOString().split('T')[0],
@@ -41,13 +41,13 @@ export default function AddUser() {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const selectPlan = (plan) => {
-    const prices = { monthly: 1000, half_yearly: 5500, yearly: 10000 }
+    const prices = { monthly: 700, half_yearly: 3600, yearly: 6000 }
     set('plan', 'standard')
     set('plan_price', prices[form.billing_cycle])
   }
 
   const selectCycle = (cycle) => {
-    const prices = { monthly: 1000, half_yearly: 5500, yearly: 10000 }
+    const prices = { monthly: 700, half_yearly: 3600, yearly: 6000 }
     set('billing_cycle', cycle)
     set('plan_price', prices[cycle])
   }
@@ -217,9 +217,9 @@ export default function AddUser() {
               <h2 className="text-sm font-semibold text-on-surface mb-2 border-b border-outline-variant/20 pb-2 uppercase tracking-wider">Billing Cycle</h2>
               <div className="flex gap-3">
                 {[
-                  ['monthly','Monthly', 1000],
-                  ['half_yearly','6 Months', 5500],
-                  ['yearly','Yearly', 10000]
+                  ['monthly','Monthly', 700],
+                  ['half_yearly','6 Months', 3600],
+                  ['yearly','Yearly', 6000]
                 ].map(([v,l,pr]) => (
                   <button key={v} type="button" onClick={() => selectCycle(v)}
                     className={`flex-1 border-2 rounded-xl p-3 text-sm text-center transition-all ${form.billing_cycle === v ? 'border-primary bg-primary/10 text-primary font-bold' : 'border-outline-variant/30 bg-surface-container hover:border-on-surface-variant text-on-surface-variant'}`}>

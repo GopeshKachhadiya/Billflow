@@ -17,67 +17,63 @@ import { CTASection } from "../components/CTASection";
 
 const plans = [
   {
-    name: "14-Day Free Trial",
-    priceMonthly: "₹0",
-    priceAnnual: "₹0",
-    desc: "Perfect for testing all 22 features on your Windows desktop with zero commitment.",
-    badge: "No Credit Card",
+    name: "Monthly Flex",
+    priceDisplay: "₹700",
+    period: "/month",
+    desc: "Flexible month-to-month billing with full access to all 22 core features on your Windows desktop.",
+    badge: "Pay As You Go",
     popular: false,
-    ctaText: "Download Free Now",
+    ctaText: "Start 14-Day Free Trial",
     ctaLink: "#/download",
     features: [
       { name: "Unlimited GST Invoices", included: true },
       { name: "Customer Khata & Ledger", included: true },
-      { name: "1-Click WhatsApp Send", included: true },
+      { name: "1-Click WhatsApp & SMS Send", included: true },
       { name: "GSTR-1 JSON & Excel Export", included: true },
       { name: "100% Offline SQLite Storage", included: true },
-      { name: "Multi-User Role Permissions", included: false },
-      { name: "Automated Google Drive Sync", included: false },
-      { name: "Dedicated Setup Call with CA", included: false },
-    ],
-  },
-  {
-    name: "Shop Owner Pro",
-    priceMonthly: "₹149",
-    priceAnnual: "₹1,499",
-    periodMonthly: "/month",
-    periodAnnual: "/year",
-    desc: "The complete digital ledger for single-retail stores, distributors, and traders.",
-    badge: "✦ MOST POPULAR · SAVE 20%",
-    popular: true,
-    ctaText: "Start Pro Trial →",
-    ctaLink: "#/download",
-    features: [
-      { name: "Unlimited GST Invoices", included: true },
-      { name: "Customer Khata & Ledger", included: true },
-      { name: "1-Click WhatsApp Send", included: true },
-      { name: "GSTR-1 JSON & Excel Export", included: true },
-      { name: "100% Offline SQLite Storage", included: true },
-      { name: "Automated Google Drive Sync", included: true },
+      { name: "Real-time Cloud Sync & Backup", included: true },
       { name: "A4 & POS Thermal Print Layouts", included: true },
-      { name: "Multi-User Role Permissions", included: false },
+      { name: "Priority CA Setup Assistance", included: false },
     ],
   },
   {
-    name: "Multi-Store Enterprise",
-    priceMonthly: "₹349",
-    priceAnnual: "₹3,499",
-    periodMonthly: "/month",
-    periodAnnual: "/year",
-    desc: "For growing agencies, multi-branch distributors, and businesses with multiple cashiers.",
-    badge: "Full Power",
-    popular: false,
-    ctaText: "Contact Sales / Buy Now",
-    ctaLink: "#/contact",
+    name: "6-Month Saver",
+    priceDisplay: "₹600",
+    period: "/month",
+    desc: "Save ₹600 with our half-yearly package (billed ₹3,600 every 6 months). Ideal for growing stores & traders.",
+    badge: "✦ MOST POPULAR · SAVE ₹600",
+    popular: true,
+    ctaText: "Start 14-Day Free Trial →",
+    ctaLink: "#/download",
     features: [
-      { name: "Everything in Shop Owner Pro", included: true },
-      { name: "Up to 5 Windows PC Licenses", included: true },
-      { name: "Multi-User Role Permissions (Cashier/Admin)", included: true },
-      { name: "Real-time Cloud Branch Sync", included: true },
-      { name: "Dedicated 2-Hour Setup Call with CA", included: true },
-      { name: "Custom PDF Invoice Branding & Watermark", included: true },
-      { name: "Priority Telephone & WhatsApp Support", included: true },
-      { name: "Custom API & ERP Integration", included: true },
+      { name: "Unlimited GST Invoices", included: true },
+      { name: "Customer Khata & Ledger", included: true },
+      { name: "1-Click WhatsApp & SMS Send", included: true },
+      { name: "GSTR-1 JSON & Excel Export", included: true },
+      { name: "100% Offline SQLite Storage", included: true },
+      { name: "Real-time Cloud Sync & Backup", included: true },
+      { name: "A4 & POS Thermal Print Layouts", included: true },
+      { name: "Priority CA Setup Assistance", included: true },
+    ],
+  },
+  {
+    name: "Annual Pro",
+    priceDisplay: "₹500",
+    period: "/month",
+    desc: "Save ₹2,400 annually (billed ₹6,000 every 12 months)! Complete power for established businesses & multi-store setups.",
+    badge: "Best Value · Save ₹2,400",
+    popular: false,
+    ctaText: "Start 14-Day Free Trial",
+    ctaLink: "#/download",
+    features: [
+      { name: "Unlimited GST Invoices", included: true },
+      { name: "Customer Khata & Ledger", included: true },
+      { name: "1-Click WhatsApp & SMS Send", included: true },
+      { name: "GSTR-1 JSON & Excel Export", included: true },
+      { name: "100% Offline SQLite Storage", included: true },
+      { name: "Real-time Cloud Sync & Backup", included: true },
+      { name: "A4 & POS Thermal Print Layouts", included: true },
+      { name: "Priority CA Setup Assistance", included: true },
     ],
   },
 ];
@@ -88,11 +84,11 @@ const comparisonMatrix = [
   { feature: "1-Click WhatsApp & SMS Sending", trial: "Yes", pro: "Yes", enterprise: "Yes" },
   { feature: "GSTR-1 JSON & Excel Export", trial: "Yes", pro: "Yes", enterprise: "Yes" },
   { feature: "POS Thermal & A4 Print Templates", trial: "Yes", pro: "Yes", enterprise: "Yes" },
-  { feature: "Automated Google Drive Cloud Sync", trial: "No", pro: "Yes", enterprise: "Yes" },
-  { feature: "Multi-User Staff Login Accounts", trial: "No", pro: "No", enterprise: "Up to 5 Staff" },
-  { feature: "Multi-Branch Real-time Sync", trial: "No", pro: "No", enterprise: "Yes" },
-  { feature: "Dedicated Setup Call with CA", trial: "No", pro: "No", enterprise: "Included (2 Hrs)" },
-  { feature: "Support Channel", trial: "Email", pro: "Email & Chat", enterprise: "24/7 Phone & WhatsApp" },
+  { feature: "Automated Google Drive Cloud Sync", trial: "Yes", pro: "Yes", enterprise: "Yes" },
+  { feature: "Multi-User Staff Login Accounts", trial: "1 User", pro: "Up to 2 Staff", enterprise: "Up to 5 Staff" },
+  { feature: "Multi-Branch Real-time Sync", trial: "No", pro: "Yes", enterprise: "Yes" },
+  { feature: "Dedicated Setup Call with CA", trial: "No", pro: "Included", enterprise: "Priority (2 Hrs)" },
+  { feature: "Support Channel", trial: "Email", pro: "Email & WhatsApp", enterprise: "24/7 Phone & WhatsApp VIP" },
 ];
 
 export function PricingPage() {
@@ -131,21 +127,10 @@ export function PricingPage() {
             No hidden subscription traps or cloud storage fees. Start with a 14-day free trial and upgrade only when you see the value.
           </motion.p>
 
-          {/* Billing Frequency Toggle */}
-          <div className="inline-flex items-center p-1.5 rounded-full bg-background border border-border shadow-sm gap-2">
-            <button
-              onClick={() => setIsAnnual(false)}
-              className={`px-5 py-2 rounded-full font-serif text-sm font-semibold transition-all ${!isAnnual ? "bg-fountain text-white shadow" : "text-text-secondary hover:text-text-primary"}`}
-            >
-              Monthly Billing
-            </button>
-            <button
-              onClick={() => setIsAnnual(true)}
-              className={`px-5 py-2 rounded-full font-serif text-sm font-semibold transition-all flex items-center gap-2 ${isAnnual ? "bg-fountain text-white shadow" : "text-text-secondary hover:text-text-primary"}`}
-            >
-              <span>Annual Billing</span>
-              <span className="stamp-badge stamp-badge-gold text-[10px] py-0.5">Save 20% + Free CA Setup</span>
-            </button>
+          {/* Billing Options Note */}
+          <div className="inline-flex items-center px-6 py-2 rounded-full bg-background border border-border shadow-sm gap-2">
+            <span className="font-serif text-sm font-semibold text-text-primary">All plans include a 14-Day Free Trial.</span>
+            <span className="stamp-badge stamp-badge-gold text-[10px] py-0.5">Save up to ₹2,400 with Annual Billing</span>
           </div>
         </div>
       </section>
@@ -155,8 +140,6 @@ export function PricingPage() {
         <div className="section-container max-w-6xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 items-stretch">
             {plans.map((plan, i) => {
-              const price = isAnnual ? plan.priceAnnual : plan.priceMonthly;
-              const period = isAnnual ? (plan.periodAnnual || "") : (plan.periodMonthly || "");
               return (
                 <motion.div
                   key={plan.name}
@@ -186,8 +169,8 @@ export function PricingPage() {
                     </div>
 
                     <div className="my-6 pb-6 border-b border-border flex items-baseline gap-1">
-                      <span className="font-mono text-4xl sm:text-5xl font-extrabold text-text-primary tracking-tight">{price}</span>
-                      <span className="text-xs font-mono text-text-muted">{period}</span>
+                      <span className="font-mono text-4xl sm:text-5xl font-extrabold text-text-primary tracking-tight">{plan.priceDisplay}</span>
+                      <span className="text-xs font-mono text-text-muted">{plan.period}</span>
                     </div>
 
                     <p className="font-sans text-sm text-text-secondary leading-relaxed mb-6 min-h-[40px]">
@@ -242,9 +225,9 @@ export function PricingPage() {
               <thead>
                 <tr className="border-b-2 border-border bg-surface font-serif text-text-primary">
                   <th className="py-4 px-6 font-bold">Feature Capability</th>
-                  <th className="py-4 px-4 text-center font-bold">14-Day Free Trial</th>
-                  <th className="py-4 px-4 text-center font-bold text-fountain">Shop Owner Pro</th>
-                  <th className="py-4 px-4 text-center font-bold">Multi-Store Enterprise</th>
+                  <th className="py-4 px-4 text-center font-bold">Monthly Flex</th>
+                  <th className="py-4 px-4 text-center font-bold text-fountain">6-Month Saver</th>
+                  <th className="py-4 px-4 text-center font-bold">Annual Pro</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">

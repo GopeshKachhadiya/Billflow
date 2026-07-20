@@ -3,82 +3,62 @@ import { CheckCircle, XCircle, Sparkles, Crown, ArrowRight, Users, Shield, Cloud
 
 const plans = [
   {
-    name: "Starter",
-    tagline: "For solo entrepreneurs",
-    monthlyPrice: 999,
-    yearlyPrice: 9990,
+    name: "Monthly Flex",
+    tagline: "Pay as you go flexibility",
+    priceDisplay: "₹700",
+    period: "/month",
+    billingNote: "Billed ₹700 every month",
     popular: false,
     features: [
-      { name: "Up to 100 invoices/month", included: true },
-      { name: "GST-compliant invoicing (CGST/SGST/IGST)", included: true },
-      { name: "HSN/SAC code library", included: true },
-      { name: "Offline-first with cloud sync", included: true },
-      { name: "Professional PDF generation", included: true },
-      { name: "WhatsApp & Email delivery", included: true },
-      { name: "Automated payment reminders (3)", included: true },
-      { name: "Basic GSTR-1 export", included: true },
-      { name: "Single user access", included: true },
-      { name: "Email support", included: true },
-      { name: "Advanced reporting & analytics", included: false },
-      { name: "Multi-user team access", included: false },
-      { name: "Unlimited invoices", included: false },
-      { name: "Priority WhatsApp/SMS support", included: false },
-      { name: "Dedicated account manager", included: false },
+      { name: "Unlimited GST Invoices", included: true },
+      { name: "Customer Khata & Ledger", included: true },
+      { name: "1-Click WhatsApp & SMS Send", included: true },
+      { name: "GSTR-1 JSON & Excel Export", included: true },
+      { name: "100% Offline SQLite Storage", included: true },
+      { name: "Real-time Cloud Sync & Backup", included: true },
+      { name: "A4 & POS Thermal Print Layouts", included: true },
+      { name: "Priority CA Setup Assistance", included: false },
+      { name: "Multi-User Role Permissions", included: false },
     ],
   },
   {
-    name: "Professional",
-    tagline: "For growing businesses",
-    monthlyPrice: 1999,
-    yearlyPrice: 19990,
+    name: "6-Month Saver",
+    tagline: "For growing retail stores & traders",
+    priceDisplay: "₹600",
+    period: "/month",
+    billingNote: "₹3,600 billed every 6 months (Save ₹600)",
     popular: true,
     features: [
-      { name: "Up to 100 invoices/month", included: true },
-      { name: "GST-compliant invoicing (CGST/SGST/IGST)", included: true },
-      { name: "HSN/SAC code library", included: true },
-      { name: "Offline-first with cloud sync", included: true },
-      { name: "Professional PDF generation", included: true },
-      { name: "WhatsApp & Email delivery", included: true },
-      { name: "Automated payment reminders (3)", included: true },
-      { name: "Basic GSTR-1 export", included: true },
-      { name: "Single user access", included: true },
-      { name: "Email support", included: true },
-      { name: "Advanced reporting & analytics", included: true },
-      { name: "Multi-user team access (5 users)", included: true },
-      { name: "Unlimited invoices", included: true },
-      { name: "Priority WhatsApp/SMS support", included: true },
-      { name: "Dedicated account manager", included: false },
+      { name: "Unlimited GST Invoices", included: true },
+      { name: "Customer Khata & Ledger", included: true },
+      { name: "1-Click WhatsApp & SMS Send", included: true },
+      { name: "GSTR-1 JSON & Excel Export", included: true },
+      { name: "100% Offline SQLite Storage", included: true },
+      { name: "Real-time Cloud Sync & Backup", included: true },
+      { name: "A4 & POS Thermal Print Layouts", included: true },
+      { name: "Priority CA Setup Assistance", included: true },
+      { name: "Multi-User Role Permissions (2 users)", included: true },
     ],
   },
   {
-    name: "Enterprise",
-    tagline: "For established companies",
-    monthlyPrice: 4999,
-    yearlyPrice: 49990,
+    name: "Annual Pro",
+    tagline: "Best value for established stores",
+    priceDisplay: "₹500",
+    period: "/month",
+    billingNote: "₹6,000 billed annually (Save ₹2,400!)",
     popular: false,
     features: [
-      { name: "Up to 100 invoices/month", included: true },
-      { name: "GST-compliant invoicing (CGST/SGST/IGST)", included: true },
-      { name: "HSN/SAC code library", included: true },
-      { name: "Offline-first with cloud sync", included: true },
-      { name: "Professional PDF generation", included: true },
-      { name: "WhatsApp & Email delivery", included: true },
-      { name: "Automated payment reminders (3)", included: true },
-      { name: "Basic GSTR-1 export", included: true },
-      { name: "Single user access", included: true },
-      { name: "Email support", included: true },
-      { name: "Advanced reporting & analytics", included: true },
-      { name: "Multi-user team access (5 users)", included: true },
-      { name: "Unlimited invoices", included: true },
-      { name: "Priority WhatsApp/SMS support", included: true },
-      { name: "Dedicated account manager", included: true },
+      { name: "Unlimited GST Invoices", included: true },
+      { name: "Customer Khata & Ledger", included: true },
+      { name: "1-Click WhatsApp & SMS Send", included: true },
+      { name: "GSTR-1 JSON & Excel Export", included: true },
+      { name: "100% Offline SQLite Storage", included: true },
+      { name: "Real-time Cloud Sync & Backup", included: true },
+      { name: "A4 & POS Thermal Print Layouts", included: true },
+      { name: "Priority CA Setup Assistance", included: true },
+      { name: "Multi-User Role Permissions (5 users)", included: true },
     ],
   },
-];
-
-const billingPeriods = [
-  { value: "monthly", label: "Monthly", savings: null },
-  { value: "yearly", label: "Yearly", savings: "Save 20%" },
 ];
 
 export function PricingSection() {
@@ -109,42 +89,8 @@ export function PricingSection() {
             <span className="ink-handwriting text-brand-accent">fits your business</span>
           </h2>
           <p className="ink-body text-body-lg text-text-secondary max-w-2xl mx-auto">
-            All plans include a 14-day free trial. No credit card required. Cancel anytime. Yearly billing saves 20% — like getting 2.5 months free.
+            All plans include a 14-day free trial. No credit card required. Cancel anytime. Choose Monthly, 6 Months, or Yearly billing to maximize your savings.
           </p>
-        </motion.div>
-
-        {/* Billing Toggle */}
-        <motion.div
-          className="flex justify-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="paper-card p-1 flex items-center gap-1 rounded-paper-lg" style={{ width: 'fit-content' }}>
-            {billingPeriods.map((period) => (
-              <button
-                key={period.value}
-                className={`relative px-6 py-3 rounded-paper font-medium text-sm transition-all duration-300 ease-spring flex items-center gap-2 ${
-                  period.value === 'monthly'
-                    ? 'bg-brand-primary text-surface shadow-paper'
-                    : 'text-text-secondary hover:text-text-primary'
-                }`}
-              >
-                {period.label}
-                {period.savings && (
-                  <motion.span
-                    className="badge-gold text-xs px-2 py-0.5 -ml-1"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3, type: "spring" }}
-                  >
-                    {period.savings}
-                  </motion.span>
-                )}
-              </button>
-            ))}
-          </div>
         </motion.div>
 
         {/* Pricing Cards */}
@@ -208,14 +154,14 @@ export function PricingSection() {
                 {/* Price */}
                 <div className="mb-4">
                   <span className="text-5xl lg:text-6xl font-bold ink-heading text-gradient-ink">
-                    ₹{plan.monthlyPrice.toLocaleString()}
+                    {plan.priceDisplay}
                   </span>
-                  <span className="ink-body text-text-muted ml-2">/month</span>
+                  <span className="ink-body text-text-muted ml-2">{plan.period}</span>
                 </div>
                 
                 {/* Yearly price hint */}
                 <p className="ink-body text-sm text-brand-accent font-medium">
-                  ₹{plan.yearlyPrice.toLocaleString()}/year (save ₹{(plan.monthlyPrice * 12 - plan.yearlyPrice).toLocaleString()})
+                  {plan.billingNote}
                 </p>
               </div>
 
