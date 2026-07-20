@@ -8,7 +8,7 @@ export default function CTA() {
           Ready to Simplify Your GST Billing?
         </h2>
         <p className="text-xl text-white/90 mb-8">
-          Join thousands of small business owners who trust GSTBill for their GST compliance needs.
+          Experience the modern desktop & cloud GST billing solution built specifically for Indian businesses.
         </p>
         <motion.button
           whileHover={{ scale: 1.05 }}

@@ -2,12 +2,12 @@ import { motion } from "framer-motion";
 import { Star, ShieldCheck, Zap, Award, CheckCircle2, Heart } from "lucide-react";
 
 const trustItems = [
-  { icon: Star, text: "4.9★ Rated on SoftwareSuggest & Capterra", color: "text-stamp-gold" },
-  { icon: ShieldCheck, text: "100% GST & GSTR-1 Compliant Architecture", color: "text-stamp-green" },
-  { icon: Zap, text: "12,000+ Bills Generated Every Single Day", color: "text-fountain" },
-  { icon: Award, text: "Works 100% Offline on Any Windows PC", color: "text-stamp-red" },
-  { icon: CheckCircle2, text: "Zero Cloud Dependency — Your Data Stays Yours", color: "text-stamp-green" },
-  { icon: Heart, text: "Loved & Recommended by 500+ CAs across India", color: "text-stamp-red" },
+  { icon: ShieldCheck, text: "100% GST & GSTR-1 Portal Compliant Architecture", color: "text-stamp-green" },
+  { icon: Zap, text: "Real-Time Supabase Cloud Backup & Multi-Device Sync", color: "text-fountain" },
+  { icon: Award, text: "Works Smoothly Offline on Any Windows PC", color: "text-stamp-red" },
+  { icon: CheckCircle2, text: "Live GSTIN Sandbox & Cloud Caching Engine", color: "text-stamp-green" },
+  { icon: Star, text: "Instant QR Code & Professional Tax Invoice Generation", color: "text-stamp-gold" },
+  { icon: Heart, text: "Engineered for Indian Retailers, Wholesalers & Distributors", color: "text-stamp-red" },
 ];
 
 export function SocialProofStrip() {

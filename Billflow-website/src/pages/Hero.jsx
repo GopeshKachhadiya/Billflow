@@ -13,7 +13,7 @@ export default function Hero() {
           Simplify Your GST Billing
         </h1>
         <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-          GSTBill is an intuitive GST billing software designed specifically for small business owners. Generate compliant invoices, track expenses, and file returns with ease.
+          BillFlow is an intuitive, offline-first GST billing and inventory software with real-time Supabase cloud sync. Generate professional tax invoices, track item catalogs, and export GSTR-1 data with ease.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <motion.button

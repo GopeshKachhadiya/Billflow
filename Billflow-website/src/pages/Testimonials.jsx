@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 
 export default function Testimonials() {
   const testimonials = [
@@ -8,7 +8,7 @@ export default function Testimonials() {
       location: "Mumbai",
       rating: 5,
       comment:
-        "GSTBill has completely transformed how we handle our invoicing and GST compliance. The automated GST filing feature has saved us countless hours each month.",
+        "BillFlow has completely transformed how we handle our invoicing and GST compliance. The GSTR-1 JSON export and instant tax invoice generation have saved us countless hours each month.",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face"
     },
     {
@@ -55,7 +55,7 @@ export default function Testimonials() {
                 <div>
                   <h3 className="font-bold">{testimonial.name}</h3>
                   <p className="text-sm text-gray-500">
-                    {testimonial.business} � {testimonial.location}
+                    {testimonial.business} • {testimonial.location}
                   </p>
                 </div>
               </div>

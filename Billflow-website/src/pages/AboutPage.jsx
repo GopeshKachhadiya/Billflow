@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ShieldCheck, Heart, Award, Users, MapPin, Sparkles, PenTool, Lock, WifiOff, CheckCircle2 } from "lucide-react";
 import { CTASection } from "../components/CTASection";
+import { ProblemSolutionSection } from "../components/home/ProblemSolutionSection";
 
 export function AboutPage() {
   return (
@@ -37,6 +38,9 @@ export function AboutPage() {
           </motion.p>
         </div>
       </section>
+
+      {/* Problem vs Solution */}
+      <ProblemSolutionSection />
 
       {/* Philosophy Section */}
       <section className="section-padding">
@@ -117,23 +121,23 @@ export function AboutPage() {
       <section className="section-padding">
         <div className="section-container max-w-4xl mx-auto text-center">
           <div className="paper-card p-8 sm:p-12 rounded-paper-xl bg-surface text-text-primary border border-border">
-            <h2 className="font-serif text-3xl font-bold mb-8 text-fountain">Our Impact Across India</h2>
+            <h2 className="font-serif text-3xl font-bold mb-8 text-fountain">Built for Seamless GST Compliance</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-border">
               <div className="pt-4 md:pt-0">
-                <div className="font-mono text-3xl sm:text-4xl font-extrabold text-text-primary">12,000+</div>
-                <div className="text-xs text-text-muted mt-1">Daily Invoices</div>
+                <div className="font-mono text-3xl sm:text-4xl font-extrabold text-text-primary">30s</div>
+                <div className="text-xs text-text-muted mt-1">Avg. Invoice Creation</div>
               </div>
               <div className="pt-4 md:pt-0">
-                <div className="font-mono text-3xl sm:text-4xl font-extrabold text-stamp-gold">28</div>
-                <div className="text-xs text-text-muted mt-1">States & UTs Active</div>
+                <div className="font-mono text-3xl sm:text-4xl font-extrabold text-stamp-gold">100%</div>
+                <div className="text-xs text-text-muted mt-1">Offline & Cloud Sync</div>
               </div>
               <div className="pt-4 md:pt-0">
-                <div className="font-mono text-3xl sm:text-4xl font-extrabold text-stamp-green">₹45 Cr+</div>
-                <div className="text-xs text-text-muted mt-1">Monthly GST Tracked</div>
+                <div className="font-mono text-3xl sm:text-4xl font-extrabold text-stamp-green">28</div>
+                <div className="text-xs text-text-muted mt-1">States & UTs Supported</div>
               </div>
               <div className="pt-4 md:pt-0">
-                <div className="font-mono text-3xl sm:text-4xl font-extrabold text-text-primary">4.9 / 5</div>
-                <div className="text-xs text-text-muted mt-1">Customer Rating</div>
+                <div className="font-mono text-3xl sm:text-4xl font-extrabold text-text-primary">100%</div>
+                <div className="text-xs text-text-muted mt-1">GSTR-1 Portal Ready</div>
               </div>
             </div>
           </div>

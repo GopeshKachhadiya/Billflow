@@ -100,9 +100,9 @@ export function CTASection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
             >
-              Join 10,000+ Indian businesses who've ditched the paper ledger for BillFlow. 
-              Same familiar feel — zero manual GST calculations, automated WhatsApp reminders, 
-              and peace of mind.
+              Ditch the paper ledger and slow accounting software for BillFlow. 
+              Enjoy a clean digital interface — zero manual GST calculations, automated WhatsApp reminders, 
+              and complete peace of mind.
             </motion.p>
 
             {/* Quick Benefits */}

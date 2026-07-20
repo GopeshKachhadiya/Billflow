@@ -20,6 +20,7 @@ import {
   Database,
   RefreshCw
 } from "lucide-react";
+import { ComparisonSection } from "../components/home/ComparisonSection";
 import { CTASection } from "../components/CTASection";
 
 const categories = [
@@ -270,6 +271,9 @@ export function FeaturesPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Competitor Comparison */}
+      <ComparisonSection />
 
       {/* CTA Bottom Banner */}
       <CTASection />

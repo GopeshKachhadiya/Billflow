@@ -99,7 +99,7 @@ export function TestimonialsSection() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
           <motion.span className="badge-gold inline-block mb-4" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
-            Trusted by 10,000+ Indian businesses
+            Built for Indian Wholesalers & Retailers
           </motion.span>
           <h2 id="testimonials-heading" className="ink-heading text-display-md mb-4 text-gradient-ink">
             What our customers
@@ -289,7 +289,7 @@ export function TestimonialsSection() {
           transition={{ duration: 0.7, delay: 0.4 }}
         >
           <h3 className="ink-heading text-display-sm mb-4 max-w-2xl mx-auto">
-            Ready to join 10,000+ happy customers?
+            Ready to experience effortless GST billing?
           </h3>
           <p className="ink-body text-body-lg text-text-secondary mb-6 max-w-xl mx-auto">
             Start your 14-day free trial today. Experience the comfort of pen & paper with the power of automation.

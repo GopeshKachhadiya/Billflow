@@ -3,10 +3,10 @@ import { useEffect, useState, useRef } from "react";
 import { TrendingUp, ShieldCheck, Star, Clock } from "lucide-react";
 
 const stats = [
-  { icon: TrendingUp, value: 12000, suffix: "+", label: "Daily GST Bills Generated", sub: "Across 28 states & UTs" },
-  { icon: ShieldCheck, value: 45, prefix: "₹", suffix: " Cr+", label: "Monthly GST Vol Tracked", sub: "100% Tax Compliant" },
-  { icon: Star, value: 4.9, decimals: 1, suffix: " / 5", label: "Average User Rating", sub: "Verified on SoftwareSuggest" },
-  { icon: Clock, value: 30, suffix: " Sec", label: "Average Bill Creation Time", sub: "Fastest in Indian market" },
+  { icon: Clock, value: 30, suffix: "s", label: "Fast & Effortless Invoicing", sub: "Create GST bills in seconds" },
+  { icon: ShieldCheck, value: 100, suffix: "%", label: "Offline-First Reliability", sub: "Works 24/7 without internet dependency" },
+  { icon: TrendingUp, value: 100, suffix: "%", label: "GSTR-1 Portal Ready", sub: "Auto-calibrated JSON exports" },
+  { icon: Star, value: 100, suffix: "%", label: "Supabase Cloud Sync", sub: "Real-time multi-device backup & sync" },
 ];
 
 function AnimatedCounter({ value, prefix = "", suffix = "", decimals = 0 }) {
