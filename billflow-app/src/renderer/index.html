@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BillFlow</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*; img-src 'self' data:;">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-modern.css">
+  <!-- Vendor libraries (exposed as globals in renderer context) -->
+  <script src="js/vendor/gst-calculator.js"></script>
+  <script src="js/vendor/amount-to-words.js"></script>
+  <script src="js/vendor/date-utils.js"></script>
+  <script src="js/vendor/format-currency.js"></script>
+  <script src="js/vendor/state-codes.js"></script>
+  <script src="js/vendor/qrcode.min.js"></script>
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top logo bar and user status -->
+    <div id="topbar">
+      <div id="topbar-logo-wrapper" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="loadPage('dashboard')">
+        <div class="logo-mark" style="width: 34px; height: 34px; border-radius: 6px; background-color: var(--color-surface-elevated); border: 1.5px solid var(--color-primary); display: flex; align-items: flex-start; justify-content: flex-start; padding: 2px 0 0 5px; position: relative; overflow: hidden; box-shadow: var(--shadow-paper); flex-shrink: 0;">
+          <span style="font-family: var(--font-serif); font-weight: 900; font-size: 22px; color: var(--color-primary); user-select: none; line-height: 1;">B</span>
+          <div style="position: absolute; inset: 0; background: linear-gradient(135deg, transparent, rgba(168, 141, 46, 0.25), transparent);"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; justify-content: center;">
+          <span id="topbar-logo" style="font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--color-primary); line-height: 1.1; letter-spacing: -0.5px;">BillFlow</span>
+          <span style="font-family: var(--font-mono); font-size: 9px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: -2px;">The Digital Ledger</span>
+        </div>
+      </div>
+      <div id="topbar-right">
+        <span id="user-email"></span>
+        <button id="logout-btn" class="btn" style="display: none;">Logout</button>
+      </div>
+    </div>
+    <!-- Main layout panel -->
+    <div id="main-layout">
+      <!-- Navigation Sidebar -->
+      <nav id="sidebar" style="display: none;">
+        <ul>
+          <li><a href="#" data-page="dashboard" class="active">Dashboard</a></li>
+          <li><a href="#" data-page="bills-list">Bills</a></li>
+          <li><a href="#" data-page="customers-list">Customers</a></li>
+          <li><a href="#" data-page="catalog-list">Items</a></li>
+          <li><a href="#" data-page="reports">Reports</a></li>
+          <li><a href="#" data-page="settings">Settings</a></li>
+        </ul>
+      </nav>
+      <!-- Page Content Viewer -->
+      <main id="content">
+        <div class="page-loading">Loading...</div>
+      </main>
+    </div>
+    <!-- Status footer -->
+    <div id="statusbar">
+      <span id="sync-badge">● Synced</span>
+      <span id="app-version">v1.0.0</span>
+    </div>
+  </div>
+  <!-- Support Chatbot Widget -->
+  <div id="support-bot-container" class="no-print" style="position: fixed; bottom: 40px; right: 24px; z-index: 1000; font-family: var(--font-sans);">
+    <button id="btn-support-bot" style="width: 50px; height: 50px; border-radius: 50%; background-color: var(--color-primary); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.25); position: relative; transition: transform 0.2s ease;">
+      <span style="font-size: 22px;">💬</span>
+      <span id="support-bot-ping" style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background-color: var(--color-warning); border-radius: 50%; border: 2px solid var(--color-surface);"></span>
+    </button>
+    
+    <div id="support-bot-card" style="display: none; position: absolute; bottom: 65px; right: 0; width: 330px; height: 420px; background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; box-shadow: var(--shadow-paper-md); flex-direction: column; overflow: hidden;">
+      <div style="background-color: var(--color-primary); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 24px; height: 24px; border-radius: 50%; background-color: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-weight: bold; font-family: var(--font-serif); font-size: 13px;">B</div>
+          <span style="font-weight: 600; font-size: 13px;">BillFlow Priority Support</span>
+        </div>
+        <button id="btn-close-support-bot" style="background: none; border: none; color: #fff; opacity: 0.8; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1;">×</button>
+      </div>
+      
+      <div id="support-bot-messages" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background-color: #fdfbf7;">
+        <div style="align-self: flex-start; max-width: 85%; padding: 8px 12px; border-radius: 8px 8px 8px 0; background-color: var(--color-surface-elevated); border: 1px solid var(--color-border); font-size: 12px; line-height: 1.4; color: var(--color-text);">
+          Hello! Welcome to priority support. 🤖 I can raise a support ticket and schedule a call back from customer care. To get started, please tell me your name.
+        </div>
+      </div>
+      
+      <div id="support-bot-topics" style="display: none; padding: 8px 16px; background-color: #faf6e6; border-top: 1px solid var(--color-border); flex-direction: column; gap: 6px;"></div>
+      
+      <div id="support-bot-footer" style="padding: 10px 16px; border-top: 1px solid var(--color-border); background-color: var(--color-surface); display: flex; gap: 8px; align-items: center;">
+        <input type="text" id="support-bot-input" placeholder="Type your name..." style="flex: 1; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 12px; background-color: #fff; color: var(--color-text);" />
+        <button id="btn-send-support-bot" style="width: 28px; height: 28px; border-radius: 4px; background-color: var(--color-primary); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;">➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application components -->
+  <script src="js/components/toast.js"></script>
+  <script src="js/components/modal.js"></script>
+  <script src="js/components/sync-status.js"></script>
+  <script src="js/components/form-validator.js"></script>
+  <script src="js/components/support-chatbot.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

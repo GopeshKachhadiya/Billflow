@@ -1,0 +1,568 @@
+<style>
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #content, #content * {
+    visibility: visible;
+  }
+  #content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .invoice-container {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+  }
+}
+
+.invoice-container {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  width: 794px; /* A4 width at 96 DPI */
+  height: 1123px; /* A4 height at 96 DPI */
+  margin: 0 auto 24px auto;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+/* Classic Boxy GST Layout Styles */
+.classic-invoice {
+  width: 100%;
+  height: 100%;
+  border: 2px solid #000;
+  font-family: 'Inter', sans-serif;
+  color: #000;
+  background: #fff;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Header Section */
+.classic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #000;
+  padding: 12px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.classic-header-left {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  max-width: 70%;
+}
+.classic-header-logo {
+  max-height: 55px;
+  max-width: 55px;
+  object-fit: contain;
+}
+.classic-biz-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.classic-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-weight: bold;
+  text-align: right;
+  font-size: 11px;
+}
+
+/* Split details under header */
+.classic-grid-2 {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr; /* 70% vs 30% */
+  width: 100%;
+  flex-shrink: 0;
+}
+.classic-col-left {
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
+.classic-col-right {
+  border-bottom: 2px solid #000;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.classic-invoice-title-box {
+  background-color: #f2f2f2;
+  border-bottom: 2px solid #000;
+  font-weight: bold;
+  text-align: center;
+  padding: 6px;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+.classic-invoice-details-table {
+  width: 100%;
+  padding: 8px 12px;
+  border-collapse: collapse;
+  box-sizing: border-box;
+}
+.classic-invoice-details-table td {
+  border: none !important;
+  padding: 3px 0;
+}
+
+/* Items Table */
+.classic-table-wrapper {
+  flex-grow: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.classic-table {
+  width: 100%;
+  border-collapse: collapse;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+.classic-table thead, .classic-table tfoot {
+  flex-shrink: 0;
+}
+.classic-table tbody {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.classic-table tr {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+}
+.classic-table th, .classic-table td {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  box-sizing: border-box;
+  font-size: 11px;
+}
+.classic-table th {
+  background: #f2f2f2;
+  text-transform: uppercase;
+  font-weight: bold;
+  justify-content: center;
+  border-right: 1px solid #000;
+  border-bottom: 1px solid #000;
+  height: 28px;
+}
+.classic-table th:last-child {
+  border-right: none;
+}
+.classic-table td {
+  border-right: 1px solid #000;
+  height: 24px;
+}
+.classic-table td:last-child {
+  border-right: none;
+}
+.classic-table tbody tr:not(.spacer-row) td {
+  border-bottom: 1px solid #000;
+}
+.classic-table tbody tr.spacer-row {
+  flex-grow: 1;
+  height: auto;
+}
+.classic-table tbody tr.spacer-row td {
+  flex-grow: 1;
+  height: 100%;
+  border-bottom: none;
+}
+.classic-table tfoot tr {
+  height: 28px;
+  border-top: 2px solid #000;
+  border-bottom: 1px solid #000;
+  font-weight: bold;
+  background: #f9f9f9;
+}
+.classic-table tfoot td {
+  justify-content: center;
+  height: 100%;
+  border-right: none;
+}
+
+/* Summary Grid */
+.classic-summary-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr; /* 65% vs 35% */
+  border-top: none;
+  width: 100%;
+  flex-shrink: 0;
+}
+.classic-summary-left {
+  border-right: 2px solid #000;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 115px;
+  box-sizing: border-box;
+}
+.classic-summary-right {
+  padding: 8px 12px;
+  height: 115px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+.classic-totals-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.classic-total-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 11px;
+}
+.classic-total-row.grand-total {
+  font-weight: bold;
+  font-size: 13px;
+  border-top: 1.5px solid #000;
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+/* Footer Grid */
+.classic-footer-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.5fr 0.6fr 0.4fr; /* 4-column layout */
+  border-top: 2px solid #000;
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.classic-footer-col {
+  padding: 8px;
+  height: 86px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 2px solid #000;
+}
+.classic-footer-col:last-child {
+  border-right: none;
+}
+.classic-footer-col.center-align {
+  align-items: center;
+  text-align: center;
+}
+</style>
+
+<div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <button id="btn-back" class="btn">← Back to List</button>
+  <div style="display: flex; gap: 12px; align-items: center;">
+    <button id="btn-send-reminder" class="btn" style="background-color: var(--color-warning); color: white; border-color: var(--color-warning); display: none;">Send Reminder</button>
+    <button id="btn-download-pdf" class="btn">Download PDF</button>
+    <button id="btn-print" class="btn">Print Invoice</button>
+    <button id="btn-send-whatsapp" class="btn" style="background-color: #25D366; color: white; border-color: #25D366;">Send (WhatsApp)</button>
+    <button id="btn-print-send" class="btn btn-primary">Print & Send</button>
+  </div>
+</div>
+
+<div class="invoice-container" style="padding: 20px;">
+  <div class="classic-invoice" style="border: 2px solid #000; font-family: 'Inter', sans-serif; font-size: 11.5px; color: #000; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; background-color: #fff;">
+    
+    <!-- Top centering red text -->
+    <div style="text-align: center; color: red; font-weight: bold; font-size: 10px; padding: 4px 0; border-bottom: 2px solid #000;">
+      !! SHREE GANESHAI NAMAH !!
+    </div>
+    
+    <!-- Header: Company Info -->
+    <div style="text-align: center; padding: 8px 12px; border-bottom: 2px solid #000; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+      <!-- Logo left-aligned if present -->
+      <img id="logo" style="max-height: 55px; max-width: 55px; object-fit: contain; position: absolute; left: 15px; top: 15px; display: none;">
+      <h2 id="biz-name" style="font-size: 24px; font-weight: 800; color: #0f3080; margin: 0 0 4px 0; text-align: center; letter-spacing: 0.5px;">Your Business Name</h2>
+      <div id="biz-address" style="font-size: 10px; font-weight: 600; margin-bottom: 2px; text-transform: uppercase;">OFFICE NO-4, GROUND FLOOR, ROYAL ARCADE, OPP. MAITRI BUILDING, GITANJALI, VARACHHA,</div>
+      <div id="biz-contact" style="font-size: 10px; font-weight: 600;">sutariya.yarn@gmail.com (MO) : 9979139212</div>
+    </div>
+    
+    <!-- GST / State / PAN row -->
+    <div style="display: flex; justify-content: space-between; padding: 6px 12px; border-bottom: 2px solid #000; font-weight: bold; font-size: 10.5px;">
+      <div>GST No.: <span id="biz-gstin">—</span></div>
+      <div>State : <span id="biz-state">24 GUJARAT</span></div>
+      <div>PAN : <span id="biz-pan">—</span></div>
+    </div>
+    
+    <!-- Tax Invoice Bar -->
+    <div style="text-align: center; background-color: #f2f2f2; font-weight: bold; font-size: 12px; padding: 5px; border-bottom: 2px solid #000; letter-spacing: 1px;">
+      TAX INVOICE
+    </div>
+    
+    <!-- Invoice Details & Order Details split section -->
+    <div style="display: grid; grid-template-columns: 1fr 1.1fr; border-bottom: 2px solid #000;">
+      <!-- Left: Invoice Info -->
+      <div style="border-right: 2px solid #000; padding: 8px 12px; display: flex; flex-direction: column; justify-content: center;">
+        <div style="font-weight: bold; font-size: 10.5px; color: #555; margin-bottom: 6px;">Invoice Detail:</div>
+        <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
+          <span style="font-weight: bold; font-size: 12px; width: 90px;">Invoice No.</span>
+          <span style="font-weight: bold; font-size: 15px; color: #0f3080;">: <span id="inv-number">—</span></span>
+        </div>
+        <div style="display: flex; align-items: baseline;">
+          <span style="font-weight: bold; font-size: 12px; width: 90px;">Date</span>
+          <span style="font-weight: bold; font-size: 13px; color: #0f3080;">: <span id="inv-date">—</span></span>
+        </div>
+      </div>
+      
+      <!-- Right: Order & Party Info -->
+      <div style="padding: 0; display: flex; flex-direction: column; font-size: 11px;">
+        <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; border-bottom: 1px solid #000; padding: 4px 10px; align-items: center; min-height: 22px;">
+          <div><strong>Order No:</strong> <span id="inv-order-no">—</span></div>
+          <div><strong>Order Date:</strong> <span id="inv-order-date">—</span></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; border-bottom: 1px solid #000; padding: 4px 10px; align-items: center; min-height: 22px;">
+          <div><strong>Due Days:</strong> <span id="inv-due-days">—</span></div>
+          <div><strong>Due Date:</strong> <span id="inv-due-date">—</span></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; padding: 4px 10px; align-items: center; min-height: 22px;">
+          <div><strong>Party Name:</strong> <span id="inv-party-name">—</span></div>
+          <div><strong>MO:</strong> <span id="inv-party-phone">—</span></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Receiver vs Consignee Details split section -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; border-bottom: 2px solid #000;">
+      <!-- Left: Receiver (Billed To) -->
+      <div style="border-right: 2px solid #000; padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 95px;">
+        <div>
+          <div style="color: red; font-weight: bold; font-size: 10px; margin-bottom: 4px; text-transform: uppercase;">Detail Of Receivers/Billed To.</div>
+          <div id="cust-name" style="font-weight: 800; font-size: 13px; color: #0f3080; margin-bottom: 3px;">DIVYLON JARI</div>
+          <div id="cust-address" style="font-size: 10.5px; line-height: 1.35; margin-bottom: 6px; white-space: pre-line;">PLOT NO. 53, 3RD FLOOR, KRISHNA INDUSTRIAL ESTATE...</div>
+        </div>
+        <div style="font-weight: bold; font-size: 10.5px; border-top: 1px dashed #ccc; padding-top: 4px; display: flex; justify-content: space-between;">
+          <div>GSTIN: <span id="cust-gstin">—</span></div>
+          <div>State: <span id="cust-state">—</span></div>
+        </div>
+      </div>
+      
+      <!-- Right: Consignee (Ship To) -->
+      <div style="padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 95px;">
+        <div>
+          <div style="color: red; font-weight: bold; font-size: 10px; margin-bottom: 4px; text-transform: uppercase;">Delivery Detail Of Consignee</div>
+          <div id="consignee-name" style="font-weight: 800; font-size: 13px; color: #0f3080; margin-bottom: 3px;">DIVYLON JARI</div>
+          <div id="consignee-address" style="font-size: 10.5px; line-height: 1.35; margin-bottom: 6px; white-space: pre-line;">PLOT NO. 53, 3RD FLOOR, KRISHNA INDUSTRIAL ESTATE...</div>
+        </div>
+        <div style="font-weight: bold; font-size: 10.5px; border-top: 1px dashed #ccc; padding-top: 4px; display: flex; justify-content: space-between;">
+          <div>GST No: <span id="consignee-gstin">—</span></div>
+          <div>State: <span id="consignee-state">—</span></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Transporter Details Row -->
+    <div style="display: grid; grid-template-columns: 1.2fr 0.8fr 1fr; padding: 6px 12px; border-bottom: 2px solid #000; font-size: 10.5px; line-height: 1.4;">
+      <div>
+        <div><strong>Transporter:</strong> <span id="transporter-val">—</span></div>
+        <div><strong>Transporter Gst No:</strong> <span id="transporter-gst-val">—</span></div>
+      </div>
+      <div>
+        <div><strong>L.R No:</strong> <span id="lr-number-val">—</span></div>
+        <div><strong>L.R Date:</strong> <span id="lr-date-val">—</span></div>
+      </div>
+      <div>
+        <div><strong>Veh.No.:</strong> <span id="vehicle-number-val">—</span></div>
+      </div>
+    </div>
+    
+    <!-- Items Table -->
+    <div style="flex-grow: 1; display: flex; flex-direction: column; min-height: 250px;">
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 0; flex-grow: 1;">
+        <thead>
+          <tr style="border-bottom: 2px solid #000; background-color: #f2f2f2; font-size: 10.5px; font-weight: bold;">
+            <th style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 35px;">Sr.</th>
+            <th style="border-right: 1px solid #000; padding: 5px; text-align: left;">Description of Goods</th>
+            <th style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 75px;">HSN</th>
+            <th style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 95px;">Lot No</th>
+            <th style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 65px;">Gread</th>
+            <th style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 50px;">Crtn</th>
+            <th style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 80px;">Weight</th>
+            <th style="border-right: 1px solid #000; padding: 5px; text-align: center; width: 50px;">UQC</th>
+            <th style="border-right: 1px solid #000; padding: 5px; text-align: right; width: 75px;">RATE</th>
+            <th style="padding: 5px; text-align: right; width: 85px;">AMOUNT</th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody" style="font-size: 11px;">
+          <!-- Dynamic rows inserted by JS -->
+        </tbody>
+        <tfoot>
+          <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; background-color: #f9f9f9; font-size: 11px; height: 28px;">
+            <td colspan="5" style="border-right: 1px solid #000; padding: 5px 12px; text-align: left;">Total ....</td>
+            <td id="total-cartons" style="border-right: 1px solid #000; padding: 5px 4px; text-align: center;">0</td>
+            <td id="total-qty" style="border-right: 1px solid #000; padding: 5px 4px; text-align: center;">0.000</td>
+            <td id="total-unit" style="border-right: 1px solid #000; padding: 5px 4px; text-align: center;">KGS</td>
+            <td style="border-right: 1px solid #000; padding: 5px 4px;"></td>
+            <td id="total-subtotal" style="padding: 5px 8px; text-align: right;">0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Below Table Message & Net Rate bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 12px; border-bottom: 2px solid #000; background-color: #fff; font-size: 10.5px; font-weight: bold;">
+      <div style="color: red;">NO RESPONSIBILITY FOR ANY DEFECT IN YARN AFTER DYEING & WEAVING &PROCESSING.</div>
+      <div style="color: #0f3080; font-size: 12px;">Net Rate : <span id="net-rate">0.00</span></div>
+    </div>
+    
+    <!-- Bottom Grid -->
+    <div style="display: grid; grid-template-columns: 1.25fr 0.75fr; font-size: 10.5px;">
+      <!-- Left side: E-Invoice, Words, Bank, Terms -->
+      <div style="border-right: 2px solid #000; padding: 8px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <!-- E-Invoice reference block -->
+          <div style="border: 1px solid #000; padding: 6px 10px; margin-bottom: 6px; line-height: 1.45;">
+            <div style="color: red; font-weight: bold; font-size: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 2px; margin-bottom: 4px;">A/C PAYEE'S RTGS-NEFT-IMPS ONLY.</div>
+            <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; margin-top: 2px;">
+              <div><strong>Company Name:</strong> <span id="company-name-val">—</span></div>
+              <div><strong>Company Bill No:</strong> <span id="company-bill-no-val">—</span></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1.2fr 0.8fr;">
+              <div><strong>Ack No:</strong> <span id="ack-no-val">—</span></div>
+              <div><strong>Ack Dt:</strong> <span id="ack-dt-val">—</span></div>
+            </div>
+            <div><strong>IRN No:</strong> <span id="irn-no-val" style="word-break: break-all;">—</span></div>
+          </div>
+          
+          <!-- Net payable in words -->
+          <div style="margin-bottom: 8px; font-size: 11px; line-height: 1.3;">
+            <strong>IN WORDS :</strong> <span id="amount-words" style="font-weight: bold; text-transform: uppercase;">—</span>
+          </div>
+          
+          <!-- Bank Details & QR -->
+          <div style="display: flex; gap: 15px; border-top: 1px solid #000; padding-top: 6px; margin-bottom: 6px;">
+            <div style="flex: 1; line-height: 1.45; font-size: 10.5px;">
+              <strong style="text-decoration: underline; display: block; margin-bottom: 2px;">Bank Details</strong>
+              <div><strong>Bank:</strong> <span id="bank-name-val">—</span></div>
+              <div><strong>A/c No:</strong> <span id="bank-account-val">—</span></div>
+              <div><strong>IFSC:</strong> <span id="bank-ifsc-val">—</span></div>
+              <div><strong>Branch:</strong> <span id="bank-branch-val">—</span></div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; border: 1px solid #eee; padding: 4px; border-radius: 4px;">
+              <div id="upi-qrcode" style="width: 76px; height: 76px; display: flex; align-items: center; justify-content: center;"></div>
+              <div style="font-size: 7px; font-weight: bold; margin-top: 4px; color: #555; text-align: center; word-break: break-all;">UPI ID: <span id="upi-id-val">—</span></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Terms and Sign -->
+        <div style="border-top: 1px solid #000; padding-top: 6px;">
+          <strong>Terms and Conditions :</strong>
+          <div id="inv-terms" style="font-size: 9px; line-height: 1.4; color: #333; margin-top: 2px; white-space: pre-line;">
+            1) The goods are dispatched on your account and at your risk & responsibility
+            2) Any complaint regarding goods should be reported in writing within- 24 hours of the receipt of the goods.
+            3) Goods sold will not be taken back.
+            4) Late payment 2.0% per month charges on account not paid within due course.
+            5) No working guarantee after 30 days from the date of delivery.
+          </div>
+          <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; font-weight: bold;">
+            <div style="width: 140px; border-top: 1px dashed #999; text-align: center; padding-top: 4px; font-size: 10px;">Receiver's Sign</div>
+            <div style="margin-right: 15px;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right side: Totals summary, NEFT grid, Seller Sign -->
+      <div style="display: flex; flex-direction: column; justify-content: space-between; padding: 8px;">
+        <!-- Totals list -->
+        <div style="line-height: 1.6; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px;">
+            <span>Sub Total ....</span>
+            <span id="summary-subtotal" style="font-weight: bold;">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: red; display: none;" id="row-discount">
+            <span>Discount (-)</span>
+            <span id="total-discount" style="font-weight: bold;">-₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; display: none;" id="row-cgst">
+            <span>CGST (+) <span id="cgst-rate-percent">2.5</span>%</span>
+            <span id="total-cgst" style="font-weight: bold;">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; display: none;" id="row-sgst">
+            <span>SGST (+) <span id="sgst-rate-percent">2.5</span>%</span>
+            <span id="total-sgst" style="font-weight: bold;">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; display: none;" id="row-igst">
+            <span>IGST (+) <span id="igst-rate-percent">5</span>%</span>
+            <span id="total-igst" style="font-weight: bold;">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px;" id="row-roundoff">
+            <span>Round off</span>
+            <span id="total-roundoff" style="font-weight: bold; font-style: italic;">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; border-top: 2px solid #000; padding-top: 6px; margin-top: 6px; color: #0f3080;">
+            <span>Net Amount :</span>
+            <span id="total-grand">₹0.00</span>
+          </div>
+        </div>
+        
+        <!-- NEFT-RTGS grid box -->
+        <div style="margin-bottom: 8px;">
+          <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 9.5px; text-align: left;">
+            <tr style="border-bottom: 1px solid #000; height: 20px;">
+              <td style="border-right: 1.5px solid #000; padding: 2px 6px; width: 85px; font-weight: bold; background-color: #fafafa;">Date</td>
+              <td style="padding: 2px 6px;"></td>
+            </tr>
+            <tr style="border-bottom: 1px solid #000; height: 20px;">
+              <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">NEFT-RTGS</td>
+              <td style="padding: 2px 6px;"></td>
+            </tr>
+            <tr style="border-bottom: 1px solid #000; height: 20px;">
+              <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">Amt</td>
+              <td style="padding: 2px 6px;"></td>
+            </tr>
+            <tr style="border-bottom: 1px solid #000; height: 20px;">
+              <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">Bank</td>
+              <td style="padding: 2px 6px;"></td>
+            </tr>
+            <tr style="height: 20px;">
+              <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">Bill No.</td>
+              <td style="padding: 2px 6px;"></td>
+            </tr>
+          </table>
+        </div>
+        
+        <!-- Seller Sign Block -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100px; text-align: center;">
+          <div style="color: red; font-weight: bold; font-size: 11px; margin-bottom: 4px;">For, <span id="seller-name-label">Your Business Name</span></div>
+          <div style="height: 40px; display: flex; align-items: center; justify-content: center;">
+            <img id="signature" style="max-height: 38px; display: none;">
+          </div>
+          <div style="font-weight: bold; font-size: 10px; border-top: 1.5px solid #000; width: 95%; padding-top: 4px; margin-top: 4px;">Authorised Signatory</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

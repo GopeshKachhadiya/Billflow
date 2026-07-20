@@ -1,13 +1,52 @@
 node_modules/
 dist/
+**/node_modules/
+**/dist/
+**/.gradle/
+**/.idea/
+**/build/
+local.properties
+**/local.properties
+
+# Environment & credentials — NEVER commit these
 .env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+bootstrap.json
+**/bootstrap.json
+
+# Database files
 data.db
+data.db-wal
+data.db-shm
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+**/*.db
+**/*.sqlite
+
+# WhatsApp session data
+wa-session/
+**/wa-session/
+
+# Logs
 *.log
+**/*.log
+
+# Python
 __pycache__/
 *.pyc
+
+# Misc sensitive files
 sbox_live_key.csv
 audit_report.txt
 audit_report_utf8.txt
+
+# Build artifacts & runtime data
 Billflow-website/vite.config.mjs.timestamp-*
 ChatGPT Image Jul 5, 2026, 11_16_31 PM.png
 data/
+**/data/

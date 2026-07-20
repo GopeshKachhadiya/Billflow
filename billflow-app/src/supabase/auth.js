@@ -1,0 +1,239 @@
+var fs   = require('fs');
+var path = require('path');
+var electron = require('electron');
+
+var _currentSession = null;
+var _currentUser    = null;
+var _currentProfile = null;
+
+function getSessionPath() {
+  try {
+    return path.join(electron.app.getPath('userData'), 'cloud_session.json');
+  } catch(e) {
+    return path.join(__dirname, '../../data/cloud_session.json');
+  }
+}
+
+function saveSessionToDisk(session, user, profile) {
+  _currentSession = session;
+  _currentUser    = user;
+  _currentProfile = profile;
+  try {
+    var p = getSessionPath();
+    var dir = path.dirname(p);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(p, JSON.stringify({
+      session: session,
+      user: user,
+      profile: profile,
+      saved_at: Date.now()
+    }, null, 2), 'utf8');
+  } catch(e) {
+    console.error('[auth] Failed to save cloud session to disk:', e.message);
+  }
+}
+
+function loadSessionFromDisk() {
+  if (_currentSession && _currentUser) {
+    return { session: _currentSession, user: _currentUser, profile: _currentProfile };
+  }
+  try {
+    var p = getSessionPath();
+    if (fs.existsSync(p)) {
+      var data = JSON.parse(fs.readFileSync(p, 'utf8'));
+      if (data && data.session && data.user) {
+        // Check if token expired
+        var now = Math.floor(Date.now() / 1000);
+        if (data.session.expires_at && data.session.expires_at < now) {
+          // Attempt refresh or mark as expired
+          console.log('[auth] Cached session expired on disk.');
+        } else {
+          _currentSession = data.session;
+          _currentUser    = data.user;
+          _currentProfile = data.profile || null;
+          // Set in Supabase client
+          var client = require('./client').getSupabaseClient();
+          if (client && _currentSession.access_token && _currentSession.refresh_token) {
+            client.auth.setSession({
+              access_token: _currentSession.access_token,
+              refresh_token: _currentSession.refresh_token
+            }).catch(function() {});
+          }
+          return data;
+        }
+      }
+    }
+  } catch(e) {
+    console.error('[auth] Failed to load cloud session from disk:', e.message);
+  }
+  return null;
+}
+
+function wipeSessionDisk() {
+  _currentSession = null;
+  _currentUser    = null;
+  _currentProfile = null;
+  try {
+    var p = getSessionPath();
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  } catch(e) {}
+}
+
+function checkProfileStatus(client, email, user, session, callback) {
+  // First check admin_users, then profiles
+  client
+    .from('admin_users')
+    .select('status, trial_end_date, license_key')
+    .eq('email', email)
+    .single()
+    .then(function(profileRes) {
+      if (!profileRes.error && profileRes.data) {
+        return evaluateProfileAndProceed(profileRes.data, user, session, callback);
+      }
+      // If not in admin_users, check profiles table
+      client
+        .from('profiles')
+        .select('status, trial_end_date, license_key')
+        .eq('id', user.id)
+        .single()
+        .then(function(profRes2) {
+          if (!profRes2.error && profRes2.data) {
+            return evaluateProfileAndProceed(profRes2.data, user, session, callback);
+          }
+          // Default profile if newly created or missing from both tables
+          var defaultProfile = { status: 'trial', trial_end_date: new Date(Date.now() + 14*86400000).toISOString().split('T')[0] };
+          return evaluateProfileAndProceed(defaultProfile, user, session, callback);
+        });
+    })
+    .catch(function(err) {
+      client.auth.signOut().catch(function() {});
+      callback({ success: false, error: 'Failed to verify account status: ' + err.message });
+    });
+}
+
+function evaluateProfileAndProceed(profile, user, session, callback) {
+  if (profile.status === 'suspended') {
+    require('./client').getSupabaseClient().auth.signOut().catch(function() {});
+    return callback({ success: false, error: 'Your account has been suspended. Please contact the administrator.' });
+  }
+  if (profile.status === 'cancelled') {
+    require('./client').getSupabaseClient().auth.signOut().catch(function() {});
+    return callback({ success: false, error: 'Your account has been cancelled.' });
+  }
+  if (profile.status === 'expired') {
+    require('./client').getSupabaseClient().auth.signOut().catch(function() {});
+    return callback({ success: false, error: 'Your subscription has expired.' });
+  }
+  if (profile.status === 'trial') {
+    var today = new Date().toISOString().split('T')[0];
+    if (profile.trial_end_date && profile.trial_end_date < today) {
+      require('./client').getSupabaseClient().auth.signOut().catch(function() {});
+      return callback({ success: false, error: 'Your trial has expired. Expiry date: ' + profile.trial_end_date });
+    }
+  }
+
+  // Save session and profile securely
+  saveSessionToDisk(session, user, profile);
+
+  // Sync settings/profile to local memory cache
+  var settings = require('../db/queries/settings');
+  settings.loadCloudSettings(user.id).then(function() {
+    callback({ success: true, mode: 'cloud', email: user.email, userId: user.id });
+  }).catch(function() {
+    callback({ success: true, mode: 'cloud', email: user.email, userId: user.id });
+  });
+}
+
+function login(email, password, callback) {
+  var normalizedEmail = (email || '').trim().toLowerCase();
+  if (!normalizedEmail || !password) {
+    return callback({ success: false, error: 'Please enter both email and password.' });
+  }
+
+  var client = require('./client').getSupabaseClient();
+  if (!client) {
+    return callback({ success: false, error: 'Supabase cloud connection is not configured. Please check your .env file or settings.' });
+  }
+
+  client.auth.signInWithPassword({ email: normalizedEmail, password: password })
+    .then(function(result) {
+      if (result.error || !result.data || !result.data.session) {
+        var msg = result.error ? result.error.message : 'Invalid login credentials';
+        return callback({ success: false, error: msg });
+      }
+
+      var session = result.data.session;
+      var user    = result.data.user;
+      checkProfileStatus(client, normalizedEmail, user, session, callback);
+    })
+    .catch(function(err) {
+      callback({ success: false, error: 'Authentication request failed: ' + err.message });
+    });
+}
+
+function logout() {
+  try {
+    var client = require('./client').getSupabaseClient();
+    if (client) { client.auth.signOut().catch(function() {}); }
+  } catch(e) {}
+  wipeSessionDisk();
+}
+
+function isLoggedIn() {
+  var loaded = loadSessionFromDisk();
+  if (!loaded || !loaded.session || !loaded.user) return false;
+
+  var now = Math.floor(Date.now() / 1000);
+  if (loaded.session.expires_at && loaded.session.expires_at < now) {
+    return false;
+  }
+  if (loaded.profile) {
+    var status = loaded.profile.status;
+    if (status === 'suspended' || status === 'cancelled' || status === 'expired') return false;
+    if (status === 'trial' && loaded.profile.trial_end_date) {
+      var today = new Date().toISOString().split('T')[0];
+      if (loaded.profile.trial_end_date < today) return false;
+    }
+  }
+  return true;
+}
+
+function getSession() {
+  var loaded = loadSessionFromDisk();
+  if (!loaded) return null;
+  return {
+    id: loaded.user.id,
+    email: loaded.user.email,
+    access_token: loaded.session.access_token,
+    refresh_token: loaded.session.refresh_token,
+    expires_at: loaded.session.expires_at,
+    status: loaded.profile ? loaded.profile.status : 'active',
+    trial_end_date: loaded.profile ? loaded.profile.trial_end_date : null
+  };
+}
+
+function refreshSession() {
+  var client = require('./client').getSupabaseClient();
+  var loaded = loadSessionFromDisk();
+  if (!client || !loaded || !loaded.session || !loaded.session.refresh_token) return;
+
+  client.auth.refreshSession({ refresh_token: loaded.session.refresh_token })
+    .then(function(result) {
+      if (result.error || !result.data.session) return;
+      saveSessionToDisk(result.data.session, result.data.user || loaded.user, loaded.profile);
+    })
+    .catch(function() {});
+}
+
+// Auto-restore session on startup if disk cache exists
+try {
+  loadSessionFromDisk();
+} catch(e) {}
+
+module.exports = {
+  login: login,
+  logout: logout,
+  isLoggedIn: isLoggedIn,
+  getSession: getSession,
+  refreshSession: refreshSession
+};

@@ -1,0 +1,140 @@
+var crypto = require('crypto');
+
+async function getClientAndUser() {
+  return await require('../../supabase/client').ensureAuthenticatedClient();
+}
+
+async function listItems(filter) {
+  filter = filter || {};
+  var ctx = await getClientAndUser();
+  var query = ctx.client
+    .from('items_catalog')
+    .select('*')
+    .eq('owner_id', ctx.userId)
+    .is('deleted_at', null);
+
+  if (filter.isActive !== undefined) {
+    query = query.eq('is_active', filter.isActive ? true : false);
+  }
+
+  if (filter.search && filter.search.trim()) {
+    var s = filter.search.trim();
+    query = query.or('name.ilike.%' + s + '%,hsn_sac.ilike.%' + s + '%,description.ilike.%' + s + '%');
+  }
+
+  query = query.order('name', { ascending: true });
+
+  var res = await query;
+  if (res.error) throw new Error('Cloud items list error: ' + res.error.message);
+
+  return (res.data || []).map(function(item) {
+    return {
+      id: item.id,
+      name: item.name || '',
+      description: item.description || '',
+      hsn_sac: item.hsn_sac || '',
+      unit: item.unit || 'Nos',
+      unit_price: parseFloat(item.unit_price) || 0.00,
+      gst_rate: parseFloat(item.gst_rate) || 18.0,
+      is_active: item.is_active ? 1 : 0,
+      created_at: item.created_at,
+      updated_at: item.updated_at
+    };
+  });
+}
+
+async function getItem(id) {
+  var ctx = await getClientAndUser();
+  var res = await ctx.client
+    .from('items_catalog')
+    .select('*')
+    .eq('owner_id', ctx.userId)
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single();
+
+  if (res.error || !res.data) return null;
+  var item = res.data;
+  return {
+    id: item.id,
+    name: item.name || '',
+    description: item.description || '',
+    hsn_sac: item.hsn_sac || '',
+    unit: item.unit || 'Nos',
+    unit_price: parseFloat(item.unit_price) || 0.00,
+    gst_rate: parseFloat(item.gst_rate) || 18.0,
+    is_active: item.is_active ? 1 : 0,
+    created_at: item.created_at,
+    updated_at: item.updated_at
+  };
+}
+
+async function createItem(data) {
+  var ctx = await getClientAndUser();
+  var newId = crypto.randomUUID();
+  var now = new Date().toISOString();
+
+  var payload = {
+    id: newId,
+    owner_id: ctx.userId,
+    name: data.name || '',
+    description: data.description || '',
+    hsn_sac: data.hsn_sac || '',
+    unit: data.unit || 'Nos',
+    unit_price: parseFloat(data.unit_price) || 0.00,
+    gst_rate: parseFloat(data.gst_rate) || 18.0,
+    is_active: data.is_active !== undefined ? (data.is_active ? true : false) : true,
+    created_at: now,
+    updated_at: now
+  };
+
+  var res = await ctx.client.from('items_catalog').insert(payload).select().single();
+  if (res.error) throw new Error('Cloud item create error: ' + res.error.message);
+
+  return { id: res.data.id };
+}
+
+async function updateItem(id, data) {
+  var ctx = await getClientAndUser();
+  var now = new Date().toISOString();
+
+  var payload = {
+    updated_at: now
+  };
+  if (data.name !== undefined) payload.name = data.name;
+  if (data.description !== undefined) payload.description = data.description;
+  if (data.hsn_sac !== undefined) payload.hsn_sac = data.hsn_sac;
+  if (data.unit !== undefined) payload.unit = data.unit;
+  if (data.unit_price !== undefined) payload.unit_price = parseFloat(data.unit_price) || 0.00;
+  if (data.gst_rate !== undefined) payload.gst_rate = parseFloat(data.gst_rate) || 18.0;
+  if (data.is_active !== undefined) payload.is_active = data.is_active ? true : false;
+
+  var res = await ctx.client
+    .from('items_catalog')
+    .update(payload)
+    .eq('owner_id', ctx.userId)
+    .eq('id', id);
+
+  if (res.error) throw new Error('Cloud item update error: ' + res.error.message);
+  return { ok: true };
+}
+
+async function deleteItem(id) {
+  var ctx = await getClientAndUser();
+  var res = await ctx.client
+    .from('items_catalog')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('owner_id', ctx.userId)
+    .eq('id', id);
+
+  if (res.error) throw new Error('Cloud item delete error: ' + res.error.message);
+  return { ok: true };
+}
+
+module.exports = {
+  listItems: listItems,
+  getItem: getItem,
+  createItem: createItem,
+  updateItem: updateItem,
+  deleteItem: deleteItem
+};

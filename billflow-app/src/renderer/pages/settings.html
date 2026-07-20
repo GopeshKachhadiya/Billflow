@@ -1,0 +1,305 @@
+<div class="settings-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <h1>Settings</h1>
+  <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+  <!-- Tab navigation -->
+  <div class="tab-nav" style="display: flex; border-bottom: 1px solid var(--color-border); background: #F9FAFB;">
+    <button class="tab-link active" onclick="switchSettingsTab(event, 'tab-business')" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;">Business Profile</button>
+    <button class="tab-link" onclick="switchSettingsTab(event, 'tab-template')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Bill Template</button>
+    <button class="tab-link" onclick="switchSettingsTab(event, 'tab-integrations')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Integrations</button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content-container" style="padding: 24px;">
+    
+    <!-- Tab 1: Business Profile -->
+    <div id="tab-business" class="settings-tab-pane" style="display: block;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label>Business Name *</label>
+          <input type="text" id="s-business_name" placeholder="e.g. Acme Corporation">
+        </div>
+        <div class="form-group">
+          <label>GSTIN</label>
+          <input type="text" id="s-gstin" placeholder="e.g. 27AAAAA0000A1Z5">
+        </div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Address</label>
+          <textarea id="s-business_address" rows="2" placeholder="e.g. 123 Main St"></textarea>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" id="s-business_city" placeholder="e.g. Mumbai">
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <select id="s-business_state">
+            <option value="">Select State</option>
+            <!-- States (28) -->
+            <option value="Andhra Pradesh">Andhra Pradesh (37)</option>
+            <option value="Arunachal Pradesh">Arunachal Pradesh (12)</option>
+            <option value="Assam">Assam (18)</option>
+            <option value="Bihar">Bihar (10)</option>
+            <option value="Chhattisgarh">Chhattisgarh (22)</option>
+            <option value="Goa">Goa (30)</option>
+            <option value="Gujarat">Gujarat (24)</option>
+            <option value="Haryana">Haryana (06)</option>
+            <option value="Himachal Pradesh">Himachal Pradesh (02)</option>
+            <option value="Jharkhand">Jharkhand (20)</option>
+            <option value="Karnataka">Karnataka (29)</option>
+            <option value="Kerala">Kerala (32)</option>
+            <option value="Madhya Pradesh">Madhya Pradesh (23)</option>
+            <option value="Maharashtra">Maharashtra (27)</option>
+            <option value="Manipur">Manipur (14)</option>
+            <option value="Meghalaya">Meghalaya (17)</option>
+            <option value="Mizoram">Mizoram (15)</option>
+            <option value="Nagaland">Nagaland (13)</option>
+            <option value="Odisha">Odisha (21)</option>
+            <option value="Punjab">Punjab (03)</option>
+            <option value="Rajasthan">Rajasthan (08)</option>
+            <option value="Sikkim">Sikkim (11)</option>
+            <option value="Tamil Nadu">Tamil Nadu (33)</option>
+            <option value="Telangana">Telangana (36)</option>
+            <option value="Tripura">Tripura (16)</option>
+            <option value="Uttar Pradesh">Uttar Pradesh (09)</option>
+            <option value="Uttarakhand">Uttarakhand (05)</option>
+            <option value="West Bengal">West Bengal (19)</option>
+            <!-- Union Territories (8) -->
+            <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands (35)</option>
+            <option value="Chandigarh">Chandigarh (04)</option>
+            <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu (26)</option>
+            <option value="Delhi">Delhi (07)</option>
+            <option value="Jammu and Kashmir">Jammu and Kashmir (01)</option>
+            <option value="Ladakh">Ladakh (38)</option>
+            <option value="Lakshadweep">Lakshadweep (31)</option>
+            <option value="Puducherry">Puducherry (34)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>PIN Code</label>
+          <input type="text" id="s-business_pin" placeholder="e.g. 400001">
+        </div>
+        <div class="form-group">
+          <label>PAN</label>
+          <input type="text" id="s-pan" placeholder="e.g. ABCDE1234F">
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 16px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 8px; font-size: 15px;">Bank Details</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label>Bank Name</label>
+          <input type="text" id="s-bank_name" placeholder="e.g. HDFC Bank">
+        </div>
+        <div class="form-group">
+          <label>Account Number</label>
+          <input type="text" id="s-bank_account" placeholder="e.g. 50100012345678">
+        </div>
+        <div class="form-group">
+          <label>IFSC Code</label>
+          <input type="text" id="s-bank_ifsc" placeholder="e.g. HDFC0000001">
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Bill Template -->
+    <div id="tab-template" class="settings-tab-pane" style="display: none;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+        <div class="form-group">
+          <label>Bill Prefix</label>
+          <input type="text" id="s-bill_prefix" placeholder="e.g. INV-2026-">
+        </div>
+        <div class="form-group">
+          <label>Default GST Rate (%)</label>
+          <select id="s-default_gst_rate">
+            <option value="0">0%</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18" selected>18%</option>
+            <option value="28">28%</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>UPI ID (for dynamic QR Code)</label>
+          <input type="text" id="s-upi_id" placeholder="e.g. business@okaxis">
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 16px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 8px; font-size: 15px;">Business Branding (Invoice)</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+        <div class="form-group">
+          <label>Business Logo</label>
+          <input type="file" id="logo-upload" accept="image/*" style="display: none;">
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <button type="button" class="btn" onclick="document.getElementById('logo-upload').click()">Choose Logo</button>
+            <span id="logo-preview-name" style="font-size: 12px; color: var(--color-text-muted);">No image selected</span>
+          </div>
+          <input type="hidden" id="s-logo_data">
+          <div style="margin-top: 8px;">
+            <img id="logo-preview-img" style="max-height: 50px; display: none; border: 1px solid var(--color-border); padding: 4px; border-radius: 4px;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Authorised Signature</label>
+          <input type="file" id="signature-upload" accept="image/*" style="display: none;">
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <button type="button" class="btn" onclick="document.getElementById('signature-upload').click()">Choose Signature</button>
+            <span id="signature-preview-name" style="font-size: 12px; color: var(--color-text-muted);">No image selected</span>
+          </div>
+          <input type="hidden" id="s-signature_data">
+          <div style="margin-top: 8px;">
+            <img id="signature-preview-img" style="max-height: 50px; display: none; border: 1px solid var(--color-border); padding: 4px; border-radius: 4px;">
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 16px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 8px; font-size: 15px;">Additional GST Invoice Details</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label>Business Mobile No.</label>
+          <input type="text" id="s-business_phone" placeholder="e.g. 9876543210">
+        </div>
+        <div class="form-group">
+          <label>Business Email</label>
+          <input type="email" id="s-business_email" placeholder="e.g. info@business.com">
+        </div>
+        <div class="form-group">
+          <label>Udyam Registration Number</label>
+          <input type="text" id="s-business_udyam" placeholder="e.g. UDYAM-GJ-22-XXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>Business Category</label>
+          <input type="text" id="s-business_category" placeholder="e.g. Manufacturing">
+        </div>
+        <div class="form-group">
+          <label>Business Status</label>
+          <input type="text" id="s-business_status" placeholder="e.g. MICRO">
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Integrations -->
+    <div id="tab-integrations" class="settings-tab-pane" style="display: none;">
+      <h3 style="margin-bottom: 16px; font-size: 15px;">Email SMTP Settings</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+        <div class="form-group">
+          <label>From Name</label>
+          <input type="text" id="s-email_from_name" placeholder="e.g. Billing Dept">
+        </div>
+        <div class="form-group">
+          <label>From Email Address</label>
+          <input type="email" id="s-email_from_address" placeholder="e.g. billing@acme.com">
+        </div>
+        <div class="form-group">
+          <label>SMTP Host</label>
+          <input type="text" id="s-smtp_host" placeholder="smtp.gmail.com">
+        </div>
+        <div class="form-group">
+          <label>SMTP Port</label>
+          <input type="text" id="s-smtp_port" placeholder="587">
+        </div>
+        <div class="form-group">
+          <label>SMTP User</label>
+          <input type="text" id="s-smtp_user" placeholder="user@gmail.com">
+        </div>
+        <div class="form-group">
+          <label>SMTP Password</label>
+          <input type="password" id="s-smtp_pass" placeholder="••••••••••••••••">
+        </div>
+        <div class="form-group">
+          <label>Accountant CC Email</label>
+          <input type="email" id="s-accountant_email" placeholder="accountant@acme.com">
+        </div>
+      </div>
+
+      <h3 style="border-top: 1px solid var(--color-border); padding-top: 24px; margin-bottom: 16px; font-size: 15px;">WhatsApp Local Link (Free & Automated)</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; background: #FAF9F6; border: 1px solid var(--color-border); border-radius: 8px; padding: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; font-size: 13px;">Link Personal WhatsApp Account</div>
+            <div id="wa-link-status" style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">Checking connection status...</div>
+          </div>
+          <div>
+            <button type="button" id="btn-wa-connect" class="btn btn-primary" style="background-color: #25D366; border-color: #25D366; color: white;">Link Account</button>
+            <button type="button" id="btn-wa-disconnect" class="btn btn-danger" style="display: none;">Disconnect</button>
+          </div>
+        </div>
+        <div id="wa-qr-container" style="display: none; align-items: center; justify-content: center; flex-direction: column; padding: 16px; border-top: 1px dashed var(--color-border); margin-top: 12px;">
+          <div style="font-weight: bold; margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted);">Scan this QR Code with WhatsApp (Linked Devices)</div>
+          <div id="wa-qr-code" style="padding: 10px; background: white; border: 1px solid var(--color-border); border-radius: 4px; display: inline-block;"></div>
+        </div>
+      </div>
+
+      <h3 style="border-top: 1px solid var(--color-border); padding-top: 24px; margin-bottom: 16px; font-size: 15px;">WhatsApp (WATI) Settings</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+        <div class="form-group" style="grid-column: span 2; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="s-wati-enabled" style="width: auto;">
+          <label for="s-wati-enabled" style="margin-bottom: 0; cursor: pointer;">Enable WhatsApp Integration</label>
+        </div>
+        <div class="form-group">
+          <label>WATI API URL</label>
+          <input type="text" id="s-wati_api_url" placeholder="https://live-server.wati.io/api/v1">
+        </div>
+        <div class="form-group">
+          <label>WATI Access Token</label>
+          <input type="password" id="s-wati_api_token" placeholder="••••••••••••••••">
+        </div>
+      </div>
+
+      <h3 style="border-top: 1px solid var(--color-border); padding-top: 24px; margin-bottom: 16px; font-size: 15px;">SMS (MSG91) Settings</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+        <div class="form-group" style="grid-column: span 2; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="s-sms-enabled" style="width: auto;">
+          <label for="s-sms-enabled" style="margin-bottom: 0; cursor: pointer;">Enable SMS Integration</label>
+        </div>
+        <div class="form-group">
+          <label>MSG91 AUTH Key</label>
+          <input type="password" id="s-msg91_auth_key" placeholder="••••••••••••••••">
+        </div>
+        <div class="form-group">
+          <label>MSG91 Sender ID</label>
+          <input type="text" id="s-msg91_sender_id" placeholder="e.g. ACMESM">
+        </div>
+      </div>
+
+      <h3 style="border-top: 1px solid var(--color-border); padding-top: 24px; margin-bottom: 16px; font-size: 15px;">n8n Webhook Integration</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+        <div class="form-group">
+          <label>n8n Base URL</label>
+          <input type="text" id="s-n8n_base_url" placeholder="e.g. http://localhost:5678">
+        </div>
+        <div class="form-group">
+          <label>n8n Secret Auth Key</label>
+          <input type="text" id="s-n8n_secret" placeholder="Secret matching n8n headers">
+        </div>
+      </div>
+
+      <h3 style="border-top: 1px solid var(--color-border); padding-top: 24px; margin-bottom: 16px; font-size: 15px;">Owner Notifications</h3>
+      <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+        <div class="form-group">
+          <label>Owner Phone Number (for WhatsApp/SMS)</label>
+          <input type="text" id="s-notify_owner_phone" placeholder="e.g. +919876543210" style="width: 300px;">
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="s-notify-whatsapp" style="width: auto;">
+          <label for="s-notify-whatsapp" style="margin-bottom: 0; cursor: pointer;">Receive alerts on WhatsApp</label>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="s-notify-daily-summary" style="width: auto;">
+          <label for="s-notify-daily-summary" style="margin-bottom: 0; cursor: pointer;">Receive Daily Sales Summary</label>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="s-notify-weekly-report" style="width: auto;">
+          <label for="s-notify-weekly-report" style="margin-bottom: 0; cursor: pointer;">Receive Weekly Summary Report</label>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="s-notify-monthly-gst" style="width: auto;">
+          <label for="s-notify-monthly-gst" style="margin-bottom: 0; cursor: pointer;">Receive Monthly GST Aggregate Summary</label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
