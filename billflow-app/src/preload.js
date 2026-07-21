@@ -5,11 +5,14 @@ function ipc(channel, args) { return ipcRenderer.invoke(channel, args || {}); }
 
 contextBridge.exposeInMainWorld('api', {
   // Auth
-  login:       function(e, p)    { return ipc('auth:login',    { email:e, password:p }); },
-  logout:      function()        { return ipc('auth:logout',   {}); },
-  isLoggedIn:  function()        { return ipc('auth:isLoggedIn', {}); },
-  getSession:      function()        { return ipc('auth:session',  {}); },
-  refreshSession:  function()        { return ipc('auth:refreshSession', {}); },
+  login:          function(e, p)     { return ipc('auth:login',          { email:e, password:p }); },
+  logout:         function()         { return ipc('auth:logout',         {}); },
+  isLoggedIn:     function()         { return ipc('auth:isLoggedIn',     {}); },
+  getSession:     function()         { return ipc('auth:session',        {}); },
+  refreshSession: function()         { return ipc('auth:refreshSession', {}); },
+  sendResetOTP:   function(email)    { return ipc('auth:sendResetOTP',   { email:email }); },
+  verifyResetOTP: function(e, otp)   { return ipc('auth:verifyResetOTP', { email:e, otp:otp }); },
+  updatePassword: function(pass)     { return ipc('auth:updatePassword', { newPassword:pass }); },
 
   // DB migrate
   migrate:     function()        { return ipc('db:migrate',    {}); },

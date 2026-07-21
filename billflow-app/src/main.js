@@ -297,6 +297,15 @@ ipcMain.handle('auth:refreshSession', function() {
     return { ok: false, error: e.message };
   }
 });
+ipcMain.handle('auth:sendResetOTP', function(e, a) {
+  return require('./supabase/auth').sendResetOTP(a.email);
+});
+ipcMain.handle('auth:verifyResetOTP', function(e, a) {
+  return require('./supabase/auth').verifyResetOTP(a.email, a.otp);
+});
+ipcMain.handle('auth:updatePassword', function(e, a) {
+  return require('./supabase/auth').updatePassword(a.newPassword);
+});
 
 // ── DB MIGRATE (called after login) ──────────────────────────────────────────
 ipcMain.handle('db:migrate', function() {

@@ -19,11 +19,62 @@
       <input type="email" id="login-email" placeholder="owner@business.com">
     </div>
 
-    <div class="form-group" style="margin-bottom: 24px;">
+    <div class="form-group" style="margin-bottom: 12px;">
       <label for="login-password">Decryption Password</label>
       <input type="password" id="login-password" placeholder="••••••••">
     </div>
 
+    <div style="text-align: right; margin-bottom: 20px;">
+      <button id="forgot-pass-link" style="background: none; border: none; color: var(--color-primary); font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: underline;">Forgot Password?</button>
+    </div>
+
     <button id="login-btn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px;">Unlock Database</button>
+
+    <!-- ── 3-STEP OTP FORGOT PASSWORD MODAL ──────────────────────────────── -->
+    <div id="reset-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 99999; justify-content: center; align-items: center;">
+      <div class="card" style="width: 380px; max-width: 90%; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--color-primary); margin: 0;">Password Recovery</h3>
+          <button id="close-reset-modal" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+        </div>
+
+        <div id="reset-msg" style="display: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 14px;"></div>
+
+        <!-- STEP 1: Enter Email -->
+        <div id="reset-step-1">
+          <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px;">Enter your registered email address to receive a 6-digit OTP verification code.</p>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="reset-email">Registered Email</label>
+            <input type="email" id="reset-email" placeholder="owner@business.com">
+          </div>
+          <button id="btn-send-otp" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">Send Verification OTP</button>
+        </div>
+
+        <!-- STEP 2: Enter OTP Code -->
+        <div id="reset-step-2" style="display: none;">
+          <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px;">Enter the 6-digit OTP code sent to your email.</p>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="reset-otp">6-Digit OTP Code</label>
+            <input type="text" id="reset-otp" placeholder="123456" maxlength="8" style="font-family: var(--font-mono); letter-spacing: 4px; font-size: 16px; text-align: center;">
+          </div>
+          <button id="btn-verify-otp" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">Verify Code</button>
+        </div>
+
+        <!-- STEP 3: Enter New Password -->
+        <div id="reset-step-3" style="display: none;">
+          <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px;">OTP Verified! Enter your new password below.</p>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label for="reset-new-pass">New Password</label>
+            <input type="password" id="reset-new-pass" placeholder="••••••••">
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="reset-confirm-pass">Confirm New Password</label>
+            <input type="password" id="reset-confirm-pass" placeholder="••••••••">
+          </div>
+          <button id="btn-update-pass" class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 13px;">Update Password & Sign In</button>
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>

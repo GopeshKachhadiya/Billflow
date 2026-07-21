@@ -225,6 +225,72 @@ function refreshSession() {
     .catch(function() {});
 }
 
+function sendResetOTP(email) {
+  var normalizedEmail = (email || '').trim().toLowerCase();
+  if (!normalizedEmail) {
+    return Promise.resolve({ success: false, error: 'Please enter a valid email address.' });
+  }
+  var client = require('./client').getSupabaseClient();
+  if (!client) {
+    return Promise.resolve({ success: false, error: 'Cloud connection unavailable.' });
+  }
+
+  return client.auth.resetPasswordForEmail(normalizedEmail)
+    .then(function(res) {
+      if (res.error) {
+        return { success: false, error: res.error.message };
+      }
+      return { success: true, message: '6-digit OTP code sent to your email address.' };
+    })
+    .catch(function(err) {
+      return { success: false, error: err ? err.message : 'Failed to dispatch OTP.' };
+    });
+}
+
+function verifyResetOTP(email, otp) {
+  var normalizedEmail = (email || '').trim().toLowerCase();
+  var token = (otp || '').trim();
+  if (!normalizedEmail || !token) {
+    return Promise.resolve({ success: false, error: 'Please enter both email and OTP code.' });
+  }
+  var client = require('./client').getSupabaseClient();
+  if (!client) {
+    return Promise.resolve({ success: false, error: 'Cloud connection unavailable.' });
+  }
+
+  return client.auth.verifyOtp({ email: normalizedEmail, token: token, type: 'recovery' })
+    .then(function(res) {
+      if (res.error || !res.data || !res.data.session) {
+        return { success: false, error: res.error ? res.error.message : 'Invalid or expired OTP code.' };
+      }
+      return { success: true, session: res.data.session };
+    })
+    .catch(function(err) {
+      return { success: false, error: err ? err.message : 'OTP verification failed.' };
+    });
+}
+
+function updatePassword(newPassword) {
+  if (!newPassword || newPassword.length < 6) {
+    return Promise.resolve({ success: false, error: 'Password must be at least 6 characters long.' });
+  }
+  var client = require('./client').getSupabaseClient();
+  if (!client) {
+    return Promise.resolve({ success: false, error: 'Cloud connection unavailable.' });
+  }
+
+  return client.auth.updateUser({ password: newPassword })
+    .then(function(res) {
+      if (res.error) {
+        return { success: false, error: res.error.message };
+      }
+      return { success: true, message: 'Password updated successfully.' };
+    })
+    .catch(function(err) {
+      return { success: false, error: err ? err.message : 'Password update failed.' };
+    });
+}
+
 // Auto-restore session on startup if disk cache exists
 try {
   loadSessionFromDisk();
@@ -235,5 +301,8 @@ module.exports = {
   logout: logout,
   isLoggedIn: isLoggedIn,
   getSession: getSession,
-  refreshSession: refreshSession
+  refreshSession: refreshSession,
+  sendResetOTP: sendResetOTP,
+  verifyResetOTP: verifyResetOTP,
+  updatePassword: updatePassword
 };

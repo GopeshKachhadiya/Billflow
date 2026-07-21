@@ -156,5 +156,152 @@ window.PageControllers['login'] = {
     passEl.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' || e.keyCode === 13) { btnEl.click(); }
     });
+
+    // ── 3-STEP OTP FORGOT PASSWORD CONTROLLER ────────────────────────────────────
+    var forgotLink     = document.getElementById('forgot-pass-link');
+    var resetModal     = document.getElementById('reset-modal');
+    var closeResetModal= document.getElementById('close-reset-modal');
+    var resetMsgEl     = document.getElementById('reset-msg');
+    var resetStep1     = document.getElementById('reset-step-1');
+    var resetStep2     = document.getElementById('reset-step-2');
+    var resetStep3     = document.getElementById('reset-step-3');
+
+    var resetEmailInput = document.getElementById('reset-email');
+    var resetOtpInput   = document.getElementById('reset-otp');
+    var resetNewPass    = document.getElementById('reset-new-pass');
+    var resetConfirmPass= document.getElementById('reset-confirm-pass');
+
+    var btnSendOtp      = document.getElementById('btn-send-otp');
+    var btnVerifyOtp    = document.getElementById('btn-verify-otp');
+    var btnUpdatePass   = document.getElementById('btn-update-pass');
+
+    var activeResetEmail = '';
+
+    function showResetMsg(msg, isSuccess) {
+      resetMsgEl.textContent = msg;
+      resetMsgEl.style.display = 'block';
+      resetMsgEl.style.backgroundColor = isSuccess ? '#dcfce7' : '#fee2e2';
+      resetMsgEl.style.color = isSuccess ? '#15803d' : '#b91c1c';
+      resetMsgEl.style.border = '1px solid ' + (isSuccess ? '#bbf7d0' : '#fca5a5');
+    }
+    function clearResetMsg() { resetMsgEl.style.display = 'none'; }
+
+    if (forgotLink && resetModal) {
+      forgotLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        clearResetMsg();
+        resetEmailInput.value = (emailEl.value || '').trim();
+        resetOtpInput.value = '';
+        resetNewPass.value = '';
+        resetConfirmPass.value = '';
+        resetStep1.style.display = 'block';
+        resetStep2.style.display = 'none';
+        resetStep3.style.display = 'none';
+        resetModal.style.display = 'flex';
+      });
+
+      if (closeResetModal) {
+        closeResetModal.addEventListener('click', function() {
+          resetModal.style.display = 'none';
+        });
+      }
+
+      // STEP 1: Send OTP
+      if (btnSendOtp) {
+        btnSendOtp.addEventListener('click', function() {
+          clearResetMsg();
+          activeResetEmail = (resetEmailInput.value || '').trim();
+          if (!activeResetEmail) {
+            return showResetMsg('Please enter your registered email address.', false);
+          }
+
+          btnSendOtp.disabled = true;
+          btnSendOtp.textContent = 'Sending OTP...';
+
+          window.api.sendResetOTP(activeResetEmail).then(function(res) {
+            btnSendOtp.disabled = false;
+            btnSendOtp.textContent = 'Send Verification OTP';
+            if (res && res.success) {
+              showResetMsg('6-digit OTP code sent! Please check your email.', true);
+              resetStep1.style.display = 'none';
+              resetStep2.style.display = 'block';
+            } else {
+              showResetMsg(res.error || 'Failed to send OTP code.', false);
+            }
+          }).catch(function(err) {
+            btnSendOtp.disabled = false;
+            btnSendOtp.textContent = 'Send Verification OTP';
+            showResetMsg('Request failed: ' + err.message, false);
+          });
+        });
+      }
+
+      // STEP 2: Verify OTP
+      if (btnVerifyOtp) {
+        btnVerifyOtp.addEventListener('click', function() {
+          clearResetMsg();
+          var otp = (resetOtpInput.value || '').trim();
+          if (!otp) {
+            return showResetMsg('Please enter the 6-digit OTP code.', false);
+          }
+
+          btnVerifyOtp.disabled = true;
+          btnVerifyOtp.textContent = 'Verifying...';
+
+          window.api.verifyResetOTP(activeResetEmail, otp).then(function(res) {
+            btnVerifyOtp.disabled = false;
+            btnVerifyOtp.textContent = 'Verify Code';
+            if (res && res.success) {
+              showResetMsg('OTP Verified! Enter your new password below.', true);
+              resetStep2.style.display = 'none';
+              resetStep3.style.display = 'block';
+            } else {
+              showResetMsg(res.error || 'Invalid OTP verification code.', false);
+            }
+          }).catch(function(err) {
+            btnVerifyOtp.disabled = false;
+            btnVerifyOtp.textContent = 'Verify Code';
+            showResetMsg('Verification failed: ' + err.message, false);
+          });
+        });
+      }
+
+      // STEP 3: Update Password
+      if (btnUpdatePass) {
+        btnUpdatePass.addEventListener('click', function() {
+          clearResetMsg();
+          var pass1 = resetNewPass.value || '';
+          var pass2 = resetConfirmPass.value || '';
+
+          if (!pass1 || pass1.length < 6) {
+            return showResetMsg('Password must be at least 6 characters long.', false);
+          }
+          if (pass1 !== pass2) {
+            return showResetMsg('Passwords do not match.', false);
+          }
+
+          btnUpdatePass.disabled = true;
+          btnUpdatePass.textContent = 'Updating Password...';
+
+          window.api.updatePassword(pass1).then(function(res) {
+            btnUpdatePass.disabled = false;
+            btnUpdatePass.textContent = 'Update Password & Sign In';
+            if (res && res.success) {
+              if (window.Toast) window.Toast.show('Password updated successfully! Logging in...', 'success');
+              resetModal.style.display = 'none';
+              emailEl.value = activeResetEmail;
+              passEl.value = pass1;
+              btnEl.click(); // Auto-login with new password
+            } else {
+              showResetMsg(res.error || 'Password update failed.', false);
+            }
+          }).catch(function(err) {
+            btnUpdatePass.disabled = false;
+            btnUpdatePass.textContent = 'Update Password & Sign In';
+            showResetMsg('Update failed: ' + err.message, false);
+          });
+        });
+      }
+    }
   }
 };
