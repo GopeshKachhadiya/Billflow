@@ -22,10 +22,23 @@ export function DownloadPage() {
 
   const handleDownload = () => {
     setDownloading(true);
+    
+    // Trigger real download from official GitHub Releases repository
+    const downloadUrl = arch === "64"
+      ? "https://github.com/GopeshKachhadiya/Billflow/releases/latest/download/BillFlow-Setup-x64.exe"
+      : "https://github.com/GopeshKachhadiya/Billflow/releases/latest/download/BillFlow-Setup-ia32.exe";
+
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.setAttribute("download", `BillFlow_Setup_v2.4_${arch}bit.exe`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
     setTimeout(() => {
       setDownloading(false);
       setDownloaded(true);
-    }, 2000);
+    }, 1500);
   };
 
   return (
