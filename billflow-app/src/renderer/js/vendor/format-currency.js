@@ -33,4 +33,11 @@ var FormatCurrency = (function() {
     return parseFloat(String(str).replace(/[\u20B9,\s]/g,'')) || 0;
   }
   return { formatIndian:formatIndian, toRupees:toRupees, toShort:toShort, parse:parse };
-}());
+})();
+
+if (typeof window !== 'undefined') {
+  window.FormatCurrency = FormatCurrency;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = FormatCurrency;
+}

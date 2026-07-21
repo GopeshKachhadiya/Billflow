@@ -1,4 +1,4 @@
-var GSTCalculator = (function () {
+var GSTCalculator = (function() {
   function getSupplyType(businessStateCode, customerStateCode, isUnionTerritory) {
     if (!businessStateCode || !customerStateCode) {
       return 'intrastate';
@@ -159,4 +159,11 @@ var GSTCalculator = (function () {
     buildRateWiseBreakdown: buildRateWiseBreakdown,
     buildHSNBreakdown: buildHSNBreakdown
   };
-}());
+})();
+
+if (typeof window !== 'undefined') {
+  window.GSTCalculator = GSTCalculator;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = GSTCalculator;
+}

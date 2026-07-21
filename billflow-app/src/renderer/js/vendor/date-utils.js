@@ -53,4 +53,11 @@ var DateUtils = (function() {
   return { parseDate:parseDate, toSQL:toSQL, toDisplay:toDisplay, today:today,
            addDays:addDays, getDueDate:getDueDate, isOverdue:isOverdue,
            daysUntilDue:daysUntilDue, monthLabel:monthLabel };
-}());
+})();
+
+if (typeof window !== 'undefined') {
+  window.DateUtils = DateUtils;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = DateUtils;
+}

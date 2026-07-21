@@ -12,6 +12,8 @@ import { DownloadPage } from "./pages/DownloadPage";
 import { AboutPage } from "./pages/AboutPage";
 import { ContactPage } from "./pages/ContactPage";
 import { BlogPage } from "./pages/BlogPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
+import { TermsPage } from "./pages/TermsPage";
 import { SupportChatbot } from "./components/SupportChatbot";
 
 function App() {
@@ -36,6 +38,8 @@ function App() {
       : currentHash.startsWith("#/about") ? "#/about"
       : currentHash.startsWith("#/contact") ? "#/contact"
       : currentHash.startsWith("#/blog") ? "#/blog"
+      : currentHash.startsWith("#/privacy") ? "#/privacy"
+      : currentHash.startsWith("#/terms") ? "#/terms"
       : "#/";
 
     switch (basePath) {
@@ -53,6 +57,10 @@ function App() {
         return <ContactPage />;
       case "#/blog":
         return <BlogPage />;
+      case "#/privacy":
+        return <PrivacyPage />;
+      case "#/terms":
+        return <TermsPage />;
       case "#/":
       default:
         return <HomePage />;

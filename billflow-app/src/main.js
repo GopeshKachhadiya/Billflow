@@ -41,7 +41,8 @@ function getModules() {
     pdf:        require('./pdf/generator'),
     billNum:    require('./utils/bill-number'),
     webhooks:   require('./n8n/webhooks'),
-    encryptor:  require('./crypto/data-encryptor')
+    encryptor:  require('./crypto/data-encryptor'),
+    expenses:   require('./db/queries/expenses')
   };
 }
 
@@ -358,6 +359,14 @@ ipcMain.handle('db:items:list',   async function(e, a) { return await getModules
 ipcMain.handle('db:items:create', async function(e, a) { var r = await getModules().items.createItem(a); triggerPushToCloud(); return r; });
 ipcMain.handle('db:items:update', async function(e, a) { await getModules().items.updateItem(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
 ipcMain.handle('db:items:delete', async function(e, a) { await getModules().items.deleteItem(a.id); triggerPushToCloud(); return { ok:true }; });
+
+// ── EXPENSES ──────────────────────────────────────────────────────────────────
+ipcMain.handle('db:expenses:list',    async function(e, a) { return await getModules().expenses.listExpenses(a); });
+ipcMain.handle('db:expenses:get',     async function(e, a) { return await getModules().expenses.getExpense(a.id); });
+ipcMain.handle('db:expenses:create',  async function(e, a) { var r = await getModules().expenses.createExpense(a); triggerPushToCloud(); return r; });
+ipcMain.handle('db:expenses:update',  async function(e, a) { await getModules().expenses.updateExpense(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
+ipcMain.handle('db:expenses:delete',  async function(e, a) { await getModules().expenses.deleteExpense(a.id); triggerPushToCloud(); return { ok:true }; });
+ipcMain.handle('db:expenses:summary', async function(e, a) { return await getModules().expenses.getExpenseSummary(a.dateFrom, a.dateTo); });
 
 // ── BILLS ─────────────────────────────────────────────────────────────────────
 ipcMain.handle('db:bills:list',         async function(e, a) { return await getModules().bills.listBills(a); });

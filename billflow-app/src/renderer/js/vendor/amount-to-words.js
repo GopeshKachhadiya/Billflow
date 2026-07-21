@@ -47,7 +47,12 @@ var AmountToWords = (function() {
     return str.trim() + ' Rupees Only';
   }
 
-  return {
-    toWords: toWords
-  };
-}());
+  return { toWords: toWords };
+})();
+
+if (typeof window !== 'undefined') {
+  window.AmountToWords = AmountToWords;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = AmountToWords;
+}

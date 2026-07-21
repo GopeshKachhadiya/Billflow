@@ -273,8 +273,8 @@ window.PageControllers['login'] = {
           var pass1 = resetNewPass.value || '';
           var pass2 = resetConfirmPass.value || '';
 
-          if (!pass1 || pass1.length < 6) {
-            return showResetMsg('Password must be at least 6 characters long.', false);
+          if (!pass1 || pass1.length < 8 || !/[A-Z]/.test(pass1) || !/[0-9]/.test(pass1)) {
+            return showResetMsg('Password must be at least 8 characters long and include an uppercase letter and a number.', false);
           }
           if (pass1 !== pass2) {
             return showResetMsg('Passwords do not match.', false);

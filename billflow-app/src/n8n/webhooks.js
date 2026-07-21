@@ -6,18 +6,7 @@ function callWebhook(webhookKey, payload) {
   var url = baseUrl + path;
   var secret = settings.getSetting('n8n_secret') || '';
 
-  if (typeof fetch === 'function') {
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-BillFlow-Secret': secret
-      },
-      body: JSON.stringify(payload)
-    }).catch(function(e) {
-      console.error('Webhook failed:', path, e.message);
-    });
-  } else {
+  if (typeof process !== 'undefined' && process.versions && process.versions.electron) {
     try {
       var net = require('electron').net;
       var request = net.request({
@@ -31,9 +20,23 @@ function callWebhook(webhookKey, payload) {
       });
       request.write(JSON.stringify(payload));
       request.end();
+      return;
     } catch (e) {
-      console.error('Webhook request failed entirely:', path, e.message);
+      console.error('Webhook net request failed:', path, e.message);
     }
+  }
+
+  if (typeof fetch === 'function') {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-BillFlow-Secret': secret
+      },
+      body: JSON.stringify(payload)
+    }).catch(function(e) {
+      console.error('Webhook failed:', path, e.message);
+    });
   }
 }
 

@@ -37,6 +37,14 @@ contextBridge.exposeInMainWorld('api', {
   updateItem:  function(id, d)   { return ipc('db:items:update',  { id:id, data:d }); },
   deleteItem:  function(id)      { return ipc('db:items:delete',  { id:id }); },
 
+  // Expenses
+  listExpenses:      function(f)     { return ipc('db:expenses:list',    f || {}); },
+  getExpense:        function(id)    { return ipc('db:expenses:get',     { id:id }); },
+  createExpense:     function(d)     { return ipc('db:expenses:create',  d); },
+  updateExpense:     function(id, d) { return ipc('db:expenses:update',  { id:id, data:d }); },
+  deleteExpense:     function(id)    { return ipc('db:expenses:delete',  { id:id }); },
+  getExpenseSummary: function(f)     { return ipc('db:expenses:summary', f || {}); },
+
   // Bills
   listBills:           function(f)       { return ipc('db:bills:list',         f || {}); },
   getBill:             function(id)      { return ipc('db:bills:get',           { id:id }); },

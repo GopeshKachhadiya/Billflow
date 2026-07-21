@@ -331,8 +331,8 @@ function verifyResetOTP(email, otp) {
 }
 
 function updatePassword(newPassword) {
-  if (!newPassword || newPassword.length < 6) {
-    return Promise.resolve({ success: false, error: 'Password must be at least 6 characters long.' });
+  if (!newPassword || newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+    return Promise.resolve({ success: false, error: 'Password must be at least 8 characters long and include an uppercase letter and a number.' });
   }
   var client = require('./client').getSupabaseClient();
   if (!client) {

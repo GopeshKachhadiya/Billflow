@@ -17,6 +17,7 @@ module.exports = {
   },
   files: [
     'src/**/*',
+    'supabase/**/*',
     'package.json'
   ],
   asar: true,

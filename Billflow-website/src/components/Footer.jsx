@@ -67,8 +67,8 @@ const footerLinks = {
     { label: "Windows Installer", href: "#/download" },
   ],
   legal: [
-    { label: "Privacy Policy", href: "#/about" },
-    { label: "Terms of Service", href: "#/about" },
+    { label: "Privacy Policy", href: "#/privacy" },
+    { label: "Terms of Service", href: "#/terms" },
     { label: "Security & Encryption", href: "#/features" },
   ],
 };
