@@ -4,6 +4,10 @@ var BrowserWindow = electron.BrowserWindow;
 var ipcMain       = electron.ipcMain;
 var path          = require('path');
 var fs            = require('fs');
+var autoUpdater   = require('electron-updater').autoUpdater;
+
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
 
 // Baileys WhatsApp integration dynamic variables
 var makeWASocket          = null;
@@ -88,6 +92,7 @@ function syncEnvToSettings() {
 }
 
 app.on('ready', function() {
+  setupAutoUpdater();
   // Sync env to SQLite settings
   try {
     syncEnvToSettings();
@@ -107,6 +112,16 @@ app.on('ready', function() {
   mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
   mainWindow.once('ready-to-show', function() {
     mainWindow.show();
+    
+    // Check for OTA Updates in the background
+    try {
+      autoUpdater.checkForUpdatesAndNotify().catch(function(err) {
+        console.log('[OTA Updater] Initial check notice:', err ? err.message : err);
+      });
+    } catch (err) {
+      console.log('[OTA Updater] Initial check exception:', err ? err.message : err);
+    }
+
     // Auto-connect WhatsApp if credentials exist and are linked
     var credsPath = path.join(waSessionPath, 'creds.json');
     if (fs.existsSync(credsPath)) {
@@ -446,5 +461,47 @@ ipcMain.handle('wa:sendBill', function(e, a) {
     return { ok: true };
   });
 });
+
+// ── OTA AUTO-UPDATER ─────────────────────────────────────────────────────────
+function setupAutoUpdater() {
+  autoUpdater.on('checking-for-update', function() {
+    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'checking', message: 'Checking for OTA updates...' });
+  });
+
+  autoUpdater.on('update-available', function(info) {
+    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'available', info: info, message: 'New update (v' + (info && info.version) + ') available! Downloading in background...' });
+  });
+
+  autoUpdater.on('update-not-available', function(info) {
+    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'not-available', info: info, message: 'BillFlow is up to date.' });
+  });
+
+  autoUpdater.on('error', function(err) {
+    console.error('[OTA Updater] Error:', err);
+    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'error', error: err ? err.message : 'Update error', message: 'Update check completed.' });
+  });
+
+  autoUpdater.on('download-progress', function(progressObj) {
+    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'downloading', progress: progressObj, message: 'Downloading update (' + Math.round(progressObj.percent) + '%)...' });
+  });
+
+  autoUpdater.on('update-downloaded', function(info) {
+    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'downloaded', info: info, message: 'New update (v' + (info && info.version) + ') ready! Click to restart & apply.' });
+  });
+}
+
+ipcMain.handle('updater:check', function() {
+  return autoUpdater.checkForUpdatesAndNotify().then(function(res) {
+    return { ok: true, res: res };
+  }).catch(function(err) {
+    return { ok: false, error: err ? err.message : 'Failed to check' };
+  });
+});
+
+ipcMain.handle('updater:quitAndInstall', function() {
+  autoUpdater.quitAndInstall();
+  return { ok: true };
+});
+
 
 

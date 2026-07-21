@@ -4,6 +4,13 @@
 module.exports = {
   appId: 'com.billflow.app',
   productName: 'BillFlow',
+  publish: [
+    {
+      provider: 'github',
+      owner: 'GopeshKachhadiya',
+      repo: 'Billflow'
+    }
+  ],
   directories: {
     output: 'dist',
     buildResources: 'build'

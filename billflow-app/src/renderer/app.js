@@ -130,6 +130,29 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   if (window.SyncStatus) { window.SyncStatus.update(); }
+
+  // OTA Auto-Updater Event Listener
+  if (window.api && window.api.onUpdateStatus) {
+    window.api.onUpdateStatus(function(data) {
+      console.log('[OTA Updater]', data);
+      if (data.status === 'available') {
+        if (window.Toast) window.Toast.show(data.message, 'info', 5000);
+      } else if (data.status === 'downloaded') {
+        if (window.Toast) window.Toast.show(data.message, 'success', 10000);
+        var banner = document.getElementById('update-banner');
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'update-banner';
+          banner.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #2563eb; color: #ffffff; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; z-index: 99999; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+          banner.innerHTML = '🚀 New BillFlow Update (v' + (data.info && data.info.version || '') + ') Ready! Click here to restart & apply GST tax updates.';
+          banner.onclick = function() {
+            window.api.quitAndInstall();
+          };
+          document.body.appendChild(banner);
+        }
+      }
+    });
+  }
 });
 
 window.loadPage = loadPage;

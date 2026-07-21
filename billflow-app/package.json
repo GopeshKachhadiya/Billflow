@@ -2,6 +2,10 @@
   "name": "billflow",
   "version": "1.0.0",
   "description": "Local-first billing and GST management for Indian SMBs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GopeshKachhadiya/Billflow.git"
+  },
   "main": "src/main.js",
   "scripts": {
     "dev": "electron .",
@@ -12,6 +16,7 @@
     "@supabase/supabase-js": "^2.39.0",
     "@whiskeysockets/baileys": "^7.0.0-rc13",
     "better-sqlite3": "^11.3.0",
+    "electron-updater": "^6.8.9",
     "pdfkit": "^0.14.0",
     "pg": "^8.21.0",
     "pino": "^10.3.1",

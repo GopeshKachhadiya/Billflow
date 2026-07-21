@@ -92,5 +92,16 @@ contextBridge.exposeInMainWorld('api', {
     return function() {
       ipcRenderer.removeListener('wa:status-change', subscription);
     };
+  },
+
+  // OTA Auto-Updater
+  checkForUpdates: function() { return ipc('updater:check', {}); },
+  quitAndInstall:  function() { return ipc('updater:quitAndInstall', {}); },
+  onUpdateStatus:  function(callback) {
+    var subscription = function(event, data) { callback(data); };
+    ipcRenderer.on('updater:status', subscription);
+    return function() {
+      ipcRenderer.removeListener('updater:status', subscription);
+    };
   }
 });
