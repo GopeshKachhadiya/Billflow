@@ -68,6 +68,10 @@ function readEnvBootstrap() {
             if (v.startsWith("'") && v.endsWith("'")) v = v.slice(1, -1);
             if (k === 'SUPABASE_URL' || k === 'VITE_SUPABASE_URL') _cache.supabase_url = v;
             if (k === 'SUPABASE_ANON_KEY' || k === 'VITE_SUPABASE_ANON_KEY') _cache.supabase_anon_key = v;
+            if (k === 'SMTP_HOST') _cache.smtp_host = v;
+            if (k === 'SMTP_PORT') _cache.smtp_port = v;
+            if (k === 'SMTP_USER') _cache.smtp_user = v;
+            if (k === 'SMTP_PASS') _cache.smtp_pass = v;
           }
         });
       }

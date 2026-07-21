@@ -12,6 +12,7 @@ function getTransporter() {
   var port = parseInt(process.env.SMTP_PORT || allSettings.smtp_port || '465', 10);
   var user = process.env.SMTP_USER || allSettings.smtp_user || 'gopeshkachhadiya00005@gmail.com';
   var pass = process.env.SMTP_PASS || allSettings.smtp_pass || 'vydm exyu dyxl spda';
+  pass = (pass || '').replace(/\s+/g, ''); // strip spaces for Google 16-char App Passwords
 
   return nodemailer.createTransport({
     host: host,

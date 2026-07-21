@@ -240,7 +240,7 @@ function sendResetOTP(email) {
   var otpCode = otpMailer.generate6DigitOTP();
   var expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
 
-  // Insert OTP into password_otp_resets table
+  // Insert OTP into password_otp_resets table (and fallback to local settings if table not yet migrated)
   return client.from('password_otp_resets').insert({
     email: normalizedEmail,
     otp_code: otpCode,
@@ -249,6 +249,11 @@ function sendResetOTP(email) {
   }).then(function(insertRes) {
     if (insertRes.error) {
       console.warn('[auth] OTP table insert notice:', insertRes.error.message);
+      // Save locally in SQLite settings if cloud table does not exist
+      settings.setSetting('recovery_otp_' + normalizedEmail, JSON.stringify({
+        code: otpCode,
+        expires_at: expiresAt
+      }));
     }
     // Also trigger Supabase Auth reset for fallback compatibility
     client.auth.resetPasswordForEmail(normalizedEmail).catch(function() {});
@@ -258,7 +263,12 @@ function sendResetOTP(email) {
       if (mailRes.success) {
         return { success: true, message: '6-digit OTP code sent to your email (' + normalizedEmail + ').' };
       } else {
-        return { success: true, message: '6-digit OTP code dispatched to ' + normalizedEmail + '.' };
+        // If email failed, check if we had any table/local error or return the exact SMTP error
+        console.error('[auth] SMTP delivery failure:', mailRes.error);
+        return { 
+          success: false, 
+          error: 'Email delivery failed (' + mailRes.error + '). Please check your Gmail App Password or SMTP settings.' 
+        };
       }
     });
   }).catch(function(err) {
@@ -293,6 +303,19 @@ function verifyResetOTP(email, otp) {
         client.from('password_otp_resets').update({ verified: true }).eq('id', record.id).catch(function() {});
         return { success: true, verifiedByTable: true };
       }
+
+      // Check local SQLite cache if cloud table is not created or returned empty
+      var localCached = settings.getSetting('recovery_otp_' + normalizedEmail);
+      if (localCached) {
+        try {
+          var parsed = JSON.parse(localCached);
+          if (parsed.code === token && new Date(parsed.expires_at) > new Date()) {
+            settings.setSetting('recovery_otp_' + normalizedEmail, ''); // clear once used
+            return { success: true, verifiedByLocal: true };
+          }
+        } catch(e) {}
+      }
+
       // 2. Fallback to Supabase Auth OTP verification
       return client.auth.verifyOtp({ email: normalizedEmail, token: token, type: 'recovery' })
         .then(function(authRes) {
