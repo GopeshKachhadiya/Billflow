@@ -23,14 +23,13 @@ export function DownloadPage() {
   const handleDownload = () => {
     setDownloading(true);
     
-    // Trigger real download from official GitHub Releases repository
-    const downloadUrl = arch === "64"
-      ? "https://github.com/GopeshKachhadiya/Billflow/releases/latest/download/BillFlow-Setup-x64.exe"
-      : "https://github.com/GopeshKachhadiya/Billflow/releases/latest/download/BillFlow-Setup-ia32.exe";
+    // Direct same-page download from static public/downloads/ directory (works for private repos without redirection)
+    const fileName = arch === "64" ? "BillFlow_Setup_v2.4_64bit.exe" : "BillFlow_Setup_v2.4_32bit.exe";
+    const downloadUrl = `/downloads/${fileName}`;
 
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.setAttribute("download", `BillFlow_Setup_v2.4_${arch}bit.exe`);
+    link.setAttribute("download", fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
