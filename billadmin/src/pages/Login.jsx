@@ -95,15 +95,36 @@ export default function Login() {
     e.preventDefault()
     setError(''); setSuccessMsg(''); setLoading(true)
 
-    if (!otpCode) {
+    const cleanCode = otpCode.trim()
+    if (!cleanCode) {
       setError('Please enter the 6-digit OTP code.')
       setLoading(false)
       return
     }
 
+    // 1. Check custom OTP table first
+    const { data: dbRes } = await supabase
+      .from('password_otp_resets')
+      .select('*')
+      .eq('email', email.trim().toLowerCase())
+      .eq('otp_code', cleanCode)
+      .eq('verified', false)
+      .gte('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (dbRes && dbRes.length > 0) {
+      await supabase.from('password_otp_resets').update({ verified: true }).eq('id', dbRes[0].id)
+      setLoading(false)
+      setSuccessMsg('OTP verified! Enter your new password below.')
+      setResetStep(3)
+      return
+    }
+
+    // 2. Fallback to Supabase Auth OTP verification
     const { data, error: err } = await supabase.auth.verifyOtp({
       email,
-      token: otpCode.trim(),
+      token: cleanCode,
       type: 'recovery'
     })
     setLoading(false)

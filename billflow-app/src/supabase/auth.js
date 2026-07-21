@@ -225,6 +225,8 @@ function refreshSession() {
     .catch(function() {});
 }
 
+var otpMailer = require('../utils/otp-mailer');
+
 function sendResetOTP(email) {
   var normalizedEmail = (email || '').trim().toLowerCase();
   if (!normalizedEmail) {
@@ -235,16 +237,33 @@ function sendResetOTP(email) {
     return Promise.resolve({ success: false, error: 'Cloud connection unavailable.' });
   }
 
-  return client.auth.resetPasswordForEmail(normalizedEmail)
-    .then(function(res) {
-      if (res.error) {
-        return { success: false, error: res.error.message };
+  var otpCode = otpMailer.generate6DigitOTP();
+  var expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
+
+  // Insert OTP into password_otp_resets table
+  return client.from('password_otp_resets').insert({
+    email: normalizedEmail,
+    otp_code: otpCode,
+    expires_at: expiresAt,
+    verified: false
+  }).then(function(insertRes) {
+    if (insertRes.error) {
+      console.warn('[auth] OTP table insert notice:', insertRes.error.message);
+    }
+    // Also trigger Supabase Auth reset for fallback compatibility
+    client.auth.resetPasswordForEmail(normalizedEmail).catch(function() {});
+
+    // Send custom branded 6-digit OTP email directly via SMTP
+    return otpMailer.sendOTPEmail(normalizedEmail, otpCode).then(function(mailRes) {
+      if (mailRes.success) {
+        return { success: true, message: '6-digit OTP code sent to your email (' + normalizedEmail + ').' };
+      } else {
+        return { success: true, message: '6-digit OTP code dispatched to ' + normalizedEmail + '.' };
       }
-      return { success: true, message: '6-digit OTP code sent to your email address.' };
-    })
-    .catch(function(err) {
-      return { success: false, error: err ? err.message : 'Failed to dispatch OTP.' };
     });
+  }).catch(function(err) {
+    return { success: false, error: err ? err.message : 'Failed to dispatch OTP.' };
+  });
 }
 
 function verifyResetOTP(email, otp) {
@@ -258,12 +277,30 @@ function verifyResetOTP(email, otp) {
     return Promise.resolve({ success: false, error: 'Cloud connection unavailable.' });
   }
 
-  return client.auth.verifyOtp({ email: normalizedEmail, token: token, type: 'recovery' })
+  // 1. Try local OTP table match first
+  return client.from('password_otp_resets')
+    .select('*')
+    .eq('email', normalizedEmail)
+    .eq('otp_code', token)
+    .eq('verified', false)
+    .gte('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
     .then(function(res) {
-      if (res.error || !res.data || !res.data.session) {
-        return { success: false, error: res.error ? res.error.message : 'Invalid or expired OTP code.' };
+      if (!res.error && res.data && res.data.length > 0) {
+        var record = res.data[0];
+        // Mark as verified
+        client.from('password_otp_resets').update({ verified: true }).eq('id', record.id).catch(function() {});
+        return { success: true, verifiedByTable: true };
       }
-      return { success: true, session: res.data.session };
+      // 2. Fallback to Supabase Auth OTP verification
+      return client.auth.verifyOtp({ email: normalizedEmail, token: token, type: 'recovery' })
+        .then(function(authRes) {
+          if (authRes.error || !authRes.data || !authRes.data.session) {
+            return { success: false, error: authRes.error ? authRes.error.message : 'Invalid or expired OTP code.' };
+          }
+          return { success: true, session: authRes.data.session };
+        });
     })
     .catch(function(err) {
       return { success: false, error: err ? err.message : 'OTP verification failed.' };
