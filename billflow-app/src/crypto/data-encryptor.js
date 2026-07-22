@@ -4,21 +4,14 @@ var encryptionKey = null;
 
 function setKey(key) {
   encryptionKey = key; // 32-byte Buffer
-  global.__billflow_encryption_key = key;
 }
 
 function clearKey() {
   encryptionKey = null;
-  delete global.__billflow_encryption_key;
 }
 
 function getKey() {
-  if (encryptionKey) return encryptionKey;
-  if (global.__billflow_encryption_key) {
-    encryptionKey = global.__billflow_encryption_key;
-    return encryptionKey;
-  }
-  return null;
+  return encryptionKey;
 }
 
 function encrypt(text) {

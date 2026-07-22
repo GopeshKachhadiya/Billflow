@@ -18,8 +18,10 @@ async function listCustomers(filter) {
   }
 
   if (filter.search && filter.search.trim()) {
-    var s = filter.search.trim();
-    query = query.or('name.ilike.%' + s + '%,email.ilike.%' + s + '%,phone.ilike.%' + s + '%');
+    var s = filter.search.trim().replace(/[,%'"\\]/g, '').substring(0, 100);
+    if (s) {
+      query = query.or('name.ilike.%' + s + '%,email.ilike.%' + s + '%,phone.ilike.%' + s + '%');
+    }
   }
 
   query = query.order('name', { ascending: true });

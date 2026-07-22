@@ -1,20 +1,19 @@
 # BillFlow
 
-**BillFlow** is a modern, local-first billing and GST management desktop application built specifically for Indian SMBs (Small and Medium Businesses). It is designed with a seamless "thin UI" architecture, combining the speed of a local SQLite database with the powerful automation capabilities of n8n and cloud-sync via Supabase.
+**BillFlow** is a modern billing and GST management desktop application built specifically for Indian SMBs (Small and Medium Businesses). It is designed with a high-performance thin desktop client integrated directly with Supabase cloud infrastructure and n8n automation workflows.
 
 ---
 
 ## 🚀 Features
 
-*   **Local-First Architecture**: Fast, offline-capable data entry utilizing a local SQLite database (`better-sqlite3`).
+*   **Cloud-First Architecture**: Real-time synchronization and central data storage powered by Supabase PostgreSQL with strict Row Level Security (RLS).
 *   **Comprehensive GST Management**: Built-in GST calculators, HSN/SAC lookups, tax record management, and GSTR-1 export generation tailored for Indian compliance.
-*   **Maximum Automation via n8n**: The application offloads all external communications, task scheduling, and remote database syncs to a locally running n8n instance.
-    *   Fires webhooks for every significant event.
+*   **Maximum Automation via n8n**: The application offloads external communications, task scheduling, and background jobs to n8n workflows.
+    *   Fires webhooks for key billing and payment events.
     *   Orchestrates 22 distinct workflows.
     *   Handles Email, WhatsApp, and SMS communications.
-*   **Cloud Synchronization**: Uses Supabase to securely back up and sync tenant data, completely managed by n8n behind the scenes.
 *   **Professional PDF Invoices**: Generates elegant, print-ready PDF invoices using `pdfkit`.
-*   **Secure & Sandboxed**: Built on Electron with robust Content Security Policies (CSP) and secure IPC messaging.
+*   **Secure & Sandboxed**: Built on Electron with Content Security Policies (CSP) and secure IPC messaging.
 
 ## 🏗 Architecture
 

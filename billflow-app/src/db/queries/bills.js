@@ -26,8 +26,10 @@ async function listBills(filter) {
     query = query.lte('bill_date', filter.dateTo);
   }
   if (filter.search && filter.search.trim()) {
-    var s = filter.search.trim();
-    query = query.ilike('bill_number', '%' + s + '%');
+    var s = filter.search.trim().replace(/[,%'"\\]/g, '').substring(0, 100);
+    if (s) {
+      query = query.ilike('bill_number', '%' + s + '%');
+    }
   }
 
   query = query.order('bill_date', { ascending: false }).order('created_at', { ascending: false });

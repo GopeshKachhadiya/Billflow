@@ -1,8 +1,9 @@
 var nodemailer = require('nodemailer');
+var crypto     = require('crypto');
 var settings   = require('../db/queries/settings');
 
 function generate6DigitOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return crypto.randomInt(100000, 999999).toString();
 }
 
 function getTransporter() {
@@ -10,9 +11,13 @@ function getTransporter() {
   
   var host = process.env.SMTP_HOST || allSettings.smtp_host || 'smtp.gmail.com';
   var port = parseInt(process.env.SMTP_PORT || allSettings.smtp_port || '465', 10);
-  var user = process.env.SMTP_USER || allSettings.smtp_user || 'gopeshkachhadiya00005@gmail.com';
-  var pass = process.env.SMTP_PASS || allSettings.smtp_pass || 'vydm exyu dyxl spda';
+  var user = process.env.SMTP_USER || allSettings.smtp_user || '';
+  var pass = process.env.SMTP_PASS || allSettings.smtp_pass || '';
   pass = (pass || '').replace(/\s+/g, ''); // strip spaces for Google 16-char App Passwords
+
+  if (!user || !pass) {
+    throw new Error('SMTP user or password not configured in environment or settings.');
+  }
 
   return nodemailer.createTransport({
     host: host,

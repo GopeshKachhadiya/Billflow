@@ -310,4 +310,127 @@ DROP POLICY IF EXISTS "Allow insert for anyone" ON public.support_tickets;
 CREATE POLICY "Allow insert for anyone" ON public.support_tickets
     FOR INSERT TO anon, authenticated WITH CHECK (true);
 
+-- ═══════════════════════════════════════════════════
+-- 8. Missing Schema Fixes & Extra Tables
+-- ═══════════════════════════════════════════════════
+
+-- Add missing columns to profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'trial';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS trial_end_date DATE;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS license_key TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
+
+-- Add missing columns to customers
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS payment_terms TEXT DEFAULT 'due_on_receipt';
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS notes TEXT;
+
+-- Add missing columns to bills
+ALTER TABLE public.bills ADD COLUMN IF NOT EXISTS terms TEXT;
+ALTER TABLE public.bills ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.bills ADD COLUMN IF NOT EXISTS order_number TEXT;
+ALTER TABLE public.bills ADD COLUMN IF NOT EXISTS order_date DATE;
+ALTER TABLE public.bills ADD COLUMN IF NOT EXISTS created_by TEXT;
+
+-- Expenses table
+CREATE TABLE IF NOT EXISTS public.expenses (
+    id TEXT PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    category TEXT DEFAULT 'General',
+    vendor_name TEXT,
+    amount DOUBLE PRECISION DEFAULT 0.00,
+    gst_amount DOUBLE PRECISION DEFAULT 0.00,
+    bill_date DATE,
+    receipt_url TEXT,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can manage their own expenses" ON public.expenses;
+CREATE POLICY "Users can manage their own expenses" ON public.expenses
+    FOR ALL USING (auth.uid() = owner_id);
+
+-- Settings table
+CREATE TABLE IF NOT EXISTS public.settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    key TEXT NOT NULL,
+    value TEXT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(owner_id, key)
+);
+ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can manage their own settings" ON public.settings;
+CREATE POLICY "Users can manage their own settings" ON public.settings
+    FOR ALL USING (auth.uid() = owner_id);
+
+-- Password OTP resets table
+CREATE TABLE IF NOT EXISTS public.password_otp_resets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT NOT NULL,
+    otp_code TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    verified BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.password_otp_resets ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon and auth to insert/select password_otp_resets" ON public.password_otp_resets;
+CREATE POLICY "Allow anon and auth to insert/select password_otp_resets" ON public.password_otp_resets
+    FOR ALL TO anon, authenticated USING (true);
+
+-- Credit / Debit Notes Table (GST Compliance)
+CREATE TABLE IF NOT EXISTS public.credit_notes (
+    id TEXT PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    note_number TEXT NOT NULL,
+    note_type TEXT DEFAULT 'credit',
+    bill_id TEXT REFERENCES public.bills(id) ON DELETE SET NULL,
+    customer_id TEXT REFERENCES public.customers(id) ON DELETE SET NULL,
+    note_date DATE NOT NULL,
+    amount DOUBLE PRECISION DEFAULT 0.00,
+    gst_amount DOUBLE PRECISION DEFAULT 0.00,
+    reason TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+ALTER TABLE public.credit_notes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can manage their own credit notes" ON public.credit_notes;
+CREATE POLICY "Users can manage their own credit notes" ON public.credit_notes
+    FOR ALL USING (auth.uid() = owner_id);
+
+-- ═══════════════════════════════════════════════════
+-- 9. Universal Incoming Bills Inbox Table
+-- ═══════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS public.inbox_bills (
+    id TEXT PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    sender_name TEXT NOT NULL,
+    sender_email TEXT,
+    sender_phone TEXT,
+    sender_gstin TEXT,
+    bill_number TEXT NOT NULL,
+    bill_date DATE,
+    due_date DATE,
+    amount DOUBLE PRECISION DEFAULT 0.00,
+    tax_amount DOUBLE PRECISION DEFAULT 0.00,
+    pdf_url TEXT,
+    pdf_base64 TEXT,
+    status TEXT DEFAULT 'unread', -- 'unread', 'read', 'accepted', 'rejected', 'converted_expense'
+    source TEXT DEFAULT 'manual', -- 'email', 'whatsapp', 'webhook', 'manual'
+    notes TEXT,
+    converted_expense_id TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+ALTER TABLE public.inbox_bills ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can manage their own inbox bills" ON public.inbox_bills;
+CREATE POLICY "Users can manage their own inbox bills" ON public.inbox_bills
+    FOR ALL USING (auth.uid() = owner_id);
+
+
 

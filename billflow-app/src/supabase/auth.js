@@ -14,6 +14,24 @@ function getSessionPath() {
   }
 }
 
+var loginAttempts = {};
+var otpAttempts = {};
+
+function isRateLimited(ipOrEmail, attemptsMap, maxAttempts, windowMs) {
+  var now = Date.now();
+  var record = attemptsMap[ipOrEmail];
+  if (!record) {
+    attemptsMap[ipOrEmail] = { count: 1, resetAt: now + windowMs };
+    return false;
+  }
+  if (now > record.resetAt) {
+    attemptsMap[ipOrEmail] = { count: 1, resetAt: now + windowMs };
+    return false;
+  }
+  record.count++;
+  return record.count > maxAttempts;
+}
+
 function saveSessionToDisk(session, user, profile) {
   _currentSession = session;
   _currentUser    = user;
@@ -22,12 +40,20 @@ function saveSessionToDisk(session, user, profile) {
     var p = getSessionPath();
     var dir = path.dirname(p);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(p, JSON.stringify({
+    
+    var rawText = JSON.stringify({
       session: session,
       user: user,
       profile: profile,
       saved_at: Date.now()
-    }, null, 2), 'utf8');
+    }, null, 2);
+
+    if (electron.safeStorage && electron.safeStorage.isEncryptionAvailable()) {
+      var encryptedBuf = electron.safeStorage.encryptString(rawText);
+      fs.writeFileSync(p, encryptedBuf);
+    } else {
+      fs.writeFileSync(p, rawText, 'utf8');
+    }
   } catch(e) {
     console.error('[auth] Failed to save cloud session to disk:', e.message);
   }
@@ -40,18 +66,28 @@ function loadSessionFromDisk() {
   try {
     var p = getSessionPath();
     if (fs.existsSync(p)) {
-      var data = JSON.parse(fs.readFileSync(p, 'utf8'));
+      var rawContent = fs.readFileSync(p);
+      var text = '';
+
+      if (electron.safeStorage && electron.safeStorage.isEncryptionAvailable()) {
+        try {
+          text = electron.safeStorage.decryptString(rawContent);
+        } catch (decErr) {
+          text = rawContent.toString('utf8');
+        }
+      } else {
+        text = rawContent.toString('utf8');
+      }
+
+      var data = JSON.parse(text);
       if (data && data.session && data.user) {
-        // Check if token expired
         var now = Math.floor(Date.now() / 1000);
         if (data.session.expires_at && data.session.expires_at < now) {
-          // Attempt refresh or mark as expired
           console.log('[auth] Cached session expired on disk.');
         } else {
           _currentSession = data.session;
           _currentUser    = data.user;
           _currentProfile = data.profile || null;
-          // Set in Supabase client
           var client = require('./client').getSupabaseClient();
           if (client && _currentSession.access_token && _currentSession.refresh_token) {
             client.auth.setSession({
@@ -150,6 +186,11 @@ function login(email, password, callback) {
     return callback({ success: false, error: 'Please enter both email and password.' });
   }
 
+  // Rate limit: max 5 login attempts per email per 5 minutes
+  if (isRateLimited('login_' + normalizedEmail, loginAttempts, 5, 5 * 60 * 1000)) {
+    return callback({ success: false, error: 'Too many failed attempts. Please wait 5 minutes before trying again.' });
+  }
+
   var client = require('./client').getSupabaseClient();
   if (!client) {
     return callback({ success: false, error: 'Supabase cloud connection is not configured. Please check your .env file or settings.' });
@@ -231,6 +272,11 @@ function sendResetOTP(email) {
   var normalizedEmail = (email || '').trim().toLowerCase();
   if (!normalizedEmail) {
     return Promise.resolve({ success: false, error: 'Please enter a valid email address.' });
+  }
+
+  // Rate limit: max 3 OTP requests per email per 10 minutes
+  if (isRateLimited('otp_' + normalizedEmail, otpAttempts, 3, 10 * 60 * 1000)) {
+    return Promise.resolve({ success: false, error: 'Too many OTP requests. Please wait 10 minutes before requesting again.' });
   }
   var client = require('./client').getSupabaseClient();
   if (!client) {

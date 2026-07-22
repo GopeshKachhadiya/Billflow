@@ -42,7 +42,9 @@ function getModules() {
     billNum:    require('./utils/bill-number'),
     webhooks:   require('./n8n/webhooks'),
     encryptor:  require('./crypto/data-encryptor'),
-    expenses:   require('./db/queries/expenses')
+    expenses:   require('./db/queries/expenses'),
+    creditNotes:require('./db/queries/credit-notes'),
+    inbox:      require('./db/queries/inbox')
   };
 }
 
@@ -52,17 +54,8 @@ function syncEnvToSettings() {
   try {
     var fs = require('fs');
     var path = require('path');
-    var envPaths = [
-      path.join(__dirname, '..', '.env'),
-      path.join(__dirname, '../..', '.env'),
-      path.join(__dirname, '..', 'billadmin', '.env'),
-      path.join(__dirname, '../../billadmin', '.env')
-    ];
-    var envPath = null;
-    for (var i = 0; i < envPaths.length; i++) {
-      if (fs.existsSync(envPaths[i])) { envPath = envPaths[i]; break; }
-    }
-    if (envPath && fs.existsSync(envPath)) {
+    var envPath = path.join(__dirname, '..', '.env');
+    if (fs.existsSync(envPath)) {
       var envContent = fs.readFileSync(envPath, 'utf8');
       var env = {};
       envContent.split(/\r?\n/).forEach(function(line) {
@@ -384,9 +377,37 @@ ipcMain.handle('db:bills:dashboard',    async function()     { return await getM
 ipcMain.handle('db:billitems:replace', async function(e, a) { var r = await getModules().billItems.replaceItemsForBill(a.billId, a.items); triggerPushToCloud(); return r; });
 ipcMain.handle('db:billitems:get',     async function(e, a) { return await getModules().billItems.getItemsForBill(a.billId); });
 
+// ── INBOX BILLS ────────────────────────────────────────────────────────────────
+ipcMain.handle('db:inbox:list',             async function(e, a) { return await getModules().inbox.listInboxBills(a); });
+ipcMain.handle('db:inbox:get',              async function(e, a) { return await getModules().inbox.getInboxBill(a.id); });
+ipcMain.handle('db:inbox:create',           async function(e, a) { var r = await getModules().inbox.createInboxBill(a); triggerPushToCloud(); return r; });
+ipcMain.handle('db:inbox:updateStatus',     async function(e, a) { await getModules().inbox.updateInboxStatus(a.id, a.status); triggerPushToCloud(); return { ok:true }; });
+ipcMain.handle('db:inbox:convertToExpense', async function(e, a) { var r = await getModules().inbox.convertToExpense(a.id); triggerPushToCloud(); return r; });
+ipcMain.handle('db:inbox:unreadCount',      async function()     { return await getModules().inbox.getUnreadCount(); });
+
 // ── TAX RECORDS ───────────────────────────────────────────────────────────────
 ipcMain.handle('db:taxrecords:upsert',  async function(e, a) { await getModules().taxRecords.upsertTaxRecord(a.billId, a.data); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:taxrecords:get',     async function(e, a) { return await getModules().taxRecords.getTaxRecord(a.billId); });
+ipcMain.handle('db:creditnotes:list',   async function(e, a) { return await getModules().creditNotes.listCreditNotes(a); });
+ipcMain.handle('db:creditnotes:create', async function(e, a) { var r = await getModules().creditNotes.createCreditNote(a); triggerPushToCloud(); return r; });
+
+ipcMain.handle('db:export:fullData', async function() {
+  var m = getModules();
+  var customers = await m.customers.listCustomers();
+  var items     = await m.items.listItems();
+  var bills     = await m.bills.listBills();
+  var expenses  = await m.expenses.listExpenses();
+  var settings  = m.settings.getAllSettings();
+
+  return {
+    exported_at: new Date().toISOString(),
+    version: '1.0.0',
+    settings: settings,
+    customers: customers,
+    items: items,
+    bills: bills,
+    expenses: expenses
+  };
+});
 ipcMain.handle('db:taxrecords:summary', async function(e, a) { return await getModules().taxRecords.getTaxSummary(a); });
 ipcMain.handle('db:taxrecords:monthly', async function(e, a) { return await getModules().taxRecords.getMonthlyGSTSummary(a.year); });
 ipcMain.handle('gst:gstr1Export', function(e, a) { return require('./gst/gstr1-export').exportGSTR1(a.year, a.month); });

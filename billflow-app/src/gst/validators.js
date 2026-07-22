@@ -12,6 +12,35 @@ function isValidGSTIN(gstin) {
   return true;
 }
 
+function isValidPAN(pan) {
+  if (!pan) return false;
+  pan = pan.trim().toUpperCase();
+  return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
+}
+
+function isValidPhone(phone) {
+  if (!phone) return false;
+  phone = phone.trim().replace(/\D/g, '');
+  if (phone.length === 12 && phone.startsWith('91')) phone = phone.substring(2);
+  return /^[6-9]\d{9}$/.test(phone);
+}
+
+function isValidPIN(pin) {
+  if (!pin) return false;
+  pin = pin.trim();
+  return /^[1-9][0-9]{5}$/.test(pin);
+}
+
+function isValidIFSC(ifsc) {
+  if (!ifsc) return false;
+  ifsc = ifsc.trim().toUpperCase();
+  return /^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc);
+}
+
 module.exports = {
-  isValidGSTIN: isValidGSTIN
+  isValidGSTIN: isValidGSTIN,
+  isValidPAN: isValidPAN,
+  isValidPhone: isValidPhone,
+  isValidPIN: isValidPIN,
+  isValidIFSC: isValidIFSC
 };

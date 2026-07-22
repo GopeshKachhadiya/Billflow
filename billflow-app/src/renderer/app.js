@@ -131,6 +131,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (window.SyncStatus) { window.SyncStatus.update(); }
 
+  var logoWrapper = document.getElementById('topbar-logo-wrapper');
+  if (logoWrapper) {
+    logoWrapper.addEventListener('click', function() {
+      loadPage('dashboard');
+    });
+  }
+
   // OTA Auto-Updater Event Listener
   if (window.api && window.api.onUpdateStatus) {
     window.api.onUpdateStatus(function(data) {

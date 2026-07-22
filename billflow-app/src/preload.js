@@ -45,6 +45,19 @@ contextBridge.exposeInMainWorld('api', {
   deleteExpense:     function(id)    { return ipc('db:expenses:delete',  { id:id }); },
   getExpenseSummary: function(f)     { return ipc('db:expenses:summary', f || {}); },
 
+  // Credit Notes & Backup
+  listCreditNotes:  function(f)     { return ipc('db:creditnotes:list',   f || {}); },
+  createCreditNote: function(d)     { return ipc('db:creditnotes:create', d); },
+  exportFullData:   function()      { return ipc('db:export:fullData',    {}); },
+
+  // Incoming Bills Inbox
+  listInboxBills:       function(f)       { return ipc('db:inbox:list',             f || {}); },
+  getInboxBill:         function(id)      { return ipc('db:inbox:get',              { id:id }); },
+  createInboxBill:      function(d)       { return ipc('db:inbox:create',           d); },
+  updateInboxStatus:    function(id, s)   { return ipc('db:inbox:updateStatus',     { id:id, status:s }); },
+  convertInboxToExpense:function(id)      { return ipc('db:inbox:convertToExpense', { id:id }); },
+  getInboxUnreadCount:  function()        { return ipc('db:inbox:unreadCount',      {}); },
+
   // Bills
   listBills:           function(f)       { return ipc('db:bills:list',         f || {}); },
   getBill:             function(id)      { return ipc('db:bills:get',           { id:id }); },

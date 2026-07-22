@@ -1,0 +1,115 @@
+<div class="page-container" style="display: flex; flex-direction: column; height: 100%; gap: 16px; padding: 20px;">
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; background-color: var(--color-surface); padding: 16px 20px; border-radius: 8px; border: 1px solid var(--color-border); box-shadow: var(--shadow-paper);">
+    <div>
+      <h1 style="font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--color-primary); margin-bottom: 2px;">Incoming Bills Inbox</h1>
+      <p style="font-size: 12px; color: var(--color-text-muted);">Central repository for supplier invoices, client receipts, and vendor dispatches from Email, WhatsApp, or Webhooks.</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button id="btn-receive-bill" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 16px;">📥</span> + Receive / Log Bill
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; background-color: var(--color-surface); padding: 10px 16px; border-radius: 6px; border: 1px solid var(--color-border);">
+    <div style="display: flex; gap: 8px;" id="inbox-status-tabs">
+      <button class="btn btn-sm tab-filter active" data-status="all">All</button>
+      <button class="btn btn-sm tab-filter" data-status="unread">Unread <span id="tab-count-unread" class="badge" style="display:none; background:#8b3a3a; color:#fff; padding:1px 5px; border-radius:10px; font-size:10px;">0</span></button>
+      <button class="btn btn-sm tab-filter" data-status="accepted">Accepted</button>
+      <button class="btn btn-sm tab-filter" data-status="converted_expense">Converted to Expense</button>
+      <button class="btn btn-sm tab-filter" data-status="rejected">Rejected</button>
+    </div>
+    <div style="display: flex; gap: 8px; flex: 1; max-width: 320px;">
+      <input type="text" id="inbox-search-input" placeholder="Search by vendor, bill #, email..." style="width: 100%; padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px; background-color: #fff; color: var(--color-text);" />
+    </div>
+  </div>
+
+  <!-- Split Screen Layout -->
+  <div style="display: flex; flex: 1; gap: 16px; min-height: 0;">
+    <!-- Left Master List (40% width) -->
+    <div style="width: 40%; background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-paper);">
+      <div style="padding: 10px 14px; background-color: var(--color-surface-elevated); border-bottom: 1px solid var(--color-border); font-weight: 600; font-size: 12px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between;">
+        <span>INBOX MESSAGES</span>
+        <span id="inbox-total-count">0 items</span>
+      </div>
+      <div id="inbox-master-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+        <div style="padding: 40px 20px; text-align: center; color: var(--color-text-muted); font-size: 13px;">Loading incoming bills...</div>
+      </div>
+    </div>
+
+    <!-- Right Detail Inspector (60% width) -->
+    <div id="inbox-detail-panel" style="width: 60%; background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-paper);">
+      <div style="padding: 60px 20px; text-align: center; color: var(--color-text-muted); font-size: 14px;">
+        <span style="font-size: 36px; display: block; margin-bottom: 8px;">📬</span>
+        Select an incoming bill from the list on the left to inspect details.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Log / Simulate Incoming Bill -->
+<div id="modal-incoming-bill" class="modal-overlay" style="display: none;">
+  <div class="modal-box" style="width: 500px; max-width: 90%;">
+    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border); padding-bottom: 12px; margin-bottom: 16px;">
+      <h3 style="font-family: var(--font-serif); font-size: 18px; font-weight: 700; color: var(--color-primary);">Log Incoming Bill / Receipt</h3>
+      <button class="btn-close-modal" id="btn-close-incoming-modal" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+    </div>
+    <form id="form-incoming-bill">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Vendor / Sender Name *</label>
+          <input type="text" id="inc-sender-name" required placeholder="e.g. Acme Supplies Pvt Ltd" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px;" />
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Vendor Email</label>
+            <input type="email" id="inc-sender-email" placeholder="billing@acme.com" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px;" />
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Vendor GSTIN</label>
+            <input type="text" id="inc-sender-gstin" placeholder="24AAAAA0000A1Z5" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px;" />
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Bill / Invoice Number *</label>
+            <input type="text" id="inc-bill-number" required placeholder="INV-2026-001" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px;" />
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Bill Date *</label>
+            <input type="date" id="inc-bill-date" required style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px;" />
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Total Amount (₹) *</label>
+            <input type="number" step="0.01" id="inc-amount" required placeholder="15000.00" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px;" />
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">GST Amount (₹)</label>
+            <input type="number" step="0.01" id="inc-tax-amount" placeholder="2700.00" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px;" />
+          </div>
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Channel / Source</label>
+          <select id="inc-source" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px; background-color: #fff;">
+            <option value="email">Email Parser</option>
+            <option value="whatsapp">WhatsApp Business</option>
+            <option value="webhook">Webhook API</option>
+            <option value="manual" selected>Manual Upload</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Notes / Item Description</label>
+          <textarea id="inc-notes" rows="2" placeholder="e.g. Office stationery & printing supplies" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px;"></textarea>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" class="btn" id="btn-cancel-incoming">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save to Inbox</button>
+      </div>
+    </form>
+  </div>
+</div>
