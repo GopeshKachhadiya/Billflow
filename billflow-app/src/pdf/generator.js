@@ -50,9 +50,25 @@ function generateBoxyPDF(doc, bill, items, customer, s, W) {
   doc.moveTo(40, 131).lineTo(40 + W, 131).stroke('#000000');
 
   // 4. TAX INVOICE Bar (131 to 149)
+  var paidAmt = parseFloat(bill.amount_paid) || 0;
+  var grandAmt = parseFloat(bill.grand_total) || 0;
+  var dueAmt = bill.amount_due !== undefined ? parseFloat(bill.amount_due) : Math.max(0, grandAmt - paidAmt);
+  var isPaid = bill.status === 'paid' || (dueAmt <= 0.01 && grandAmt > 0);
+  var isPartial = bill.status === 'partial' || (paidAmt > 0 && dueAmt > 0.01);
+
+  var docHeaderStr = 'TAX INVOICE';
+  if (isPaid) docHeaderStr = 'TAX INVOICE / PAID RECEIPT';
+  else if (isPartial) docHeaderStr = 'TAX INVOICE / DOWNPAYMENT RECEIPT';
+
   doc.rect(40, 131, W, 18).fillAndStroke('#f2f2f2', '#000000');
-  doc.fillColor('#000000').font('Helvetica-Bold').fontSize(10.5);
-  doc.text('TAX INVOICE', 40, 136, { align: 'center', width: W });
+  doc.fillColor('#000000').font('Helvetica-Bold').fontSize(10);
+  doc.text(docHeaderStr, 40, 136, { align: 'center', width: W });
+
+  if (isPaid) {
+    doc.fillColor('#155724').fontSize(8.5).text('[ PAID ]', 40 + W - 65, 136, { width: 60, align: 'right' });
+  } else if (isPartial) {
+    doc.fillColor('#856404').fontSize(8).text('[ DOWNPAYMENT PAID ]', 40 + W - 125, 136, { width: 120, align: 'right' });
+  }
 
   // 5. Invoice Detail & Order Details split section (149 to 219)
   var detailsY = 149;
@@ -307,24 +323,44 @@ function generateBoxyPDF(doc, bill, items, customer, s, W) {
   var grandY = startTotalsY + rightRows.length * stepY + 3;
   doc.moveTo(bottomSplitX, grandY).lineTo(40 + W, grandY).stroke('#000000');
   
-  doc.fillColor('#0f3080').font('Helvetica-Bold').fontSize(11);
+  doc.fillColor('#0f3080').font('Helvetica-Bold').fontSize(10);
   doc.text('Net Amount :', bottomSplitX + 8, grandY + 4);
   doc.text(Number(bill.grand_total || 0).toFixed(2), bottomSplitX + 8, grandY + 4, { align: 'right', width: W - (bottomSplitX - 40) - 16 });
 
+  var paidY = grandY + 16;
+  doc.fillColor('#155724').font('Helvetica-Bold').fontSize(8.5);
+  doc.text('Amount Paid :', bottomSplitX + 8, paidY);
+  doc.text(paidAmt.toFixed(2), bottomSplitX + 8, paidY, { align: 'right', width: W - (bottomSplitX - 40) - 16 });
+
+  var dueY = paidY + 11;
+  doc.fillColor('#721c24').font('Helvetica-Bold').fontSize(9);
+  doc.text('Balance Due :', bottomSplitX + 8, dueY);
+  doc.text(dueAmt.toFixed(2), bottomSplitX + 8, dueY, { align: 'right', width: W - (bottomSplitX - 40) - 16 });
+
   // Payment Grid Box
-  var gridY = grandY + 20;
-  doc.rect(bottomSplitX + 8, gridY, W - (bottomSplitX - 40) - 16, 60).stroke('#000000');
+  var gridY = dueY + 13;
+  doc.rect(bottomSplitX + 8, gridY, W - (bottomSplitX - 40) - 16, 50).stroke('#000000');
   for (var r = 1; r < 5; r++) { 
-    doc.moveTo(bottomSplitX + 8, gridY + r * 12).lineTo(40 + W - 8, gridY + r * 12).stroke('#000000'); 
+    doc.moveTo(bottomSplitX + 8, gridY + r * 10).lineTo(40 + W - 8, gridY + r * 10).stroke('#000000'); 
   }
-  doc.moveTo(bottomSplitX + 63, gridY).lineTo(bottomSplitX + 63, gridY + 60).stroke('#000000');
+  doc.moveTo(bottomSplitX + 63, gridY).lineTo(bottomSplitX + 63, gridY + 50).stroke('#000000');
   
-  doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#000000');
-  doc.text('Date', bottomSplitX + 12, gridY + 2.5);
-  doc.text('NEFT-RTGS', bottomSplitX + 12, gridY + 14.5);
-  doc.text('Amt', bottomSplitX + 12, gridY + 26.5);
-  doc.text('Bank', bottomSplitX + 12, gridY + 38.5);
-  doc.text('Bill No.', bottomSplitX + 12, gridY + 50.5);
+  doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#000000');
+  doc.text('Date', bottomSplitX + 10, gridY + 1.5);
+  doc.font('Helvetica').text(DateUtils_toDisplay(bill.bill_date), bottomSplitX + 68, gridY + 1.5, { width: 110 });
+
+  doc.font('Helvetica-Bold').text('Method/Ref', bottomSplitX + 10, gridY + 11.5);
+  var methodRefStr = (bill.payment_method || '—') + (bill.payment_reference ? ' (' + bill.payment_reference + ')' : '');
+  doc.font('Helvetica').text(methodRefStr, bottomSplitX + 68, gridY + 11.5, { width: 110, ellipsis: true });
+
+  doc.font('Helvetica-Bold').text('Amt Paid', bottomSplitX + 10, gridY + 21.5);
+  doc.font('Helvetica').text('Rs. ' + paidAmt.toFixed(2), bottomSplitX + 68, gridY + 21.5, { width: 110 });
+
+  doc.font('Helvetica-Bold').text('Bank', bottomSplitX + 10, gridY + 31.5);
+  doc.font('Helvetica').text(s.bank_name || '—', bottomSplitX + 68, gridY + 31.5, { width: 110, ellipsis: true });
+
+  doc.font('Helvetica-Bold').text('Bill No.', bottomSplitX + 10, gridY + 41.5);
+  doc.font('Helvetica').text(bill.bill_number, bottomSplitX + 68, gridY + 41.5, { width: 110 });
 
   // Seller signature
   doc.fillColor('red').font('Helvetica-Bold').fontSize(9);

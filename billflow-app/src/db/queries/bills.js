@@ -55,6 +55,8 @@ async function listBills(filter) {
       grand_total: parseFloat(b.grand_total) || 0,
       amount_paid: parseFloat(b.amount_paid) || 0,
       amount_due: parseFloat(b.amount_due) || 0,
+      payment_method: b.payment_method || '',
+      payment_reference: b.payment_reference || '',
       terms: b.terms || '',
       notes: b.notes || '',
       created_by: b.created_by || '',
@@ -89,6 +91,8 @@ async function getBill(id) {
     grand_total: parseFloat(b.grand_total) || 0,
     amount_paid: parseFloat(b.amount_paid) || 0,
     amount_due: parseFloat(b.amount_due) || 0,
+    payment_method: b.payment_method || '',
+    payment_reference: b.payment_reference || '',
     terms: b.terms || '',
     notes: b.notes || '',
     created_by: b.created_by || '',
@@ -123,6 +127,8 @@ async function createBill(data) {
     grand_total: parseFloat(data.grand_total) || 0,
     amount_paid: parseFloat(data.amount_paid) || 0,
     amount_due: parseFloat(data.amount_due) !== undefined ? parseFloat(data.amount_due) : (parseFloat(data.grand_total) || 0),
+    payment_method: data.payment_method || null,
+    payment_reference: data.payment_reference || null,
     terms: data.terms || '',
     notes: data.notes || '',
     created_by: data.created_by || '',
@@ -132,6 +138,21 @@ async function createBill(data) {
 
   var res = await ctx.client.from('bills').insert(payload).select().single();
   if (res.error) throw new Error('Cloud bill create error: ' + res.error.message);
+
+  if (parseFloat(data.amount_paid) > 0) {
+    try {
+      await ctx.client.from('payment_log').insert({
+        owner_id: ctx.userId,
+        bill_id: newId,
+        amount_paid: parseFloat(data.amount_paid) || 0,
+        payment_date: data.bill_date || now.split('T')[0],
+        payment_method: data.payment_method || 'Manual',
+        payment_reference: data.payment_reference || ''
+      });
+    } catch (e) {
+      console.warn('payment_log entry warning:', e.message);
+    }
+  }
 
   if (data.items && data.items.length > 0) {
     await require('./bill-items').replaceItemsForBill(newId, data.items);
@@ -156,6 +177,8 @@ async function updateBill(id, data) {
   if (data.grand_total !== undefined) payload.grand_total = parseFloat(data.grand_total) || 0;
   if (data.amount_paid !== undefined) payload.amount_paid = parseFloat(data.amount_paid) || 0;
   if (data.amount_due !== undefined) payload.amount_due = parseFloat(data.amount_due) || 0;
+  if (data.payment_method !== undefined) payload.payment_method = data.payment_method;
+  if (data.payment_reference !== undefined) payload.payment_reference = data.payment_reference;
   if (data.terms !== undefined) payload.terms = data.terms;
   if (data.notes !== undefined) payload.notes = data.notes;
 
@@ -166,6 +189,21 @@ async function updateBill(id, data) {
     .eq('id', id);
 
   if (res.error) throw new Error('Cloud bill update error: ' + res.error.message);
+
+  if (data.amount_paid !== undefined && parseFloat(data.amount_paid) > 0) {
+    try {
+      await ctx.client.from('payment_log').insert({
+        owner_id: ctx.userId,
+        bill_id: id,
+        amount_paid: parseFloat(data.amount_paid) || 0,
+        payment_date: data.bill_date || now.split('T')[0],
+        payment_method: data.payment_method || 'Manual',
+        payment_reference: data.payment_reference || ''
+      });
+    } catch (e) {
+      console.warn('payment_log update warning:', e.message);
+    }
+  }
 
   if (data.items) {
     await require('./bill-items').replaceItemsForBill(id, data.items);

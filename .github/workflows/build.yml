@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -31,6 +31,6 @@ jobs:
       - name: Build Desktop Application (Dry Run)
         run: |
           cd billflow-app
-          npm run build:modern -- --executableArgs="--no-sandbox"
+          npm run build:modern -- --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

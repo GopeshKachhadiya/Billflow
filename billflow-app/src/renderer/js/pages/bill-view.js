@@ -294,6 +294,60 @@ window.PageControllers['bill-view'] = {
     }
     document.getElementById('amount-words').textContent = AmountToWords.toWords(b.grand_total || 0);
     
+    // Header Title & Payment Status Stamp
+    var docTitleEl = document.getElementById('doc-header-title');
+    var statusStampEl = document.getElementById('payment-status-stamp');
+    var paidAmount = parseFloat(b.amount_paid) || 0;
+    var grandTotal = parseFloat(b.grand_total) || 0;
+    var dueAmount = b.amount_due !== undefined ? parseFloat(b.amount_due) : Math.max(0, grandTotal - paidAmount);
+
+    var isFullPaid = b.status === 'paid' || (dueAmount <= 0.01 && grandTotal > 0);
+    var isPartialPaid = b.status === 'partial' || (paidAmount > 0 && dueAmount > 0.01);
+
+    if (docTitleEl) {
+      if (isFullPaid) {
+        docTitleEl.textContent = 'TAX INVOICE / PAID RECEIPT';
+      } else if (isPartialPaid) {
+        docTitleEl.textContent = 'TAX INVOICE / DOWNPAYMENT RECEIPT';
+      } else {
+        docTitleEl.textContent = 'TAX INVOICE';
+      }
+    }
+
+    if (statusStampEl) {
+      if (isFullPaid) {
+        statusStampEl.textContent = 'PAID';
+        statusStampEl.style.backgroundColor = '#d4edda';
+        statusStampEl.style.color = '#155724';
+        statusStampEl.style.border = '1px solid #c3e6cb';
+        statusStampEl.style.display = 'inline-block';
+      } else if (isPartialPaid) {
+        statusStampEl.textContent = 'DOWNPAYMENT PAID';
+        statusStampEl.style.backgroundColor = '#fff3cd';
+        statusStampEl.style.color = '#856404';
+        statusStampEl.style.border = '1px solid #ffeeba';
+        statusStampEl.style.display = 'inline-block';
+      } else {
+        statusStampEl.textContent = 'UNPAID / DUE';
+        statusStampEl.style.backgroundColor = '#f8d7da';
+        statusStampEl.style.color = '#721c24';
+        statusStampEl.style.border = '1px solid #f5c6cb';
+        statusStampEl.style.display = 'inline-block';
+      }
+    }
+
+    // Set Amount Paid & Balance Due
+    setElText('total-paid', FormatCurrency.toRupees(paidAmount));
+    setElText('total-due', FormatCurrency.toRupees(dueAmount));
+
+    // Populate NEFT / Payment Grid box
+    setElText('pay-grid-date', DateUtils.toDisplay(b.bill_date));
+    var payMethodStr = (b.payment_method || '—') + (b.payment_reference ? ' (' + b.payment_reference + ')' : '');
+    setElText('pay-grid-method', payMethodStr);
+    setElText('pay-grid-amt', FormatCurrency.toRupees(paidAmount));
+    setElText('pay-grid-bank', s.bank_name || '—');
+    setElText('pay-grid-billno', b.bill_number);
+
     // Terms
     document.getElementById('inv-terms').textContent = b.terms || '—';
     
@@ -326,7 +380,7 @@ window.PageControllers['bill-view'] = {
     if (s.upi_id && typeof QRCode !== 'undefined') {
       var upiStr = 'upi://pay?pa=' + encodeURIComponent(s.upi_id) +
                    '&pn=' + encodeURIComponent(s.business_name || 'Business') +
-                   '&am=' + b.grand_total.toFixed(2) +
+                   '&am=' + (dueAmount > 0 ? dueAmount : grandTotal).toFixed(2) +
                    '&cu=INR';
       new QRCode(upiContainer, {
         text: upiStr,

@@ -184,6 +184,38 @@
 <div style="display: grid; grid-template-columns: 1fr 320px; gap: 24px; margin-bottom: 24px;">
   <div>
     <div class="card" style="height: 100%;">
+      <div style="margin-bottom: 16px;">
+        <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--color-primary);">Payment & Settlement Options</h4>
+        <div class="form-group">
+          <label style="font-weight: 600;">Payment Status / Receipt Type *</label>
+          <select id="payment-status-select" style="width: 100%; font-weight: 600;">
+            <option value="unpaid">Unpaid / Credit (Due Bill)</option>
+            <option value="paid">Full Payment (Paid Bill Receipt)</option>
+            <option value="partial">Downpayment / Partial Payment (Partial Receipt)</option>
+          </select>
+        </div>
+        <div id="downpayment-group" class="form-group" style="display: none;">
+          <label>Downpayment / Paid Amount (₹) *</label>
+          <input type="number" id="downpayment-amount" step="0.01" min="0" placeholder="e.g. 5000">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Payment Method</label>
+            <select id="payment-method-select">
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI / QR Code</option>
+              <option value="Bank Transfer">Bank Transfer / NEFT</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Card">Credit / Debit Card</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Payment Ref / Txn ID</label>
+            <input type="text" id="payment-reference" placeholder="e.g. UPI-987654 / CHQ-1234">
+          </div>
+        </div>
+      </div>
+      <hr style="border: 0; border-top: 1px solid var(--color-border); margin: 16px 0;">
       <div class="form-group">
         <label>Notes</label>
         <textarea id="bill-notes" rows="3" placeholder="e.g. Thank you for your business!"></textarea>
@@ -226,9 +258,17 @@
           <td style="padding: 6px 0; font-size: 13px; font-style: italic;">Round-off:</td>
           <td id="total-roundoff" style="padding: 6px 0; text-align: right; font-style: italic;">₹0.00</td>
         </tr>
-        <tr style="font-size: 15px; font-weight: 700;">
-          <td style="padding: 12px 0 0 0;">Grand Total:</td>
-          <td id="total-grand" style="padding: 12px 0 0 0; text-align: right; color: var(--color-primary);">₹0.00</td>
+        <tr style="font-size: 15px; font-weight: 700; border-bottom: 1px solid var(--color-border);">
+          <td style="padding: 8px 0;">Grand Total:</td>
+          <td id="total-grand" style="padding: 8px 0; text-align: right; color: var(--color-primary);">₹0.00</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--color-border);">
+          <td style="padding: 6px 0; font-size: 13px; color: var(--color-success);">Amount Paid:</td>
+          <td id="total-paid-display" style="padding: 6px 0; text-align: right; font-weight: 600; color: var(--color-success);">₹0.00</td>
+        </tr>
+        <tr style="font-size: 14px; font-weight: 700;">
+          <td style="padding: 8px 0; color: var(--color-danger);">Balance Due:</td>
+          <td id="total-due-display" style="padding: 8px 0; text-align: right; color: var(--color-danger);">₹0.00</td>
         </tr>
       </table>
       

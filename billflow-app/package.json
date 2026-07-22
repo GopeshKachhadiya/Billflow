@@ -2,6 +2,7 @@
   "name": "billflow",
   "version": "1.0.0",
   "description": "Local-first billing and GST management for Indian SMBs",
+  "author": "Gopesh Kachhadiya",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GopeshKachhadiya/Billflow.git"

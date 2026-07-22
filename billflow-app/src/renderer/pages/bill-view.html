@@ -318,8 +318,9 @@
     </div>
     
     <!-- Tax Invoice Bar -->
-    <div style="text-align: center; background-color: #f2f2f2; font-weight: bold; font-size: 12px; padding: 5px; border-bottom: 2px solid #000; letter-spacing: 1px;">
-      TAX INVOICE
+    <div style="display: flex; justify-content: center; align-items: center; gap: 12px; background-color: #f2f2f2; font-weight: bold; font-size: 12px; padding: 5px; border-bottom: 2px solid #000; letter-spacing: 1px;">
+      <span id="doc-header-title">TAX INVOICE</span>
+      <span id="payment-status-stamp" style="font-size: 10px; padding: 2px 8px; border-radius: 3px; display: none; font-weight: 800; text-transform: uppercase;">PAID</span>
     </div>
     
     <!-- Invoice Details & Order Details split section -->
@@ -526,6 +527,14 @@
             <span>Net Amount :</span>
             <span id="total-grand">₹0.00</span>
           </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #28a745; margin-top: 4px; font-weight: bold;" id="row-paid-amount">
+            <span>Amount Paid:</span>
+            <span id="total-paid">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; color: #dc3545; border-top: 1px dashed #ccc; padding-top: 4px; margin-top: 4px;" id="row-due-amount">
+            <span>Balance Due:</span>
+            <span id="total-due">₹0.00</span>
+          </div>
         </div>
         
         <!-- NEFT-RTGS grid box -->
@@ -533,23 +542,23 @@
           <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 9.5px; text-align: left;">
             <tr style="border-bottom: 1px solid #000; height: 20px;">
               <td style="border-right: 1.5px solid #000; padding: 2px 6px; width: 85px; font-weight: bold; background-color: #fafafa;">Date</td>
-              <td style="padding: 2px 6px;"></td>
+              <td id="pay-grid-date" style="padding: 2px 6px;"></td>
             </tr>
             <tr style="border-bottom: 1px solid #000; height: 20px;">
-              <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">NEFT-RTGS</td>
-              <td style="padding: 2px 6px;"></td>
+              <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">Method/Ref</td>
+              <td id="pay-grid-method" style="padding: 2px 6px;"></td>
             </tr>
             <tr style="border-bottom: 1px solid #000; height: 20px;">
-              <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">Amt</td>
-              <td style="padding: 2px 6px;"></td>
+              <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">Amt Paid</td>
+              <td id="pay-grid-amt" style="padding: 2px 6px;"></td>
             </tr>
             <tr style="border-bottom: 1px solid #000; height: 20px;">
               <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">Bank</td>
-              <td style="padding: 2px 6px;"></td>
+              <td id="pay-grid-bank" style="padding: 2px 6px;"></td>
             </tr>
             <tr style="height: 20px;">
               <td style="border-right: 1.5px solid #000; padding: 2px 6px; font-weight: bold; background-color: #fafafa;">Bill No.</td>
-              <td style="padding: 2px 6px;"></td>
+              <td id="pay-grid-billno" style="padding: 2px 6px;"></td>
             </tr>
           </table>
         </div>

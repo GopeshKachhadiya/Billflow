@@ -143,6 +143,28 @@ window.PageControllers['bill-edit'] = {
     // Auto-save every 60 seconds
     if (self._autoSaveTimer) clearInterval(self._autoSaveTimer);
     self._autoSaveTimer = setInterval(function() { self.autoSave(); }, 60000);
+
+    // Payment status change & downpayment listeners
+    var payStatusSelect = document.getElementById('payment-status-select');
+    var dpGroup = document.getElementById('downpayment-group');
+    var dpInput = document.getElementById('downpayment-amount');
+
+    if (payStatusSelect) {
+      payStatusSelect.addEventListener('change', function() {
+        if (this.value === 'partial') {
+          if (dpGroup) dpGroup.style.display = 'block';
+        } else {
+          if (dpGroup) dpGroup.style.display = 'none';
+        }
+        self.recalculateTotals();
+      });
+    }
+
+    if (dpInput) {
+      dpInput.addEventListener('input', function() {
+        self.recalculateTotals();
+      });
+    }
   },
 
   // ── Customer selection ────────────────────────────────────────────────────
@@ -363,6 +385,27 @@ window.PageControllers['bill-edit'] = {
     setEl('total-grand',     FormatCurrency.toRupees(totals.grandTotal));
     setEl('amount-words',    AmountToWords.toWords(totals.grandTotal));
 
+    var payStatus = (document.getElementById('payment-status-select') || {}).value || 'unpaid';
+    var paidAmount = 0;
+    var grandTotal = totals.grandTotal || 0;
+    if (payStatus === 'paid') {
+      paidAmount = grandTotal;
+    } else if (payStatus === 'partial') {
+      var dpInput = document.getElementById('downpayment-amount');
+      paidAmount = parseFloat(dpInput ? dpInput.value : 0) || 0;
+      if (paidAmount > grandTotal) paidAmount = grandTotal;
+    } else {
+      paidAmount = 0;
+    }
+    var dueAmount = Math.max(0, grandTotal - paidAmount);
+
+    setEl('total-paid-display', FormatCurrency.toRupees(paidAmount));
+    setEl('total-due-display',  FormatCurrency.toRupees(dueAmount));
+
+    totals.paidAmount = paidAmount;
+    totals.dueAmount = dueAmount;
+    totals.paymentStatus = payStatus;
+
     this._currentTotals = totals;
   },
 
@@ -422,12 +465,23 @@ window.PageControllers['bill-edit'] = {
       })
     );
 
+    var payStatusSelect = (document.getElementById('payment-status-select') || {}).value || 'unpaid';
+    var finalStatus = status;
+    if (status !== 'draft') {
+      if (payStatusSelect === 'paid') finalStatus = 'paid';
+      else if (payStatusSelect === 'partial') finalStatus = 'partial';
+      else finalStatus = 'sent';
+    }
+
+    var payMethod = (document.getElementById('payment-method-select') || {}).value || 'Cash';
+    var payRef = (document.getElementById('payment-reference') || {}).value || '';
+
     var billData = {
       bill_number:     (document.getElementById('bill-number')||{}).value || '',
       customer_id:     self._customer.id,
       bill_date:       (document.getElementById('bill-date')||{}).value   || DateUtils.today(),
       due_date:        (document.getElementById('due-date')||{}).value    || '',
-      status:          status,
+      status:          finalStatus,
       supply_type:     self._supplyType,
       place_of_supply: self._customer.state_code || '',
       subtotal:        totals.subtotal      || 0,
@@ -439,8 +493,10 @@ window.PageControllers['bill-edit'] = {
       total_tax:       (totals.totalCGST||0) + (totals.totalSGST||0) + (totals.totalIGST||0),
       round_off:       totals.roundOff      || 0,
       grand_total:     totals.grandTotal    || 0,
-      amount_due:      status === 'paid' ? 0 : (totals.grandTotal || 0),
-      amount_paid:     status === 'paid' ? (totals.grandTotal || 0) : 0,
+      amount_due:      totals.dueAmount !== undefined ? totals.dueAmount : (finalStatus === 'paid' ? 0 : totals.grandTotal),
+      amount_paid:     totals.paidAmount !== undefined ? totals.paidAmount : (finalStatus === 'paid' ? totals.grandTotal : 0),
+      payment_method:  payMethod,
+      payment_reference: payRef,
       notes:           (document.getElementById('bill-notes')||{}).value  || '',
       terms:           (document.getElementById('bill-terms')||{}).value  || '',
       order_number:    (document.getElementById('order-number')||{}).value || '',
@@ -622,6 +678,28 @@ window.PageControllers['bill-edit'] = {
     setVal('ack-no',       bill.ack_no);
     setVal('ack-dt',       bill.ack_dt);
     setVal('irn-no',       bill.irn_no);
+    setVal('payment-reference', bill.payment_reference);
+
+    var pSelect = document.getElementById('payment-status-select');
+    var dpGroup = document.getElementById('downpayment-group');
+    var dpInput = document.getElementById('downpayment-amount');
+    var pmSelect = document.getElementById('payment-method-select');
+
+    if (pmSelect && bill.payment_method) pmSelect.value = bill.payment_method;
+
+    if (pSelect) {
+      if (bill.status === 'paid') {
+        pSelect.value = 'paid';
+        if (dpGroup) dpGroup.style.display = 'none';
+      } else if (bill.status === 'partial' || (bill.amount_paid > 0 && bill.amount_due > 0)) {
+        pSelect.value = 'partial';
+        if (dpGroup) dpGroup.style.display = 'block';
+        if (dpInput) dpInput.value = bill.amount_paid || 0;
+      } else {
+        pSelect.value = 'unpaid';
+        if (dpGroup) dpGroup.style.display = 'none';
+      }
+    }
 
     if (data.customer) { self.selectCustomer(data.customer); }
 
