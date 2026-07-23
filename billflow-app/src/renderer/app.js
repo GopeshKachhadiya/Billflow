@@ -115,13 +115,17 @@ function updateTopbar(email) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  var links = document.querySelectorAll('[data-page]');
-  for (var i = 0; i < links.length; i++) {
-    links[i].addEventListener('click', function(e) {
+  // Global Event Delegation for all [data-page] navigation links and buttons
+  document.addEventListener('click', function(e) {
+    var target = e.target.closest ? e.target.closest('[data-page]') : null;
+    if (target) {
       e.preventDefault();
-      loadPage(this.getAttribute('data-page'));
-    });
-  }
+      var page = target.getAttribute('data-page');
+      if (page) {
+        loadPage(page);
+      }
+    }
+  });
 
   var logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {

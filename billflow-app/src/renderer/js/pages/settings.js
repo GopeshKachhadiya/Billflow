@@ -1,6 +1,7 @@
 // ES5 — Settings page controller
 window.switchSettingsTab = function(evt, tabId) {
-  var tabPanes = document.getElementsByClassName("settings-tab-pane");
+  if (evt && evt.preventDefault) evt.preventDefault();
+  var tabPanes = document.querySelectorAll(".settings-tab-pane");
   for (var i = 0; i < tabPanes.length; i++) {
     tabPanes[i].style.display = "none";
   }
@@ -13,11 +14,12 @@ window.switchSettingsTab = function(evt, tabId) {
   }
   var target = document.getElementById(tabId);
   if (target) target.style.display = "block";
-  if (evt && evt.currentTarget) {
-    evt.currentTarget.classList.add("active");
-    evt.currentTarget.style.color = "var(--color-primary)";
-    evt.currentTarget.style.borderBottom = "2px solid var(--color-primary)";
-    evt.currentTarget.style.fontWeight = "600";
+  var btn = (evt && (evt.currentTarget || evt.target)) ? (evt.currentTarget || evt.target).closest('.tab-link') : null;
+  if (btn) {
+    btn.classList.add("active");
+    btn.style.color = "var(--color-primary)";
+    btn.style.borderBottom = "2px solid var(--color-primary)";
+    btn.style.fontWeight = "600";
   }
 };
 
