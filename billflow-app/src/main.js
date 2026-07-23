@@ -181,6 +181,11 @@ app.on('ready', function() {
     app.dock.setIcon(appIcon);
   }
   mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
+
+  mainWindow.webContents.on('console-message', function(event, level, message, line, sourceId) {
+    console.log('[RENDERER CONSOLE]', message, '(' + path.basename(sourceId) + ':' + line + ')');
+  });
+
   mainWindow.once('ready-to-show', function() {
     mainWindow.show();
     
@@ -409,6 +414,10 @@ ipcMain.handle('db:settings:setMultiple', async function(e, a) {
     }
   } catch(err) {}
   return { ok:true }; 
+});
+
+ipcMain.on('debug:log', function(e, msg) {
+  console.log('[RENDERER DEBUG]', msg);
 });
 
 function triggerPushToCloud() {

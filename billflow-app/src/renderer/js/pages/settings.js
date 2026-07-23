@@ -148,31 +148,43 @@ window.PageControllers['settings'] = {
     if (window.StateCodes) {
       var selectState = document.getElementById('s-business_state');
       if (selectState) {
-        selectState.innerHTML = '<option value="">Select State</option>';
-        window.StateCodes.forEach(function(st) {
-          var opt = document.createElement('option');
-          opt.value = st.name;
-          opt.textContent = st.name + ' (' + st.code + ')';
-          selectState.appendChild(opt);
-        });
+        var statesArr = typeof window.StateCodes.getAllStates === 'function' ? window.StateCodes.getAllStates() : (Array.isArray(window.StateCodes) ? window.StateCodes : []);
+        if (Array.isArray(statesArr)) {
+          selectState.innerHTML = '<option value="">Select State</option>';
+          statesArr.forEach(function(st) {
+            var opt = document.createElement('option');
+            opt.value = st.name;
+            opt.textContent = st.name + ' (' + st.code + ')';
+            selectState.appendChild(opt);
+          });
+        }
       }
     }
     // Populate form fields function
     self.populateFields = function() {
-      window.api.getAllSettings().then(function(s) {
+      return window.api.getAllSettings().then(function(s) {
         if (!s) return;
         var fields = ['business_name','gstin','business_address','business_city',
                       'business_state','business_pin','pan','bank_name','bank_account',
                       'bank_ifsc','bill_prefix','default_gst_rate',
                       'email_from_name','email_from_address','smtp_host','smtp_port',
-                      'smtp_user','accountant_email',
-                      'notify_owner_phone','wati_api_url','msg91_sender_id',
+                      'smtp_user','smtp_pass','accountant_email',
+                      'notify_owner_phone','wati_api_url','wati_api_token','msg91_auth_key','msg91_sender_id',
                       'logo_data', 'signature_data',
                       'business_phone', 'business_email', 'business_udyam',
                       'business_category', 'business_status', 'upi_id'];
         for (var i = 0; i < fields.length; i++) {
-          var el = document.getElementById('s-' + fields[i]);
-          if (el) el.value = s[fields[i]] || '';
+          var key = fields[i];
+          var val = s[key] || '';
+          if (key === 'business_state' && val && window.StateCodes) {
+            var statesArr = typeof window.StateCodes.getAllStates === 'function' ? window.StateCodes.getAllStates() : (Array.isArray(window.StateCodes) ? window.StateCodes : []);
+            var stMatch = Array.isArray(statesArr) ? statesArr.find(function(st) { return st.name === val || st.code === val; }) : null;
+            if (stMatch) val = stMatch.name;
+          }
+          var els = document.querySelectorAll('[id="s-' + key + '"]');
+          for (var j = 0; j < els.length; j++) {
+            els[j].value = val;
+          }
         }
 
         // Update image previews if data exists
@@ -181,7 +193,8 @@ window.PageControllers['settings'] = {
           if (logoPreview) {
             logoPreview.src = s.logo_data;
             logoPreview.style.display = 'block';
-            document.getElementById('logo-preview-name').textContent = 'Saved logo';
+            var nameEl = document.getElementById('logo-preview-name');
+            if (nameEl) nameEl.textContent = 'Saved logo';
           }
         }
         if (s.signature_data) {
@@ -189,14 +202,17 @@ window.PageControllers['settings'] = {
           if (sigPreview) {
             sigPreview.src = s.signature_data;
             sigPreview.style.display = 'block';
-            document.getElementById('signature-preview-name').textContent = 'Saved signature';
+            var sigNameEl = document.getElementById('signature-preview-name');
+            if (sigNameEl) sigNameEl.textContent = 'Saved signature';
           }
         }
 
         // Toggles
         function setToggle(id, key) {
-          var el = document.getElementById(id);
-          if (el) el.checked = s[key] === '1';
+          var els = document.querySelectorAll('[id="' + id + '"]');
+          for (var k = 0; k < els.length; k++) {
+            els[k].checked = s[key] === '1';
+          }
         }
         setToggle('s-wati-enabled',          'wati_enabled');
         setToggle('s-sms-enabled',           'sms_enabled');
@@ -204,18 +220,12 @@ window.PageControllers['settings'] = {
         setToggle('s-notify-daily-summary',  'notify_daily_summary');
         setToggle('s-notify-weekly-report',  'notify_weekly_report');
         setToggle('s-notify-monthly-gst',    'notify_monthly_gst');
+        return s;
       });
     };
 
     self.populateFields();
 
-    // Save button
-    var saveBtn = document.getElementById('btn-save-settings');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function() {
-        self.saveSettings();
-      });
-    }
     // Attach live validation on blur for key fields
     if (window.FormValidator) {
       FormValidator.attachLiveValidation('s-gstin', 'gstin');
@@ -277,16 +287,21 @@ window.PageControllers['settings'] = {
 
     var obj = {};
     for (var i = 0; i < fields.length; i++) {
-      var el = document.getElementById('s-' + fields[i]);
-      if (el) obj[fields[i]] = el.value;
+      var key = fields[i];
+      var els = document.querySelectorAll('[id="s-' + key + '"]');
+      var val = '';
+      for (var j = 0; j < els.length; j++) {
+        if (els[j].value) { val = els[j].value; break; }
+      }
+      obj[key] = val;
     }
-    for (var j = 0; j < toggles.length; j++) {
-      var tel = document.getElementById(toggles[j].el);
-      if (tel) obj[toggles[j].key] = tel.checked ? '1' : '0';
+    for (var k = 0; k < toggles.length; k++) {
+      var tel = document.getElementById(toggles[k].el);
+      if (tel) obj[toggles[k].key] = tel.checked ? '1' : '0';
     }
 
     if (obj.business_state && window.StateCodes) {
-      var found = window.StateCodes.find(function(x) { return x.name === obj.business_state; });
+      var found = window.StateCodes.find(function(x) { return x.name === obj.business_state || x.code === obj.business_state; });
       if (found) { obj.business_state_code = found.code; }
     }
 
@@ -296,6 +311,7 @@ window.PageControllers['settings'] = {
       saveBtn.textContent = 'Saving...';
     }
 
+    var self = this;
     window.api.setMultipleSettings(obj).then(function() {
       if (saveBtn) {
         saveBtn.disabled = false;

@@ -13,28 +13,26 @@ var StateCodes = (function() {
     '37':'Andhra Pradesh (New)','38':'Ladakh'
   };
 
-  function getStateName(code) { return STATE_CODES[code] || ''; }
-
-  function getAllStates() {
-    var result = [];
-    for (var code in STATE_CODES) {
-      if (STATE_CODES.hasOwnProperty(code)) {
-        result.push({ code: code, name: STATE_CODES[code] });
-      }
+  var list = [];
+  for (var code in STATE_CODES) {
+    if (STATE_CODES.hasOwnProperty(code)) {
+      list.push({ code: code, name: STATE_CODES[code] });
     }
-    return result.sort(function(a,b) { return a.name.localeCompare(b.name); });
   }
+  list.sort(function(a,b) { return a.name.localeCompare(b.name); });
 
-  function getStateCode(stateName) {
+  list.STATE_CODES = STATE_CODES;
+  list.getStateName = function(c) { return STATE_CODES[c] || ''; };
+  list.getAllStates = function() { return list; };
+  list.getStateCode = function(stateName) {
     if (!stateName) return '';
     for (var code in STATE_CODES) {
       if (STATE_CODES[code].toLowerCase() === stateName.toLowerCase()) return code;
     }
     return '';
-  }
+  };
 
-  return { STATE_CODES:STATE_CODES, getStateName:getStateName,
-           getAllStates:getAllStates, getStateCode:getStateCode };
+  return list;
 })();
 
 if (typeof window !== 'undefined') {

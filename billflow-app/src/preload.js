@@ -128,5 +128,8 @@ contextBridge.exposeInMainWorld('api', {
     return function() {
       ipcRenderer.removeListener('updater:status', subscription);
     };
-  }
+  },
+
+  // Debugging
+  debugLog: function(msg) { ipcRenderer.send('debug:log', msg); }
 });

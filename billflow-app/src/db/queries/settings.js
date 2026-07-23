@@ -87,10 +87,9 @@ function getSettingsFilePath() {
       try {
         return path.join(app.getPath('userData'), 'local-settings.json');
       } catch (err) {
-        // App is not ready yet; construct path using APPDATA or HOME
-        var appName = app.name || 'billflow';
+        // App is not ready yet; construct path using APPDATA or HOME with fixed app folder name 'billflow'
         var baseDir = process.env.APPDATA || (process.platform === 'darwin' ? path.join(process.env.HOME || '', 'Library', 'Application Support') : path.join(process.env.HOME || '', '.config'));
-        return path.join(baseDir, appName, 'local-settings.json');
+        return path.join(baseDir, 'billflow', 'local-settings.json');
       }
     }
   } catch (e) {}
@@ -140,18 +139,46 @@ async function loadCloudSettings(userId) {
   var client = ctx.client;
 
   try {
-    // 1. Fetch settings rows
+    // 1. Fetch settings rows from cloud
     var res = await client.from('settings').select('key, value').eq('owner_id', userId);
+    var cloudMap = {};
     if (!res.error && res.data) {
       res.data.forEach(function(r) {
-        _cache[r.key] = r.value;
+        if (r.key) cloudMap[r.key] = r.value;
       });
     }
 
-    // 2. Also fetch profile to get business_name or phone if not overridden
+    var keysToPush = [];
+    // Populate local cache from cloud if cloud has non-empty value
+    // Push to cloud if local cache has value but cloud is missing/empty
+    for (var k in _cache) {
+      if (_cache.hasOwnProperty(k)) {
+        var localVal = _cache[k];
+        var cloudVal = cloudMap[k];
+
+        if (cloudVal !== undefined && cloudVal !== null && cloudVal !== '') {
+          _cache[k] = cloudVal;
+        } else if (localVal !== undefined && localVal !== null && localVal !== '') {
+          keysToPush.push({
+            owner_id: userId,
+            key: k,
+            value: localVal,
+            updated_at: new Date().toISOString()
+          });
+        }
+      }
+    }
+
+    if (keysToPush.length > 0) {
+      await client.from('settings').upsert(keysToPush, { onConflict: 'owner_id,key' });
+    }
+
+    // 2. Also fetch profile to get business_name, phone, email if not overridden
     var pRes = await client.from('profiles').select('*').eq('id', userId).single();
     if (!pRes.error && pRes.data) {
-      if (!_cache.business_name && pRes.data.business_name) _cache.business_name = pRes.data.business_name;
+      if ((!_cache.business_name || _cache.business_name === 'My Business') && pRes.data.business_name && pRes.data.business_name !== 'My Business') {
+        _cache.business_name = pRes.data.business_name;
+      }
       if (!_cache.business_phone && pRes.data.phone) _cache.business_phone = pRes.data.phone;
       if (!_cache.business_email && pRes.data.email) _cache.business_email = pRes.data.email;
     }

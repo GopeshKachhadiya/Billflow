@@ -11,13 +11,16 @@ window.PageControllers['customer-edit'] = {
     // Fill states dropdown
     var stateSelect = document.getElementById('c-state');
     if (stateSelect && window.StateCodes) {
-      stateSelect.innerHTML = '<option value="">Select State</option>';
-      window.StateCodes.forEach(function(st) {
-        var opt = document.createElement('option');
-        opt.value = st.name;
-        opt.textContent = st.name + ' (' + st.code + ')';
-        stateSelect.appendChild(opt);
-      });
+      var statesArr = typeof window.StateCodes.getAllStates === 'function' ? window.StateCodes.getAllStates() : (Array.isArray(window.StateCodes) ? window.StateCodes : []);
+      if (Array.isArray(statesArr)) {
+        stateSelect.innerHTML = '<option value="">Select State</option>';
+        statesArr.forEach(function(st) {
+          var opt = document.createElement('option');
+          opt.value = st.name;
+          opt.textContent = st.name + ' (' + st.code + ')';
+          stateSelect.appendChild(opt);
+        });
+      }
     }
     
     // Bind GSTIN validation on blur and fetch button
