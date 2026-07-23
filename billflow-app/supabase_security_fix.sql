@@ -100,3 +100,95 @@ ALTER TABLE public.bills
   ADD COLUMN IF NOT EXISTS encrypted_data TEXT,
   ADD COLUMN IF NOT EXISTS enc_iv TEXT,
   ADD COLUMN IF NOT EXISTS enc_auth_tag TEXT;
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- SUPPORT TICKETS, INBOX, EXPENSES & CREDIT NOTES SCHEMA & RLS POLICIES
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS public.support_tickets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    topic TEXT NOT NULL,
+    message TEXT,
+    status TEXT DEFAULT 'open',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.inbox_bills (
+    id TEXT PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    sender_name TEXT,
+    sender_email TEXT,
+    sender_phone TEXT,
+    sender_gstin TEXT,
+    bill_number TEXT,
+    bill_date DATE,
+    due_date DATE,
+    amount DOUBLE PRECISION DEFAULT 0.0,
+    tax_amount DOUBLE PRECISION DEFAULT 0.0,
+    pdf_url TEXT,
+    pdf_base64 TEXT,
+    status TEXT DEFAULT 'unread',
+    source TEXT DEFAULT 'manual',
+    notes TEXT,
+    converted_expense_id TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.expenses (
+    id TEXT PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    category TEXT,
+    vendor_name TEXT,
+    amount DOUBLE PRECISION DEFAULT 0.0,
+    gst_amount DOUBLE PRECISION DEFAULT 0.0,
+    bill_date DATE,
+    receipt_url TEXT,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.credit_notes (
+    id TEXT PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    credit_note_number TEXT,
+    customer_id TEXT,
+    bill_id TEXT,
+    amount DOUBLE PRECISION DEFAULT 0.0,
+    reason TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.inbox_bills ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.credit_notes ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+DROP POLICY IF EXISTS "Users can manage their own support tickets" ON public.support_tickets;
+CREATE POLICY "Users can manage their own support tickets" ON public.support_tickets
+    FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
+
+DROP POLICY IF EXISTS "Users can manage their own inbox bills" ON public.inbox_bills;
+CREATE POLICY "Users can manage their own inbox bills" ON public.inbox_bills
+    FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
+
+DROP POLICY IF EXISTS "Users can manage their own expenses" ON public.expenses;
+CREATE POLICY "Users can manage their own expenses" ON public.expenses
+    FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
+
+DROP POLICY IF EXISTS "Users can manage their own credit notes" ON public.credit_notes;
+CREATE POLICY "Users can manage their own credit notes" ON public.credit_notes
+    FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
+

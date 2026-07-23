@@ -202,6 +202,9 @@
           </button>
         ` : '<span style="font-size: 12px; color: #1e40af; font-weight: 600; padding: 4px 0;">✓ Recorded as Expense Entry</span>'}
         
+        <button id="btn-action-resolve" class="btn btn-sm" style="border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; font-weight: bold;">
+          ✓ Mark Resolved
+        </button>
         <button id="btn-action-accept" class="btn btn-sm" style="border: 1px solid var(--color-border); background: #f9fafb;">
           ✓ Accept
         </button>
@@ -255,9 +258,19 @@
 
     // Attach Event Listeners for Action Toolbar
     var btnConvert = document.getElementById('btn-action-convert');
+    var btnResolve = document.getElementById('btn-action-resolve');
     var btnAccept  = document.getElementById('btn-action-accept');
     var btnReject  = document.getElementById('btn-action-reject');
     var btnUnread  = document.getElementById('btn-action-unread');
+
+    if (btnResolve) {
+      btnResolve.addEventListener('click', function() {
+        window.api.updateInboxStatus(b.id, 'resolved').then(function() {
+          if (window.Toast) window.Toast.show('Case/Ticket marked as Resolved!', 'success');
+          loadInbox();
+        });
+      });
+    }
 
     if (btnConvert) {
       btnConvert.addEventListener('click', function() {

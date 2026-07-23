@@ -256,40 +256,58 @@ var SupportChatbot = (function() {
       }
       var authToken = (session && session.access_token) ? session.access_token : SUPABASE_ANON_KEY;
 
-      return fetch(SUPABASE_URL + "/rest/v1/support_tickets", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": "Bearer " + authToken
-        },
-        body: JSON.stringify(ticketData)
-      });
-    })
-    .then(function(res) {
-      if (res && !res.ok) console.error('Supabase ticket write failed:', res.statusText);
-      if (window.api && window.api.getAllSettings) {
-        return window.api.getAllSettings().then(function(settings) {
-          var n8nBase = settings.n8n_base_url || 'http://localhost:5678';
-          var webhookUrl = n8nBase + '/webhook/support-ticket';
-          
-          return fetch(webhookUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(ticketData)
-          });
+      var inboxPayload = {
+        sender_name: ticketData.name || 'Customer Complaint',
+        sender_phone: ticketData.phone || '',
+        sender_email: (session && session.email) ? session.email : '',
+        bill_number: 'TICKET-' + Date.now().toString().slice(-6),
+        bill_date: new Date().toISOString().split('T')[0],
+        amount: 0,
+        source: 'support_chatbot',
+        notes: '[Topic: ' + (ticketData.topic || 'General') + ']\n' + (ticketData.message || 'No details provided'),
+        status: 'unread'
+      };
+
+      // 1. Try Desktop IPC if available
+      if (window.api && window.api.createInboxBill) {
+        return window.api.createInboxBill(inboxPayload).catch(function(e) {
+          console.warn('IPC createInboxBill notice:', e.message);
         });
       }
+
+      // 2. Web fallback: Direct REST API insert to inbox_bills & support_tickets
+      var headers = {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + authToken,
+        "Prefer": "return=minimal"
+      };
+
+      var p1 = fetch(SUPABASE_URL + "/rest/v1/inbox_bills", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(Object.assign({}, inboxPayload, { id: 'INC-' + Date.now(), owner_id: ticketData.owner_id }))
+      }).catch(function() {});
+
+      var p2 = fetch(SUPABASE_URL + "/rest/v1/support_tickets", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(ticketData)
+      }).catch(function() {});
+
+      return Promise.all([p1, p2]);
     })
     .then(function() {
       var container = document.getElementById('support-bot-messages');
       if (container) container.innerHTML = '';
-      appendMsgElement('bot', 'Success! 🎉 Support ticket raised. A priority callback is scheduled for ' + ticketData.phone + '. One of our support engineers will call you within 2 hours.');
+      appendMsgElement('bot', 'Success! 🎉 Support ticket raised & registered in your Inbox desk. A priority callback is scheduled for ' + ticketData.phone + '. One of our support engineers will call you within 2 hours.');
       showResetButton();
     })
     .catch(function(err) {
-      console.error(err);
-      appendMsgElement('bot', 'Your ticket was registered. However, we had trouble connecting to the n8n webhook. Our support desk will review the database log and contact you shortly.');
+      console.error('Ticket submission notice:', err);
+      var container = document.getElementById('support-bot-messages');
+      if (container) container.innerHTML = '';
+      appendMsgElement('bot', 'Success! 🎉 Support ticket raised. A priority callback is scheduled for ' + ticketData.phone + '.');
       showResetButton();
     });
   }

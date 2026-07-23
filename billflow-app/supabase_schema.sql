@@ -181,6 +181,74 @@ CREATE TABLE IF NOT EXISTS public.sync_events (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- support_tickets table
+CREATE TABLE IF NOT EXISTS public.support_tickets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    topic TEXT NOT NULL,
+    message TEXT,
+    status TEXT DEFAULT 'open',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+-- inbox_bills table
+CREATE TABLE IF NOT EXISTS public.inbox_bills (
+    id TEXT PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    sender_name TEXT,
+    sender_email TEXT,
+    sender_phone TEXT,
+    sender_gstin TEXT,
+    bill_number TEXT,
+    bill_date DATE,
+    due_date DATE,
+    amount DOUBLE PRECISION DEFAULT 0.0,
+    tax_amount DOUBLE PRECISION DEFAULT 0.0,
+    pdf_url TEXT,
+    pdf_base64 TEXT,
+    status TEXT DEFAULT 'unread',
+    source TEXT DEFAULT 'manual',
+    notes TEXT,
+    converted_expense_id TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+-- expenses table
+CREATE TABLE IF NOT EXISTS public.expenses (
+    id TEXT PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    category TEXT,
+    vendor_name TEXT,
+    amount DOUBLE PRECISION DEFAULT 0.0,
+    gst_amount DOUBLE PRECISION DEFAULT 0.0,
+    bill_date DATE,
+    receipt_url TEXT,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+-- credit_notes table
+CREATE TABLE IF NOT EXISTS public.credit_notes (
+    id TEXT PRIMARY KEY,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    credit_note_number TEXT,
+    customer_id TEXT,
+    bill_id TEXT,
+    amount DOUBLE PRECISION DEFAULT 0.0,
+    reason TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
 -- 3. Enable Row Level Security (RLS) on all public tables
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
