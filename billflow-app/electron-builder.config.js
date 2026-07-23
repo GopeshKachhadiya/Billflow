@@ -27,6 +27,7 @@ module.exports = {
   win: {
     icon: 'build/icon.png',
     publisherName: 'Satya Technologies',
+    executableName: 'billflow',
     certificateFile: process.env.CSC_LINK || 'build/billflow-codesign.pfx',
     certificatePassword: process.env.CSC_KEY_PASSWORD || 'BillFlow2026!',
     target: [
