@@ -7,9 +7,8 @@ window.PageControllers['login'] = {
     var errorEl  = document.getElementById('login-error');
 
     var manualLogout = localStorage.getItem('manual_logout');
-    if (manualLogout === 'true') {
-      localStorage.removeItem('manual_logout');
-    }
+    localStorage.removeItem('manual_logout');
+    localStorage.removeItem('billflow_login_attempts');
 
     // ── Rate Limiting ──────────────────────────────────────────────────────────
     var MAX_ATTEMPTS = 5;
@@ -39,14 +38,7 @@ window.PageControllers['login'] = {
     }
 
     function isLockedOut() {
-      var data = getAttemptData();
-      if (data.lockedUntil && Date.now() < data.lockedUntil) {
-        return true;
-      }
-      if (data.lockedUntil && Date.now() >= data.lockedUntil) {
-        // Lockout expired — keep attempt count but clear timer
-        setAttemptData(data.count, 0);
-      }
+      // Time limit system disabled per user request
       return false;
     }
 

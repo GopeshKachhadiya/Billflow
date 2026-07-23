@@ -13,8 +13,8 @@ function getSupabaseClient() {
   }
 
   if (!url || !key) {
-    url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-    key = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+    url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://tdjwytrtmgsxbfvlqjtl.supabase.co';
+    key = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_sg13WITxOmD5EMcPccuBXA_bu41qGJ3';
   }
 
   if (!url || !key) { return null; }

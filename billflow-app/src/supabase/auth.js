@@ -18,18 +18,8 @@ var loginAttempts = {};
 var otpAttempts = {};
 
 function isRateLimited(ipOrEmail, attemptsMap, maxAttempts, windowMs) {
-  var now = Date.now();
-  var record = attemptsMap[ipOrEmail];
-  if (!record) {
-    attemptsMap[ipOrEmail] = { count: 1, resetAt: now + windowMs };
-    return false;
-  }
-  if (now > record.resetAt) {
-    attemptsMap[ipOrEmail] = { count: 1, resetAt: now + windowMs };
-    return false;
-  }
-  record.count++;
-  return record.count > maxAttempts;
+  // Rate limiting disabled per user request
+  return false;
 }
 
 function saveSessionToDisk(session, user, profile) {
