@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     bank_name TEXT,
     bank_account TEXT,
     bank_ifsc TEXT,
+    encryption_salt TEXT, -- Used for PBKDF2 key derivation for E2EE
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -37,6 +38,9 @@ CREATE TABLE IF NOT EXISTS public.customers (
     city TEXT,
     pin TEXT,
     is_active BOOLEAN DEFAULT TRUE,
+    encrypted_data TEXT,
+    enc_iv TEXT,
+    enc_auth_tag TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ DEFAULT NULL
@@ -47,8 +51,12 @@ CREATE TABLE IF NOT EXISTS public.items_catalog (
     id TEXT PRIMARY KEY,
     owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
+    hsn_sac TEXT,
     gst_rate DOUBLE PRECISION DEFAULT 18.0,
     is_active BOOLEAN DEFAULT TRUE,
+    encrypted_data TEXT,
+    enc_iv TEXT,
+    enc_auth_tag TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ DEFAULT NULL
@@ -74,6 +82,9 @@ CREATE TABLE IF NOT EXISTS public.bills (
     overdue_since DATE DEFAULT NULL,
     escalated BOOLEAN DEFAULT FALSE,
     escalation_date DATE DEFAULT NULL,
+    encrypted_data TEXT,
+    enc_iv TEXT,
+    enc_auth_tag TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ DEFAULT NULL
@@ -280,9 +291,9 @@ DROP POLICY IF EXISTS "Allow insert for authenticated users" ON public.gstin_cac
 CREATE POLICY "Allow insert for authenticated users" ON public.gstin_cache
     FOR INSERT TO authenticated WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow update for authenticated users" ON public.gstin_cache;
-CREATE POLICY "Allow update for authenticated users" ON public.gstin_cache
-    FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+-- SEC-05 FIX: Remove UPDATE policy for regular users to prevent cache poisoning.
+-- Only the service_role key (used by Edge Functions / admin) should update GSTIN cache records.
+-- If a record needs updating, it should be done server-side or via admin tools.
 
 -- ═══════════════════════════════════════════════════
 -- 7. Support Tickets Table
@@ -290,6 +301,7 @@ CREATE POLICY "Allow update for authenticated users" ON public.gstin_cache
 
 CREATE TABLE IF NOT EXISTS public.support_tickets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,  -- SEC-04 FIX: Track ticket creator
     name TEXT NOT NULL,
     phone TEXT NOT NULL,
     email TEXT,
@@ -302,10 +314,13 @@ CREATE TABLE IF NOT EXISTS public.support_tickets (
 
 ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;
 
+-- SEC-04 FIX: Users can only read their OWN tickets (not all users' tickets).
+-- Admin reads via service_role key which bypasses RLS.
 DROP POLICY IF EXISTS "Allow select for authenticated users" ON public.support_tickets;
-CREATE POLICY "Allow select for authenticated users" ON public.support_tickets
-    FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Users can view their own tickets" ON public.support_tickets
+    FOR SELECT TO authenticated USING (auth.uid() = owner_id);
 
+-- Allow anyone (including unauthenticated support chatbot) to create tickets
 DROP POLICY IF EXISTS "Allow insert for anyone" ON public.support_tickets;
 CREATE POLICY "Allow insert for anyone" ON public.support_tickets
     FOR INSERT TO anon, authenticated WITH CHECK (true);
@@ -376,9 +391,39 @@ CREATE TABLE IF NOT EXISTS public.password_otp_resets (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE public.password_otp_resets ENABLE ROW LEVEL SECURITY;
+
+-- SEC-03 FIX: CRITICAL — The old policy was `FOR ALL USING (true)` which allowed
+-- ANY anonymous user to READ all OTP codes and take over ANY account.
+-- New policy: Only INSERT is allowed from the authenticated client.
+-- OTP verification MUST happen server-side (via Supabase Edge Function or service_role).
+-- No SELECT, UPDATE, or DELETE is exposed to client-side at all.
 DROP POLICY IF EXISTS "Allow anon and auth to insert/select password_otp_resets" ON public.password_otp_resets;
-CREATE POLICY "Allow anon and auth to insert/select password_otp_resets" ON public.password_otp_resets
-    FOR ALL TO anon, authenticated USING (true);
+DROP POLICY IF EXISTS "Allow authenticated insert for OTP creation" ON public.password_otp_resets;
+CREATE POLICY "Allow authenticated insert for OTP creation" ON public.password_otp_resets
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+-- Server-side verification function (called via RPC, runs with SECURITY DEFINER)
+CREATE OR REPLACE FUNCTION public.verify_password_otp(p_email TEXT, p_otp TEXT)
+RETURNS BOOLEAN AS $$
+DECLARE
+  v_found BOOLEAN := FALSE;
+BEGIN
+  -- Check for valid, non-expired, non-verified OTP
+  UPDATE public.password_otp_resets
+  SET verified = TRUE
+  WHERE email = LOWER(TRIM(p_email))
+    AND otp_code = p_otp
+    AND verified = FALSE
+    AND expires_at > NOW()
+  RETURNING TRUE INTO v_found;
+
+  RETURN COALESCE(v_found, FALSE);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+
+-- Secure the function: only authenticated users can call it
+REVOKE EXECUTE ON FUNCTION public.verify_password_otp(TEXT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.verify_password_otp(TEXT, TEXT) TO authenticated;
 
 -- Credit / Debit Notes Table (GST Compliance)
 CREATE TABLE IF NOT EXISTS public.credit_notes (

@@ -66,16 +66,11 @@ function _doLoadPage(pageName, params) {
   var content = document.getElementById('content');
   content.innerHTML = '<div class="page-loading">Loading...</div>';
 
-  if (pageCache[pageName]) {
-    renderPage(pageName, pageCache[pageName], params);
-    return;
-  }
-
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'pages/' + pageName + '.html', true);
+  // Append timestamp to bust any browser-level caching (CQ-05)
+  xhr.open('GET', 'pages/' + pageName + '.html?t=' + new Date().getTime(), true);
   xhr.onload = function() {
-    if (xhr.status === 200) {
-      pageCache[pageName] = xhr.responseText;
+    if (xhr.status === 200 || xhr.status === 0) { // status 0 is for local file:// protocol
       renderPage(pageName, xhr.responseText, params);
     } else {
       content.innerHTML = '<div class="error">Page not found: ' + pageName + '</div>';
@@ -196,6 +191,21 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
+  // ── ARCH-02 Mitigation: Offline UX Blocker ──────────────────────────────────
+  function updateOnlineStatus() {
+    var overlay = document.getElementById('offline-overlay');
+    if (!overlay) return;
+    if (navigator.onLine) {
+      overlay.style.display = 'none';
+    } else {
+      overlay.style.display = 'flex';
+    }
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus(); // initial check
+
 });
 
 window.loadPage = loadPage;

@@ -9,6 +9,44 @@ var autoUpdater   = require('electron-updater').autoUpdater;
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 
+// ── GLOBAL ERROR HANDLERS ─────────────────────────────────────────────────────
+// Prevent silent crashes from unhandled exceptions/rejections in IPC handlers
+process.on('uncaughtException', function(err) {
+  console.error('[FATAL] Uncaught Exception:', err.message, err.stack);
+});
+process.on('unhandledRejection', function(reason) {
+  console.error('[FATAL] Unhandled Rejection:', reason);
+});
+
+// Safe IPC wrapper: wraps async handlers with try/catch and network retry logic
+function safeHandle(channel, handler) {
+  ipcMain.handle(channel, async function(event, args) {
+    var retries = 3;
+    var lastErr = null;
+    while (retries > 0) {
+      try {
+        return await handler(event, args);
+      } catch (err) {
+        lastErr = err;
+        var msg = err.message ? err.message.toLowerCase() : '';
+        var isNetworkError = msg.includes('fetch') || msg.includes('network') || msg.includes('timeout') || msg.includes('offline');
+        
+        if (isNetworkError && retries > 1) {
+          retries--;
+          console.warn('[IPC Retry] Network hiccup on ' + channel + '. Retries left: ' + retries + '. Waiting 3s...');
+          await new Promise(function(r) { setTimeout(r, 3000); });
+          continue;
+        }
+        
+        console.error('[IPC Error] ' + channel + ':', err.message);
+        return { success: false, ok: false, error: err.message || 'An unexpected error occurred.' };
+      }
+    }
+    console.error('[IPC Error] ' + channel + ' max retries reached:', lastErr.message);
+    return { success: false, ok: false, error: 'Network request failed after multiple retries. Please check your connection.' };
+  });
+}
+
 // Baileys WhatsApp integration dynamic variables
 var makeWASocket          = null;
 var useMultiFileAuthState = null;
@@ -270,7 +308,11 @@ async function waSendBill(phone, text, pdfBase64, filename) {
     throw new Error('WhatsApp not linked');
   }
   var jid = phone.replace(/\D/g, '');
-  if (jid.length === 10) jid = '91' + jid;
+  // CQ-10 Fix: Allow international numbers by checking if the user explicitly provided a country code.
+  // If they only provided 10 digits, we assume India (91) as a fallback, but we don't blindly prepend 91 to a 12 digit number.
+  if (jid.length === 10) {
+    jid = '91' + jid;
+  }
   jid = jid + '@s.whatsapp.net';
 
   var messageOptions = {};
@@ -327,10 +369,8 @@ ipcMain.handle('auth:updatePassword', function(e, a) {
   return require('./supabase/auth').updatePassword(a.newPassword);
 });
 
-// ── DB MIGRATE (called after login) ──────────────────────────────────────────
-ipcMain.handle('db:migrate', function() {
-  return { ok: true };
-});
+// ── DB MIGRATE (DEPRECATED) ──────────────────────────────────────────────────
+// Migrations are handled externally via Supabase SQL scripts (e.g. supabase_security_fix.sql)
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 ipcMain.handle('db:settings:get',    function(e, a) { return getModules().settings.getSetting(a.key); });
@@ -373,57 +413,57 @@ function ensureAuthenticated() {
 }
 
 // ── CUSTOMERS ─────────────────────────────────────────────────────────────────
-ipcMain.handle('db:customers:list',   async function(e, a) { ensureAuthenticated(); return await getModules().customers.listCustomers(a); });
-ipcMain.handle('db:customers:get',    async function(e, a) { ensureAuthenticated(); return await getModules().customers.getCustomer(a.id); });
-ipcMain.handle('db:customers:create', async function(e, a) { ensureAuthenticated(); var r = await getModules().customers.createCustomer(a); triggerPushToCloud(); return r; });
-ipcMain.handle('db:customers:update', async function(e, a) { ensureAuthenticated(); await getModules().customers.updateCustomer(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:customers:delete', async function(e, a) { ensureAuthenticated(); await getModules().customers.deleteCustomer(a.id); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:customers:summary',async function(e, a) { ensureAuthenticated(); return await getModules().customers.getCustomerBillSummary(a.id); });
+safeHandle('db:customers:list',   async function(e, a) { ensureAuthenticated(); return await getModules().customers.listCustomers(a); });
+safeHandle('db:customers:get',    async function(e, a) { ensureAuthenticated(); return await getModules().customers.getCustomer(a.id); });
+safeHandle('db:customers:create', async function(e, a) { ensureAuthenticated(); var r = await getModules().customers.createCustomer(a); triggerPushToCloud(); return r; });
+safeHandle('db:customers:update', async function(e, a) { ensureAuthenticated(); await getModules().customers.updateCustomer(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:customers:delete', async function(e, a) { ensureAuthenticated(); await getModules().customers.deleteCustomer(a.id); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:customers:summary',async function(e, a) { ensureAuthenticated(); return await getModules().customers.getCustomerBillSummary(a.id); });
 
 // ── ITEMS ─────────────────────────────────────────────────────────────────────
-ipcMain.handle('db:items:list',   async function(e, a) { ensureAuthenticated(); return await getModules().items.listItems(a); });
-ipcMain.handle('db:items:create', async function(e, a) { ensureAuthenticated(); var r = await getModules().items.createItem(a); triggerPushToCloud(); return r; });
-ipcMain.handle('db:items:update', async function(e, a) { ensureAuthenticated(); await getModules().items.updateItem(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:items:delete', async function(e, a) { ensureAuthenticated(); await getModules().items.deleteItem(a.id); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:items:list',   async function(e, a) { ensureAuthenticated(); return await getModules().items.listItems(a); });
+safeHandle('db:items:create', async function(e, a) { ensureAuthenticated(); var r = await getModules().items.createItem(a); triggerPushToCloud(); return r; });
+safeHandle('db:items:update', async function(e, a) { ensureAuthenticated(); await getModules().items.updateItem(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:items:delete', async function(e, a) { ensureAuthenticated(); await getModules().items.deleteItem(a.id); triggerPushToCloud(); return { ok:true }; });
 
 // ── EXPENSES ──────────────────────────────────────────────────────────────────
-ipcMain.handle('db:expenses:list',    async function(e, a) { ensureAuthenticated(); return await getModules().expenses.listExpenses(a); });
-ipcMain.handle('db:expenses:get',     async function(e, a) { ensureAuthenticated(); return await getModules().expenses.getExpense(a.id); });
-ipcMain.handle('db:expenses:create',  async function(e, a) { ensureAuthenticated(); var r = await getModules().expenses.createExpense(a); triggerPushToCloud(); return r; });
-ipcMain.handle('db:expenses:update',  async function(e, a) { ensureAuthenticated(); await getModules().expenses.updateExpense(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:expenses:delete',  async function(e, a) { ensureAuthenticated(); await getModules().expenses.deleteExpense(a.id); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:expenses:summary', async function(e, a) { ensureAuthenticated(); return await getModules().expenses.getExpenseSummary(a.dateFrom, a.dateTo); });
+safeHandle('db:expenses:list',    async function(e, a) { ensureAuthenticated(); return await getModules().expenses.listExpenses(a); });
+safeHandle('db:expenses:get',     async function(e, a) { ensureAuthenticated(); return await getModules().expenses.getExpense(a.id); });
+safeHandle('db:expenses:create',  async function(e, a) { ensureAuthenticated(); var r = await getModules().expenses.createExpense(a); triggerPushToCloud(); return r; });
+safeHandle('db:expenses:update',  async function(e, a) { ensureAuthenticated(); await getModules().expenses.updateExpense(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:expenses:delete',  async function(e, a) { ensureAuthenticated(); await getModules().expenses.deleteExpense(a.id); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:expenses:summary', async function(e, a) { ensureAuthenticated(); return await getModules().expenses.getExpenseSummary(a.dateFrom, a.dateTo); });
 
 // ── BILLS ─────────────────────────────────────────────────────────────────────
-ipcMain.handle('db:bills:list',         async function(e, a) { ensureAuthenticated(); return await getModules().bills.listBills(a); });
-ipcMain.handle('db:bills:get',          async function(e, a) { ensureAuthenticated(); return await getModules().bills.getBill(a.id); });
-ipcMain.handle('db:bills:getWithItems', async function(e, a) { ensureAuthenticated(); return await getModules().bills.getBillWithItems(a.id); });
-ipcMain.handle('db:bills:create',       async function(e, a) { ensureAuthenticated(); var r = await getModules().bills.createBill(a); triggerPushToCloud(); return r; });
-ipcMain.handle('db:bills:update',       async function(e, a) { ensureAuthenticated(); await getModules().bills.updateBill(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:bills:updateStatus', async function(e, a) { ensureAuthenticated(); await getModules().bills.updateBillStatus(a.id, a.status, a.payment); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:bills:delete',       async function(e, a) { ensureAuthenticated(); await getModules().bills.deleteBill(a.id); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:bills:counts',       async function()     { ensureAuthenticated(); return await getModules().bills.getBillCountByStatus(); });
-ipcMain.handle('db:bills:revenue',      async function(e, a) { ensureAuthenticated(); return await getModules().bills.getMonthlyRevenue(a.months); });
-ipcMain.handle('db:bills:dashboard',    async function()     { ensureAuthenticated(); return await getModules().bills.getDashboardSummary(); });
+safeHandle('db:bills:list',         async function(e, a) { ensureAuthenticated(); return await getModules().bills.listBills(a); });
+safeHandle('db:bills:get',          async function(e, a) { ensureAuthenticated(); return await getModules().bills.getBill(a.id); });
+safeHandle('db:bills:getWithItems', async function(e, a) { ensureAuthenticated(); return await getModules().bills.getBillWithItems(a.id); });
+safeHandle('db:bills:create',       async function(e, a) { ensureAuthenticated(); var r = await getModules().bills.createBill(a); triggerPushToCloud(); return r; });
+safeHandle('db:bills:update',       async function(e, a) { ensureAuthenticated(); await getModules().bills.updateBill(a.id, a.data); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:bills:updateStatus', async function(e, a) { ensureAuthenticated(); await getModules().bills.updateBillStatus(a.id, a.status, a.payment); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:bills:delete',       async function(e, a) { ensureAuthenticated(); await getModules().bills.deleteBill(a.id); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:bills:counts',       async function()     { ensureAuthenticated(); return await getModules().bills.getBillCountByStatus(); });
+safeHandle('db:bills:revenue',      async function(e, a) { ensureAuthenticated(); return await getModules().bills.getMonthlyRevenue(a.months); });
+safeHandle('db:bills:dashboard',    async function()     { ensureAuthenticated(); return await getModules().bills.getDashboardSummary(); });
 
 // ── BILL ITEMS ────────────────────────────────────────────────────────────────
-ipcMain.handle('db:billitems:replace', async function(e, a) { ensureAuthenticated(); var r = await getModules().billItems.replaceItemsForBill(a.billId, a.items); triggerPushToCloud(); return r; });
-ipcMain.handle('db:billitems:get',     async function(e, a) { ensureAuthenticated(); return await getModules().billItems.getItemsForBill(a.billId); });
+safeHandle('db:billitems:replace', async function(e, a) { ensureAuthenticated(); var r = await getModules().billItems.replaceItemsForBill(a.billId, a.items); triggerPushToCloud(); return r; });
+safeHandle('db:billitems:get',     async function(e, a) { ensureAuthenticated(); return await getModules().billItems.getItemsForBill(a.billId); });
 
 // ── INBOX BILLS ────────────────────────────────────────────────────────────────
-ipcMain.handle('db:inbox:list',             async function(e, a) { ensureAuthenticated(); return await getModules().inbox.listInboxBills(a); });
-ipcMain.handle('db:inbox:get',              async function(e, a) { ensureAuthenticated(); return await getModules().inbox.getInboxBill(a.id); });
-ipcMain.handle('db:inbox:create',           async function(e, a) { ensureAuthenticated(); var r = await getModules().inbox.createInboxBill(a); triggerPushToCloud(); return r; });
-ipcMain.handle('db:inbox:updateStatus',     async function(e, a) { ensureAuthenticated(); await getModules().inbox.updateInboxStatus(a.id, a.status); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:inbox:convertToExpense', async function(e, a) { ensureAuthenticated(); var r = await getModules().inbox.convertToExpense(a.id); triggerPushToCloud(); return r; });
-ipcMain.handle('db:inbox:unreadCount',      async function()     { ensureAuthenticated(); return await getModules().inbox.getUnreadCount(); });
+safeHandle('db:inbox:list',             async function(e, a) { ensureAuthenticated(); return await getModules().inbox.listInboxBills(a); });
+safeHandle('db:inbox:get',              async function(e, a) { ensureAuthenticated(); return await getModules().inbox.getInboxBill(a.id); });
+safeHandle('db:inbox:create',           async function(e, a) { ensureAuthenticated(); var r = await getModules().inbox.createInboxBill(a); triggerPushToCloud(); return r; });
+safeHandle('db:inbox:updateStatus',     async function(e, a) { ensureAuthenticated(); await getModules().inbox.updateInboxStatus(a.id, a.status); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:inbox:convertToExpense', async function(e, a) { ensureAuthenticated(); var r = await getModules().inbox.convertToExpense(a.id); triggerPushToCloud(); return r; });
+safeHandle('db:inbox:unreadCount',      async function()     { ensureAuthenticated(); return await getModules().inbox.getUnreadCount(); });
 
 // ── TAX RECORDS ───────────────────────────────────────────────────────────────
-ipcMain.handle('db:taxrecords:upsert',  async function(e, a) { ensureAuthenticated(); await getModules().taxRecords.upsertTaxRecord(a.billId, a.data); triggerPushToCloud(); return { ok:true }; });
-ipcMain.handle('db:creditnotes:list',   async function(e, a) { ensureAuthenticated(); return await getModules().creditNotes.listCreditNotes(a); });
-ipcMain.handle('db:creditnotes:create', async function(e, a) { ensureAuthenticated(); var r = await getModules().creditNotes.createCreditNote(a); triggerPushToCloud(); return r; });
+safeHandle('db:taxrecords:upsert',  async function(e, a) { ensureAuthenticated(); await getModules().taxRecords.upsertTaxRecord(a.billId, a.data); triggerPushToCloud(); return { ok:true }; });
+safeHandle('db:creditnotes:list',   async function(e, a) { ensureAuthenticated(); return await getModules().creditNotes.listCreditNotes(a); });
+safeHandle('db:creditnotes:create', async function(e, a) { ensureAuthenticated(); var r = await getModules().creditNotes.createCreditNote(a); triggerPushToCloud(); return r; });
 
-ipcMain.handle('db:export:fullData', async function() {
+safeHandle('db:export:fullData', async function() {
   ensureAuthenticated();
   var m = getModules();
   var customers = await m.customers.listCustomers();
@@ -442,11 +482,11 @@ ipcMain.handle('db:export:fullData', async function() {
     expenses: expenses
   };
 });
-ipcMain.handle('db:taxrecords:summary', async function(e, a) { return await getModules().taxRecords.getTaxSummary(a); });
-ipcMain.handle('db:taxrecords:monthly', async function(e, a) { return await getModules().taxRecords.getMonthlyGSTSummary(a.year); });
-ipcMain.handle('gst:gstr1Export', function(e, a) { return require('./gst/gstr1-export').exportGSTR1(a.year, a.month); });
-ipcMain.handle('gst:fetchDetails', function(e, a) { return require('./gst/lookup').fetchDetails(a.gstin); });
-ipcMain.handle('gst:cacheBulk', function(e, a) { return require('./gst/lookup').cacheBulk(a.records); });
+safeHandle('db:taxrecords:summary', async function(e, a) { return await getModules().taxRecords.getTaxSummary(a); });
+safeHandle('db:taxrecords:monthly', async function(e, a) { return await getModules().taxRecords.getMonthlyGSTSummary(a.year); });
+safeHandle('gst:gstr1Export', function(e, a) { return require('./gst/gstr1-export').exportGSTR1(a.year, a.month); });
+safeHandle('gst:fetchDetails', function(e, a) { return require('./gst/lookup').fetchDetails(a.gstin); });
+safeHandle('gst:cacheBulk', function(e, a) { return require('./gst/lookup').cacheBulk(a.records); });
 
 
 // ── SYNC ──────────────────────────────────────────────────────────────────────

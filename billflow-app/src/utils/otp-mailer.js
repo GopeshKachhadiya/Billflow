@@ -34,12 +34,15 @@ function sendOTPEmail(recipientEmail, otpCode) {
   return new Promise(function(resolve, reject) {
     try {
       var transporter = getTransporter();
-      var senderEmail = process.env.SMTP_USER || 'gopeshkachhadiya00005@gmail.com';
+      // SEC-07 FIX: No hardcoded fallback email. If SMTP_USER isn't set, getTransporter() already throws.
+      var senderEmail = process.env.SMTP_USER || settings.getSetting('smtp_user') || '';
 
       var mailOptions = {
         from: '"Satya BillFlow Security" <' + senderEmail + '>',
         to: recipientEmail,
-        subject: 'Your Satya BillFlow Password Reset Verification Code: ' + otpCode,
+        // SEC-06 FIX: OTP code removed from subject line to prevent exposure in
+        // notification previews, email logs, shoulder surfing, and email archives.
+        subject: 'Satya BillFlow — Password Reset Verification Code',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #ffffff;">
             <div style="text-align: center; margin-bottom: 20px;">

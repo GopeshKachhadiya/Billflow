@@ -4,9 +4,16 @@
 var stateCodes = require('../utils/state-codes');
 var sbClient   = require('../supabase/client');
 
-var API_KEY = 'key_live_bc4e40cd20a4406fb7184100c77a1673';
-var API_SECRET = 'secret_live_f92739c4ae1f415ba47e9b969ad825a7';
-var API_VERSION = '1.0';
+var settings = require('../db/queries/settings');
+
+// SEC-01 FIX: API credentials loaded from env/settings — NEVER hardcoded
+function getSandboxCredentials() {
+  return {
+    apiKey:    process.env.SANDBOX_API_KEY    || settings.getSetting('sandbox_api_key')    || '',
+    apiSecret: process.env.SANDBOX_API_SECRET || settings.getSetting('sandbox_api_secret') || '',
+    apiVersion: '1.0'
+  };
+}
 
 var cachedToken = null;
 var tokenExpiry = 0;
@@ -17,12 +24,17 @@ function authenticate() {
       return resolve(cachedToken);
     }
 
+    var creds = getSandboxCredentials();
+    if (!creds.apiKey || !creds.apiSecret) {
+      return reject(new Error('Sandbox API credentials not configured. Please set SANDBOX_API_KEY and SANDBOX_API_SECRET in your environment or settings.'));
+    }
+
     fetch('https://api.sandbox.co.in/authenticate', {
       method: 'POST',
       headers: {
-        'x-api-key': API_KEY,
-        'x-api-secret': API_SECRET,
-        'x-api-version': API_VERSION,
+        'x-api-key': creds.apiKey,
+        'x-api-secret': creds.apiSecret,
+        'x-api-version': creds.apiVersion,
         'Content-Type': 'application/json'
       }
     })
@@ -134,12 +146,13 @@ function fetchDetails(gstin) {
       console.log('[lookup] Cache Miss — Calling Sandbox API for', cleanGstin);
       authenticate()
         .then(function(token) {
+          var creds = getSandboxCredentials();
           return fetch('https://api.sandbox.co.in/gst/compliance/public/gstin/search', {
             method: 'POST',
             headers: {
-              'x-api-key': API_KEY,
+              'x-api-key': creds.apiKey,
               'authorization': token,
-              'x-api-version': API_VERSION,
+              'x-api-version': creds.apiVersion,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({ gstin: cleanGstin })

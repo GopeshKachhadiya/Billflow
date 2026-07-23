@@ -115,7 +115,7 @@ function wipeSessionDisk() {
   } catch(e) {}
 }
 
-function checkProfileStatus(client, email, user, session, callback) {
+function checkProfileStatus(client, email, user, session, password, callback) {
   // First check admin_users, then profiles
   client
     .from('admin_users')
@@ -124,21 +124,21 @@ function checkProfileStatus(client, email, user, session, callback) {
     .single()
     .then(function(profileRes) {
       if (!profileRes.error && profileRes.data) {
-        return evaluateProfileAndProceed(profileRes.data, user, session, callback);
+        return evaluateProfileAndProceed(profileRes.data, user, session, password, callback);
       }
       // If not in admin_users, check profiles table
       client
         .from('profiles')
-        .select('status, trial_end_date, license_key')
+        .select('status, trial_end_date, license_key, encryption_salt')
         .eq('id', user.id)
         .single()
         .then(function(profRes2) {
           if (!profRes2.error && profRes2.data) {
-            return evaluateProfileAndProceed(profRes2.data, user, session, callback);
+            return evaluateProfileAndProceed(profRes2.data, user, session, password, callback);
           }
           // Default profile if newly created or missing from both tables
           var defaultProfile = { status: 'trial', trial_end_date: new Date(Date.now() + 14*86400000).toISOString().split('T')[0] };
-          return evaluateProfileAndProceed(defaultProfile, user, session, callback);
+          return evaluateProfileAndProceed(defaultProfile, user, session, password, callback);
         });
     })
     .catch(function(err) {
@@ -147,7 +147,7 @@ function checkProfileStatus(client, email, user, session, callback) {
     });
 }
 
-function evaluateProfileAndProceed(profile, user, session, callback) {
+function evaluateProfileAndProceed(profile, user, session, password, callback) {
   if (profile.status === 'suspended') {
     require('./client').getSupabaseClient().auth.signOut().catch(function() {});
     return callback({ success: false, error: 'Your account has been suspended. Please contact the administrator.' });
@@ -170,6 +170,30 @@ function evaluateProfileAndProceed(profile, user, session, callback) {
 
   // Save session and profile securely
   saveSessionToDisk(session, user, profile);
+
+  // Derive and set E2EE encryption key
+  if (password) {
+    try {
+      var kd = require('../crypto/key-derivation');
+      var enc = require('../crypto/data-encryptor');
+      var client = require('./client').getSupabaseClient();
+      var salt = profile.encryption_salt;
+      
+      if (!salt) {
+        // First time login: generate salt and save to profiles
+        salt = kd.generateDeviceSalt();
+        profile.encryption_salt = salt;
+        // Don't await this, just fire and forget (save salt to DB)
+        client.from('profiles').update({ encryption_salt: salt }).eq('id', user.id).catch(function(){});
+      }
+      
+      var derivedKey = kd.deriveKey(password, salt);
+      enc.setKey(derivedKey);
+      console.log('[auth] E2EE key successfully derived and set.');
+    } catch(err) {
+      console.error('[auth] E2EE key derivation failed:', err);
+    }
+  }
 
   // Sync settings/profile to local memory cache
   var settings = require('../db/queries/settings');
@@ -205,7 +229,7 @@ function login(email, password, callback) {
 
       var session = result.data.session;
       var user    = result.data.user;
-      checkProfileStatus(client, normalizedEmail, user, session, callback);
+      checkProfileStatus(client, normalizedEmail, user, session, password, callback);
     })
     .catch(function(err) {
       callback({ success: false, error: 'Authentication request failed: ' + err.message });
@@ -333,24 +357,16 @@ function verifyResetOTP(email, otp) {
     return Promise.resolve({ success: false, error: 'Cloud connection unavailable.' });
   }
 
-  // 1. Try local OTP table match first
-  return client.from('password_otp_resets')
-    .select('*')
-    .eq('email', normalizedEmail)
-    .eq('otp_code', token)
-    .eq('verified', false)
-    .gte('expires_at', new Date().toISOString())
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .then(function(res) {
-      if (!res.error && res.data && res.data.length > 0) {
-        var record = res.data[0];
-        // Mark as verified
-        client.from('password_otp_resets').update({ verified: true }).eq('id', record.id).catch(function() {});
-        return { success: true, verifiedByTable: true };
+  // SEC-03 FIX: Use server-side RPC for OTP verification instead of direct table queries.
+  // The verify_password_otp function runs with SECURITY DEFINER, so it can access the
+  // OTP table without exposing read access to the client (preventing OTP code theft).
+  return client.rpc('verify_password_otp', { p_email: normalizedEmail, p_otp: token })
+    .then(function(rpcRes) {
+      if (!rpcRes.error && rpcRes.data === true) {
+        return { success: true, verifiedByRPC: true };
       }
 
-      // Check local SQLite cache if cloud table is not created or returned empty
+      // Check local settings cache as fallback (for cases where OTP table insert failed)
       var localCached = settings.getSetting('recovery_otp_' + normalizedEmail);
       if (localCached) {
         try {
@@ -362,7 +378,7 @@ function verifyResetOTP(email, otp) {
         } catch(e) {}
       }
 
-      // 2. Fallback to Supabase Auth OTP verification
+      // Fallback to Supabase Auth OTP verification
       return client.auth.verifyOtp({ email: normalizedEmail, token: token, type: 'recovery' })
         .then(function(authRes) {
           if (authRes.error || !authRes.data || !authRes.data.session) {

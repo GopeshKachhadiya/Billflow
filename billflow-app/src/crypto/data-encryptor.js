@@ -83,6 +83,7 @@ function encryptItem(item) {
   var meta = {
     id: item.id,
     name: item.name || '',
+    hsn_sac: item.hsn_sac || '',
     gst_rate: parseFloat(item.gst_rate) || 18,
     is_active: item.is_active !== undefined ? (item.is_active ? 1 : 0) : 1
   };

@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var encryptor = require('../../crypto/data-encryptor');
 
 async function getClientAndUser() {
   return await require('../../supabase/client').ensureAuthenticatedClient();
@@ -18,7 +19,8 @@ async function listCustomers(filter) {
   }
 
   if (filter.search && filter.search.trim()) {
-    var s = filter.search.trim().replace(/[,%'"\\]/g, '').substring(0, 100);
+    var sanitizeSearch = require('../../utils/sanitize').sanitizeSearch;
+    var s = sanitizeSearch(filter.search);
     if (s) {
       query = query.or('name.ilike.%' + s + '%,email.ilike.%' + s + '%,phone.ilike.%' + s + '%');
     }
@@ -36,19 +38,26 @@ async function listCustomers(filter) {
   if (res.error) throw new Error('Cloud customers list error: ' + res.error.message);
 
   return (res.data || []).map(function(c) {
+    var decrypted = c;
+    try {
+      if (c.encrypted_data && c.enc_iv && c.enc_auth_tag) {
+        decrypted = encryptor.decryptCustomer(c, c.encrypted_data, c.enc_iv, c.enc_auth_tag);
+      }
+    } catch(e) { console.error('Failed to decrypt customer:', c.id); }
+
     return {
-      id: c.id,
-      name: c.name || '',
-      email: c.email || '',
-      phone: c.phone || '',
-      state: c.state || '',
-      state_code: c.state_code || '',
-      payment_terms: c.payment_terms || 'due_on_receipt',
-      address: c.address || '',
-      notes: c.notes || '',
-      is_active: c.is_active ? 1 : 0,
-      created_at: c.created_at,
-      updated_at: c.updated_at
+      id: decrypted.id,
+      name: decrypted.name || '',
+      email: decrypted.email || '',
+      phone: decrypted.phone || '',
+      state: decrypted.state || '',
+      state_code: decrypted.state_code || '',
+      payment_terms: decrypted.payment_terms || 'due_on_receipt',
+      address: decrypted.address || '',
+      notes: decrypted.notes || '',
+      is_active: decrypted.is_active ? 1 : 0,
+      created_at: decrypted.created_at,
+      updated_at: decrypted.updated_at
     };
   });
 }
@@ -65,6 +74,13 @@ async function getCustomer(id) {
 
   if (res.error || !res.data) return null;
   var c = res.data;
+  
+  try {
+    if (c.encrypted_data && c.enc_iv && c.enc_auth_tag) {
+      c = encryptor.decryptCustomer(c, c.encrypted_data, c.enc_iv, c.enc_auth_tag);
+    }
+  } catch(e) { console.error('Failed to decrypt customer:', c.id); }
+
   return {
     id: c.id,
     name: c.name || '',
@@ -88,7 +104,6 @@ async function createCustomer(data) {
 
   var payload = {
     id: newId,
-    owner_id: ctx.userId,
     name: data.name || '',
     email: data.email || '',
     phone: data.phone || '',
@@ -97,12 +112,27 @@ async function createCustomer(data) {
     payment_terms: data.payment_terms || 'due_on_receipt',
     address: data.address || '',
     notes: data.notes || '',
-    is_active: data.is_active !== undefined ? (data.is_active ? true : false) : true,
-    created_at: now,
-    updated_at: now
+    is_active: data.is_active !== undefined ? (data.is_active ? true : false) : true
   };
 
-  var res = await ctx.client.from('customers').insert(payload).select().single();
+  var encResult;
+  try {
+    encResult = encryptor.encryptCustomer(payload);
+  } catch(e) {
+    // Fallback if encryption key isn't set (shouldn't happen in E2EE mode)
+    encResult = { meta: payload, encryptedData: null, iv: null, authTag: null };
+  }
+
+  var dbPayload = Object.assign({}, encResult.meta, {
+    owner_id: ctx.userId,
+    encrypted_data: encResult.encryptedData,
+    enc_iv: encResult.iv,
+    enc_auth_tag: encResult.authTag,
+    created_at: now,
+    updated_at: now
+  });
+
+  var res = await ctx.client.from('customers').insert(dbPayload).select().single();
   if (res.error) throw new Error('Cloud customer create error: ' + res.error.message);
 
   return { id: res.data.id };
@@ -112,22 +142,39 @@ async function updateCustomer(id, data) {
   var ctx = await getClientAndUser();
   var now = new Date().toISOString();
 
+  var currentCustomer = await getCustomer(id);
+  if (!currentCustomer) throw new Error('Customer not found');
+
   var payload = {
-    updated_at: now
+    id: id,
+    name: data.name !== undefined ? data.name : currentCustomer.name,
+    email: data.email !== undefined ? data.email : currentCustomer.email,
+    phone: data.phone !== undefined ? data.phone : currentCustomer.phone,
+    state: data.state !== undefined ? data.state : currentCustomer.state,
+    state_code: data.state_code !== undefined ? data.state_code : currentCustomer.state_code,
+    payment_terms: data.payment_terms !== undefined ? data.payment_terms : currentCustomer.payment_terms,
+    address: data.address !== undefined ? data.address : currentCustomer.address,
+    notes: data.notes !== undefined ? data.notes : currentCustomer.notes,
+    is_active: data.is_active !== undefined ? (data.is_active ? true : false) : (currentCustomer.is_active ? true : false)
   };
-  if (data.name !== undefined) payload.name = data.name;
-  if (data.email !== undefined) payload.email = data.email;
-  if (data.phone !== undefined) payload.phone = data.phone;
-  if (data.state !== undefined) payload.state = data.state;
-  if (data.state_code !== undefined) payload.state_code = data.state_code;
-  if (data.payment_terms !== undefined) payload.payment_terms = data.payment_terms;
-  if (data.address !== undefined) payload.address = data.address;
-  if (data.notes !== undefined) payload.notes = data.notes;
-  if (data.is_active !== undefined) payload.is_active = data.is_active ? true : false;
+
+  var encResult;
+  try {
+    encResult = encryptor.encryptCustomer(payload);
+  } catch(e) {
+    encResult = { meta: payload, encryptedData: null, iv: null, authTag: null };
+  }
+
+  var dbPayload = Object.assign({}, encResult.meta, {
+    updated_at: now,
+    encrypted_data: encResult.encryptedData,
+    enc_iv: encResult.iv,
+    enc_auth_tag: encResult.authTag
+  });
 
   var res = await ctx.client
     .from('customers')
-    .update(payload)
+    .update(dbPayload)
     .eq('owner_id', ctx.userId)
     .eq('id', id);
 

@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var encryptor = require('../../crypto/data-encryptor');
 
 async function getClientAndUser() {
   return await require('../../supabase/client').ensureAuthenticatedClient();
@@ -26,7 +27,8 @@ async function listBills(filter) {
     query = query.lte('bill_date', filter.dateTo);
   }
   if (filter.search && filter.search.trim()) {
-    var s = filter.search.trim().replace(/[,%'"\\]/g, '').substring(0, 100);
+    var sanitizeSearch = require('../../utils/sanitize').sanitizeSearch;
+    var s = sanitizeSearch(filter.search);
     if (s) {
       query = query.ilike('bill_number', '%' + s + '%');
     }
@@ -45,23 +47,30 @@ async function listBills(filter) {
 
   return (res.data || []).map(function(b) {
     var cust = b.customers || {};
+    var decrypted = b;
+    try {
+      if (b.encrypted_data && b.enc_iv && b.enc_auth_tag) {
+        decrypted = encryptor.decryptBill(b, b.encrypted_data, b.enc_iv, b.enc_auth_tag);
+      }
+    } catch(e) { console.error('Failed to decrypt bill:', b.id); }
+
     return {
-      id: b.id,
-      bill_number: b.bill_number || '',
-      customer_id: b.customer_id,
-      bill_date: b.bill_date,
-      due_date: b.due_date,
-      status: b.status || 'draft',
-      grand_total: parseFloat(b.grand_total) || 0,
-      amount_paid: parseFloat(b.amount_paid) || 0,
-      amount_due: parseFloat(b.amount_due) || 0,
-      payment_method: b.payment_method || '',
-      payment_reference: b.payment_reference || '',
-      terms: b.terms || '',
-      notes: b.notes || '',
-      created_by: b.created_by || '',
-      created_at: b.created_at,
-      updated_at: b.updated_at,
+      id: decrypted.id,
+      bill_number: decrypted.bill_number || '',
+      customer_id: decrypted.customer_id,
+      bill_date: decrypted.bill_date,
+      due_date: decrypted.due_date,
+      status: decrypted.status || 'draft',
+      grand_total: parseFloat(decrypted.grand_total) || 0,
+      amount_paid: parseFloat(decrypted.amount_paid) || 0,
+      amount_due: parseFloat(decrypted.amount_due) || 0,
+      payment_method: decrypted.payment_method || '',
+      payment_reference: decrypted.payment_reference || '',
+      terms: decrypted.terms || '',
+      notes: decrypted.notes || '',
+      created_by: decrypted.created_by || '',
+      created_at: decrypted.created_at,
+      updated_at: decrypted.updated_at,
       customer_name: cust.name || '',
       customer_email: cust.email || '',
       customer_phone: cust.phone || ''
@@ -81,6 +90,13 @@ async function getBill(id) {
 
   if (res.error || !res.data) return null;
   var b = res.data;
+  
+  try {
+    if (b.encrypted_data && b.enc_iv && b.enc_auth_tag) {
+      b = encryptor.decryptBill(b, b.encrypted_data, b.enc_iv, b.enc_auth_tag);
+    }
+  } catch(e) { console.error('Failed to decrypt bill:', b.id); }
+
   return {
     id: b.id,
     bill_number: b.bill_number || '',
@@ -118,7 +134,6 @@ async function createBill(data) {
 
   var payload = {
     id: newId,
-    owner_id: ctx.userId,
     bill_number: data.bill_number || '',
     customer_id: data.customer_id || null,
     bill_date: data.bill_date || now.split('T')[0],
@@ -126,17 +141,31 @@ async function createBill(data) {
     status: data.status || 'draft',
     grand_total: parseFloat(data.grand_total) || 0,
     amount_paid: parseFloat(data.amount_paid) || 0,
-    amount_due: parseFloat(data.amount_due) !== undefined ? parseFloat(data.amount_due) : (parseFloat(data.grand_total) || 0),
+    amount_due: (data.amount_due !== undefined && data.amount_due !== null && !isNaN(parseFloat(data.amount_due))) ? parseFloat(data.amount_due) : (parseFloat(data.grand_total) || 0),
     payment_method: data.payment_method || null,
     payment_reference: data.payment_reference || null,
     terms: data.terms || '',
     notes: data.notes || '',
-    created_by: data.created_by || '',
-    created_at: now,
-    updated_at: now
+    created_by: data.created_by || ''
   };
 
-  var res = await ctx.client.from('bills').insert(payload).select().single();
+  var encResult;
+  try {
+    encResult = encryptor.encryptBill(payload, data.items || [], data.taxRecord || null);
+  } catch(e) {
+    encResult = { meta: payload, encryptedData: null, iv: null, authTag: null };
+  }
+
+  var dbPayload = Object.assign({}, encResult.meta, {
+    owner_id: ctx.userId,
+    encrypted_data: encResult.encryptedData,
+    enc_iv: encResult.iv,
+    enc_auth_tag: encResult.authTag,
+    created_at: now,
+    updated_at: now
+  });
+
+  var res = await ctx.client.from('bills').insert(dbPayload).select().single();
   if (res.error) throw new Error('Cloud bill create error: ' + res.error.message);
 
   if (parseFloat(data.amount_paid) > 0) {
@@ -168,23 +197,45 @@ async function updateBill(id, data) {
   var ctx = await getClientAndUser();
   var now = new Date().toISOString();
 
+  var currentBill = await getBill(id);
+  if (!currentBill) throw new Error('Bill not found');
+
   var payload = {
-    updated_at: now
+    id: id,
+    bill_number: currentBill.bill_number,
+    customer_id: currentBill.customer_id,
+    bill_date: data.bill_date !== undefined ? data.bill_date : currentBill.bill_date,
+    due_date: data.due_date !== undefined ? (data.due_date || null) : currentBill.due_date,
+    status: data.status !== undefined ? data.status : currentBill.status,
+    grand_total: data.grand_total !== undefined ? (parseFloat(data.grand_total) || 0) : currentBill.grand_total,
+    amount_paid: data.amount_paid !== undefined ? (parseFloat(data.amount_paid) || 0) : currentBill.amount_paid,
+    amount_due: data.amount_due !== undefined ? (parseFloat(data.amount_due) || 0) : currentBill.amount_due,
+    payment_method: data.payment_method !== undefined ? data.payment_method : currentBill.payment_method,
+    payment_reference: data.payment_reference !== undefined ? data.payment_reference : currentBill.payment_reference,
+    terms: data.terms !== undefined ? data.terms : currentBill.terms,
+    notes: data.notes !== undefined ? data.notes : currentBill.notes,
+    created_by: currentBill.created_by
   };
-  if (data.bill_date !== undefined) payload.bill_date = data.bill_date;
-  if (data.due_date !== undefined) payload.due_date = data.due_date || null;
-  if (data.status !== undefined) payload.status = data.status;
-  if (data.grand_total !== undefined) payload.grand_total = parseFloat(data.grand_total) || 0;
-  if (data.amount_paid !== undefined) payload.amount_paid = parseFloat(data.amount_paid) || 0;
-  if (data.amount_due !== undefined) payload.amount_due = parseFloat(data.amount_due) || 0;
-  if (data.payment_method !== undefined) payload.payment_method = data.payment_method;
-  if (data.payment_reference !== undefined) payload.payment_reference = data.payment_reference;
-  if (data.terms !== undefined) payload.terms = data.terms;
-  if (data.notes !== undefined) payload.notes = data.notes;
+
+  var encResult;
+  try {
+    // If updateBill was called with items or taxRecord, pass them; otherwise pass empty to encryptor
+    // (In reality, updateBill mostly updates just the bill itself in this app's architecture)
+    encResult = encryptor.encryptBill(payload, data.items || [], data.taxRecord || null);
+  } catch(e) {
+    encResult = { meta: payload, encryptedData: null, iv: null, authTag: null };
+  }
+
+  var dbPayload = Object.assign({}, encResult.meta, {
+    updated_at: now,
+    encrypted_data: encResult.encryptedData,
+    enc_iv: encResult.iv,
+    enc_auth_tag: encResult.authTag
+  });
 
   var res = await ctx.client
     .from('bills')
-    .update(payload)
+    .update(dbPayload)
     .eq('owner_id', ctx.userId)
     .eq('id', id);
 
@@ -251,20 +302,25 @@ async function deleteBill(id) {
 
 async function getBillCountByStatus() {
   var ctx = await getClientAndUser();
-  var res = await ctx.client
-    .from('bills')
-    .select('status')
-    .eq('owner_id', ctx.userId)
-    .is('deleted_at', null);
-
+  var statuses = ['draft', 'sent', 'paid', 'overdue', 'cancelled'];
   var result = { draft: 0, sent: 0, paid: 0, overdue: 0, cancelled: 0, total: 0 };
-  if (!res.error && res.data) {
-    res.data.forEach(function(r) {
-      var st = r.status || 'draft';
-      if (result[st] !== undefined) result[st]++;
-      result.total++;
-    });
-  }
+  
+  // CQ-09 Fix: Use Supabase exact count (head: true) to avoid downloading entire table data
+  var promises = statuses.map(async function(st) {
+    var res = await ctx.client
+      .from('bills')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_id', ctx.userId)
+      .eq('status', st)
+      .is('deleted_at', null);
+    
+    if (!res.error && res.count !== null) {
+      result[st] = res.count;
+      result.total += res.count;
+    }
+  });
+
+  await Promise.all(promises);
   return result;
 }
 
