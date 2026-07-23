@@ -79,7 +79,59 @@ function readEnvBootstrap() {
   } catch(e) {}
 }
 
+function getSettingsFilePath() {
+  try {
+    var electron = require('electron');
+    var app = electron.app || (electron.remote && electron.remote.app);
+    if (app && app.getPath) {
+      try {
+        return path.join(app.getPath('userData'), 'local-settings.json');
+      } catch (err) {
+        // App is not ready yet; construct path using APPDATA or HOME
+        var appName = app.name || 'billflow';
+        var baseDir = process.env.APPDATA || (process.platform === 'darwin' ? path.join(process.env.HOME || '', 'Library', 'Application Support') : path.join(process.env.HOME || '', '.config'));
+        return path.join(baseDir, appName, 'local-settings.json');
+      }
+    }
+  } catch (e) {}
+  var fallbackDir = process.env.APPDATA || (process.platform === 'darwin' ? path.join(process.env.HOME || '', 'Library', 'Application Support') : path.join(process.env.HOME || '', '.config'));
+  return path.join(fallbackDir, 'billflow', 'local-settings.json');
+}
+
+function saveLocalDiskCache() {
+  try {
+    var filePath = getSettingsFilePath();
+    var dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(filePath, JSON.stringify(_cache, null, 2), 'utf8');
+  } catch(e) {
+    console.error('[settings] Error saving settings to disk:', e.message);
+  }
+}
+
+function loadLocalDiskCache() {
+  try {
+    var filePath = getSettingsFilePath();
+    if (fs.existsSync(filePath)) {
+      var content = fs.readFileSync(filePath, 'utf8');
+      if (content && content.trim()) {
+        var data = JSON.parse(content);
+        if (data && typeof data === 'object') {
+          for (var k in data) {
+            if (data.hasOwnProperty(k) && data[k] !== undefined && data[k] !== null) {
+              _cache[k] = String(data[k]);
+            }
+          }
+        }
+      }
+    }
+  } catch(e) {
+    console.error('[settings] Error loading settings from disk:', e.message);
+  }
+}
+
 readEnvBootstrap();
+loadLocalDiskCache();
 
 async function loadCloudSettings(userId) {
   var ctx = null;
@@ -103,6 +155,8 @@ async function loadCloudSettings(userId) {
       if (!_cache.business_phone && pRes.data.phone) _cache.business_phone = pRes.data.phone;
       if (!_cache.business_email && pRes.data.email) _cache.business_email = pRes.data.email;
     }
+
+    saveLocalDiskCache();
   } catch(e) {
     console.error('[settings] Error loading cloud settings:', e.message);
   }
@@ -116,26 +170,28 @@ function getSetting(key) {
 
 function getAllSettings() {
   readEnvBootstrap();
+  loadLocalDiskCache();
   return Object.assign({}, _cache);
 }
 
 async function setSetting(key, value) {
   var valStr = value === null || value === undefined ? '' : String(value);
   _cache[key] = valStr;
+  saveLocalDiskCache();
 
-  try {
-    var ctx = await require('../../supabase/client').ensureAuthenticatedClient();
-    if (ctx && ctx.client && ctx.userId) {
-      var res = await ctx.client.from('settings').upsert({
-        owner_id: ctx.userId,
-        key: key,
-        value: valStr,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'owner_id,key' });
-      if (res.error) console.error('[settings] Cloud upsert failed for key:', key, res.error.message);
+  var ctx = await require('../../supabase/client').ensureAuthenticatedClient();
+  if (ctx && ctx.client && ctx.userId) {
+    var res = await ctx.client.from('settings').upsert({
+      owner_id: ctx.userId,
+      key: key,
+      value: valStr,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'owner_id,key' });
+
+    if (res && res.error) {
+      console.error('[settings] Cloud save failed for key:', key, res.error.message);
+      throw new Error('Supabase save failed: ' + res.error.message);
     }
-  } catch(e) {
-    console.error('[settings] Cloud upsert error:', e.message);
   }
 }
 
@@ -149,27 +205,41 @@ async function setMultiple(obj) {
     }
   }
 
-  try {
-    var ctx = await require('../../supabase/client').ensureAuthenticatedClient();
-    if (ctx && ctx.client && ctx.userId) {
-      var payload = [];
-      for (var k in obj) {
-        if (obj.hasOwnProperty(k)) {
-          payload.push({
-            owner_id: ctx.userId,
-            key: k,
-            value: obj[k] === null || obj[k] === undefined ? '' : String(obj[k]),
-            updated_at: new Date().toISOString()
-          });
-        }
-      }
-      if (payload.length > 0) {
-        var res = await ctx.client.from('settings').upsert(payload, { onConflict: 'owner_id,key' });
-        if (res.error) console.error('[settings] Cloud bulk upsert failed:', res.error.message);
+  saveLocalDiskCache();
+
+  var ctx = await require('../../supabase/client').ensureAuthenticatedClient();
+  if (ctx && ctx.client && ctx.userId) {
+    var payload = [];
+    for (var k in obj) {
+      if (obj.hasOwnProperty(k)) {
+        payload.push({
+          owner_id: ctx.userId,
+          key: k,
+          value: obj[k] === null || obj[k] === undefined ? '' : String(obj[k]),
+          updated_at: new Date().toISOString()
+        });
       }
     }
-  } catch(e) {
-    console.error('[settings] Cloud bulk upsert error:', e.message);
+    
+    if (payload.length > 0) {
+      var insRes = await ctx.client.from('settings').upsert(payload, { onConflict: 'owner_id,key' });
+      if (insRes && insRes.error) {
+        console.error('[settings] Cloud bulk upsert failed:', insRes.error.message);
+        throw new Error('Supabase save failed: ' + insRes.error.message);
+      }
+    }
+
+    // Also update profiles table in Supabase
+    var profUpd = {};
+    if (obj.business_name) profUpd.business_name = obj.business_name;
+    if (obj.business_phone) profUpd.phone = obj.business_phone;
+    if (obj.business_email) profUpd.email = obj.business_email;
+    if (Object.keys(profUpd).length > 0) {
+      var pRes = await ctx.client.from('profiles').update(profUpd).eq('id', ctx.userId);
+      if (pRes && pRes.error) {
+         console.warn('[settings] Profile update failed:', pRes.error.message);
+      }
+    }
   }
 }
 

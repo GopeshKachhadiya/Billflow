@@ -1,4 +1,3 @@
-// ES5 — Settings page controller
 window.switchSettingsTab = function(evt, tabId) {
   if (evt && evt.preventDefault) evt.preventDefault();
   var tabPanes = document.querySelectorAll(".settings-tab-pane");
@@ -15,6 +14,9 @@ window.switchSettingsTab = function(evt, tabId) {
   var target = document.getElementById(tabId);
   if (target) target.style.display = "block";
   var btn = (evt && (evt.currentTarget || evt.target)) ? (evt.currentTarget || evt.target).closest('.tab-link') : null;
+  if (!btn && tabId) {
+    btn = document.querySelector('.tab-link[data-tab="' + tabId + '"]');
+  }
   if (btn) {
     btn.classList.add("active");
     btn.style.color = "var(--color-primary)";
@@ -27,6 +29,44 @@ window.PageControllers = window.PageControllers || {};
 window.PageControllers['settings'] = {
   init: function() {
     var self = this;
+
+    // Tab event listener for CSP compatibility
+    var tabNav = document.querySelector('.tab-nav');
+    if (tabNav) {
+      tabNav.addEventListener('click', function(e) {
+        var btn = e.target.closest ? e.target.closest('.tab-link') : null;
+        if (btn) {
+          var tabId = btn.getAttribute('data-tab');
+          if (tabId) {
+            window.switchSettingsTab(e, tabId);
+          }
+        }
+      });
+    }
+
+    var saveBtn = document.getElementById('btn-save-settings');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function() {
+        self.saveSettings();
+      });
+    }
+
+    var btnChooseLogo = document.getElementById('btn-choose-logo');
+    if (btnChooseLogo) {
+      btnChooseLogo.addEventListener('click', function() {
+        var logoInput = document.getElementById('logo-upload');
+        if (logoInput) logoInput.click();
+      });
+    }
+
+    var btnChooseSig = document.getElementById('btn-choose-signature');
+    if (btnChooseSig) {
+      btnChooseSig.addEventListener('click', function() {
+        var sigInput = document.getElementById('signature-upload');
+        if (sigInput) sigInput.click();
+      });
+    }
+
     // WhatsApp Local Link Setup
     var connectBtn = document.getElementById('btn-wa-connect');
     var disconnectBtn = document.getElementById('btn-wa-disconnect');
@@ -117,67 +157,63 @@ window.PageControllers['settings'] = {
         });
       }
     }
-    window.api.getAllSettings().then(function(s) {
-      // Populate all fields from settings
-      var fields = ['business_name','gstin','business_address','business_city',
-                    'business_state','business_pin','pan','bank_name','bank_account',
-                    'bank_ifsc','bill_prefix','default_gst_rate',
-                    'email_from_name','email_from_address','smtp_host','smtp_port',
-                    'smtp_user','accountant_email',
-                    'n8n_base_url','n8n_secret',
-                    'notify_owner_phone','wati_api_url','msg91_sender_id',
-                    'logo_data', 'signature_data',
-                    'business_phone', 'business_email', 'business_udyam',
-                    'business_category', 'business_status', 'upi_id'];
-      for (var i = 0; i < fields.length; i++) {
-        var el = document.getElementById('s-' + fields[i]);
-        if (el) el.value = s[fields[i]] || '';
-      }
-
-      // Update image previews if data exists
-      if (s.logo_data) {
-        var logoPreview = document.getElementById('logo-preview-img');
-        if (logoPreview) {
-          logoPreview.src = s.logo_data;
-          logoPreview.style.display = 'block';
-          document.getElementById('logo-preview-name').textContent = 'Saved logo';
+    // Populate form fields function
+    self.populateFields = function() {
+      window.api.getAllSettings().then(function(s) {
+        if (!s) return;
+        var fields = ['business_name','gstin','business_address','business_city',
+                      'business_state','business_pin','pan','bank_name','bank_account',
+                      'bank_ifsc','bill_prefix','default_gst_rate',
+                      'email_from_name','email_from_address','smtp_host','smtp_port',
+                      'smtp_user','accountant_email',
+                      'notify_owner_phone','wati_api_url','msg91_sender_id',
+                      'logo_data', 'signature_data',
+                      'business_phone', 'business_email', 'business_udyam',
+                      'business_category', 'business_status', 'upi_id'];
+        for (var i = 0; i < fields.length; i++) {
+          var el = document.getElementById('s-' + fields[i]);
+          if (el) el.value = s[fields[i]] || '';
         }
-      }
-      if (s.signature_data) {
-        var sigPreview = document.getElementById('signature-preview-img');
-        if (sigPreview) {
-          sigPreview.src = s.signature_data;
-          sigPreview.style.display = 'block';
-          document.getElementById('signature-preview-name').textContent = 'Saved signature';
-        }
-      }
 
-      // Toggles
-      function setToggle(id, key) {
-        var el = document.getElementById(id);
-        if (el) el.checked = s[key] === '1';
-      }
-      setToggle('s-wati-enabled',          'wati_enabled');
-      setToggle('s-sms-enabled',           'sms_enabled');
-      setToggle('s-notify-whatsapp',       'notify_owner_whatsapp');
-      setToggle('s-notify-daily-summary',  'notify_daily_summary');
-      setToggle('s-notify-weekly-report',  'notify_weekly_report');
-      setToggle('s-notify-monthly-gst',    'notify_monthly_gst');
-    });
+        // Update image previews if data exists
+        if (s.logo_data) {
+          var logoPreview = document.getElementById('logo-preview-img');
+          if (logoPreview) {
+            logoPreview.src = s.logo_data;
+            logoPreview.style.display = 'block';
+            document.getElementById('logo-preview-name').textContent = 'Saved logo';
+          }
+        }
+        if (s.signature_data) {
+          var sigPreview = document.getElementById('signature-preview-img');
+          if (sigPreview) {
+            sigPreview.src = s.signature_data;
+            sigPreview.style.display = 'block';
+            document.getElementById('signature-preview-name').textContent = 'Saved signature';
+          }
+        }
+
+        // Toggles
+        function setToggle(id, key) {
+          var el = document.getElementById(id);
+          if (el) el.checked = s[key] === '1';
+        }
+        setToggle('s-wati-enabled',          'wati_enabled');
+        setToggle('s-sms-enabled',           'sms_enabled');
+        setToggle('s-notify-whatsapp',       'notify_owner_whatsapp');
+        setToggle('s-notify-daily-summary',  'notify_daily_summary');
+        setToggle('s-notify-weekly-report',  'notify_weekly_report');
+        setToggle('s-notify-monthly-gst',    'notify_monthly_gst');
+      });
+    };
+
+    self.populateFields();
 
     // Save button
     var saveBtn = document.getElementById('btn-save-settings');
     if (saveBtn) {
       saveBtn.addEventListener('click', function() {
         self.saveSettings();
-      });
-    }
-
-    // Auto-populate n8n webhook URLs when base URL changes
-    var n8nUrlEl = document.getElementById('s-n8n_base_url');
-    if (n8nUrlEl) {
-      n8nUrlEl.addEventListener('blur', function() {
-        self.autoFillN8nUrls(this.value);
       });
     }
     // Attach live validation on blur for key fields
@@ -225,7 +261,7 @@ window.PageControllers['settings'] = {
                   'bank_ifsc','bill_prefix','default_gst_rate',
                   'email_from_name','email_from_address','smtp_host','smtp_port',
                   'smtp_user','smtp_pass','accountant_email',
-                  'n8n_base_url','n8n_secret','notify_owner_phone',
+                  'notify_owner_phone',
                   'wati_api_url','wati_api_token','msg91_auth_key','msg91_sender_id',
                   'logo_data', 'signature_data',
                   'business_phone', 'business_email', 'business_udyam',
@@ -254,11 +290,26 @@ window.PageControllers['settings'] = {
       if (found) { obj.business_state_code = found.code; }
     }
 
+    var saveBtn = document.getElementById('btn-save-settings');
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+    }
+
     window.api.setMultipleSettings(obj).then(function() {
-      Toast.show('Settings saved', 'success');
-      window.api.settingsUpdated(obj);
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Settings';
+      }
+      if (window.Toast) window.Toast.show('Settings saved permanently!', 'success');
+      if (window.api.settingsUpdated) window.api.settingsUpdated(obj);
+      if (typeof self.populateFields === 'function') self.populateFields();
     }).catch(function(err) {
-      Toast.show('Save failed: ' + err.message, 'error');
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Settings';
+      }
+      if (window.Toast) window.Toast.show('Save failed: ' + (err.message || err), 'error');
     });
   },
 

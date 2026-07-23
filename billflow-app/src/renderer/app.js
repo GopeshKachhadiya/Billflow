@@ -52,7 +52,12 @@ function loadPage(pageName, params) {
 }
 
 function _doLoadPage(pageName, params) {
-  if (currentPage === pageName && !params) return;
+  if (currentPage === pageName && !params) {
+    if (window.PageControllers && window.PageControllers[pageName] && typeof window.PageControllers[pageName].init === 'function') {
+      window.PageControllers[pageName].init(params || {});
+    }
+    return;
+  }
   currentPage = pageName;
 
   var links = document.querySelectorAll('[data-page]');
@@ -67,8 +72,7 @@ function _doLoadPage(pageName, params) {
   content.innerHTML = '<div class="page-loading">Loading...</div>';
 
   var xhr = new XMLHttpRequest();
-  // Append timestamp to bust any browser-level caching (CQ-05)
-  xhr.open('GET', 'pages/' + pageName + '.html?t=' + new Date().getTime(), true);
+  xhr.open('GET', 'pages/' + pageName + '.html', true);
   xhr.onload = function() {
     if (xhr.status === 200 || xhr.status === 0) { // status 0 is for local file:// protocol
       renderPage(pageName, xhr.responseText, params);
@@ -87,6 +91,16 @@ function renderPage(pageName, html, params) {
   content.innerHTML = html;
   window._pageParams = params || {};
 
+  function triggerInit() {
+    if (window.PageControllers && window.PageControllers[pageName] && typeof window.PageControllers[pageName].init === 'function') {
+      try {
+        window.PageControllers[pageName].init(params || {});
+      } catch (err) {
+        console.error('[PageController] Error initializing ' + pageName + ':', err);
+      }
+    }
+  }
+
   var scriptId = 'page-script-' + pageName;
   var oldScript = document.getElementById(scriptId);
   if (oldScript) { oldScript.parentNode.removeChild(oldScript); }
@@ -95,11 +109,16 @@ function renderPage(pageName, html, params) {
   script.id     = scriptId;
   script.src    = 'js/pages/' + pageName + '.js';
   script.onload = function() {
-    if (window.PageControllers && window.PageControllers[pageName]) {
-      window.PageControllers[pageName].init(params || {});
-    }
+    triggerInit();
+  };
+  script.onerror = function(err) {
+    console.error('Failed to load page script: ' + pageName, err);
+    triggerInit();
   };
   document.body.appendChild(script);
+
+  // If controller was already in memory, trigger init immediately on the new DOM
+  triggerInit();
 }
 
 function showSidebar(show) {
@@ -115,14 +134,28 @@ function updateTopbar(email) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Global Event Delegation for all [data-page] navigation links and buttons
+  // Global Event Delegation for [data-page] and [data-tab] navigation links and buttons
   document.addEventListener('click', function(e) {
-    var target = e.target.closest ? e.target.closest('[data-page]') : null;
-    if (target) {
+    var pageTarget = e.target.closest ? e.target.closest('[data-page]') : null;
+    if (pageTarget) {
       e.preventDefault();
-      var page = target.getAttribute('data-page');
+      var page = pageTarget.getAttribute('data-page');
       if (page) {
         loadPage(page);
+      }
+      return;
+    }
+
+    var tabTarget = e.target.closest ? e.target.closest('.tab-link[data-tab]') : null;
+    if (tabTarget) {
+      e.preventDefault();
+      var tabId = tabTarget.getAttribute('data-tab');
+      if (tabId) {
+        if (typeof window.switchReportsTab === 'function' && document.querySelector('.reports-tab-pane')) {
+          window.switchReportsTab(e, tabId);
+        } else if (typeof window.switchSettingsTab === 'function' && document.querySelector('.settings-tab-pane')) {
+          window.switchSettingsTab(e, tabId);
+        }
       }
     }
   });

@@ -600,7 +600,7 @@ window.PageControllers['bill-edit'] = {
                 }
               }
 
-              if (sendLocalWa) {
+              if (sendLocalWa || openWaRedirect) {
                 var customerPhone = (self._customer && self._customer.phone) || billData.party_phone;
                 var businessName = self._settings ? self._settings.business_name : '';
                 var text = "Dear Customer,\n\n" +
@@ -609,18 +609,13 @@ window.PageControllers['bill-edit'] = {
                            "Thank you!";
                 var filename = 'Invoice_' + billData.bill_number + '.pdf';
                 
-                Toast.show('Sending invoice PDF via local WhatsApp...', 'info');
+                Toast.show('Sending invoice PDF via WhatsApp...', 'info');
                 window.api.waSendBill(customerPhone, text, pdfBase64, filename).then(function() {
                   Toast.show('WhatsApp invoice sent automatically!', 'success');
                 }).catch(function(waErr) {
                   console.error('[wa] auto-send failed:', waErr.message);
-                  Toast.show('Auto-send failed. Falling back to WhatsApp Web redirect...', 'warning');
-                  self.openWhatsAppRedirect(customerPhone, billData.bill_number, billData.grand_total, businessName);
+                  Toast.show('WhatsApp send failed: ' + (waErr.message || waErr) + '. Please connect WhatsApp in Settings -> Integrations.', 'error');
                 });
-              } else if (openWaRedirect) {
-                var customerPhone = (self._customer && self._customer.phone) || billData.party_phone;
-                var businessName = self._settings ? self._settings.business_name : '';
-                self.openWhatsAppRedirect(customerPhone, billData.bill_number, billData.grand_total, businessName);
               }
 
               if (sendToN8n.length > 0) {

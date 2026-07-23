@@ -26,3 +26,5 @@ var Toast = (function() {
 
   return { show: show };
 }());
+
+window.Toast = Toast;

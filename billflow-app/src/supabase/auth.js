@@ -174,7 +174,7 @@ function evaluateProfileAndProceed(profile, user, session, password, callback) {
         salt = kd.generateDeviceSalt();
         profile.encryption_salt = salt;
         // Don't await this, just fire and forget (save salt to DB)
-        client.from('profiles').update({ encryption_salt: salt }).eq('id', user.id).catch(function(){});
+        client.from('profiles').update({ encryption_salt: salt }).eq('id', user.id).then(function(){}, function(){});
       }
       
       var derivedKey = kd.deriveKey(password, salt);

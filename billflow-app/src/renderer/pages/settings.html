@@ -6,9 +6,9 @@
 <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
   <!-- Tab navigation -->
   <div class="tab-nav" style="display: flex; border-bottom: 1px solid var(--color-border); background: #F9FAFB;">
-    <button class="tab-link active" onclick="switchSettingsTab(event, 'tab-business')" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;">Business Profile</button>
-    <button class="tab-link" onclick="switchSettingsTab(event, 'tab-template')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Bill Template</button>
-    <button class="tab-link" onclick="switchSettingsTab(event, 'tab-integrations')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Integrations</button>
+    <button class="tab-link active" data-tab="tab-business" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;">Business Profile</button>
+    <button class="tab-link" data-tab="tab-template" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Bill Template</button>
+    <button class="tab-link" data-tab="tab-integrations" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Integrations</button>
   </div>
 
   <!-- Tab Content -->
@@ -141,7 +141,7 @@
           <label>Business Logo</label>
           <input type="file" id="logo-upload" accept="image/*" style="display: none;">
           <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
-            <button type="button" class="btn" onclick="document.getElementById('logo-upload').click()">Choose Logo</button>
+            <button type="button" class="btn" id="btn-choose-logo">Choose Logo</button>
             <span id="logo-preview-name" style="font-size: 12px; color: var(--color-text-muted);">No image selected</span>
           </div>
           <input type="hidden" id="s-logo_data">
@@ -153,7 +153,7 @@
           <label>Authorised Signature</label>
           <input type="file" id="signature-upload" accept="image/*" style="display: none;">
           <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
-            <button type="button" class="btn" onclick="document.getElementById('signature-upload').click()">Choose Signature</button>
+            <button type="button" class="btn" id="btn-choose-signature">Choose Signature</button>
             <span id="signature-preview-name" style="font-size: 12px; color: var(--color-text-muted);">No image selected</span>
           </div>
           <input type="hidden" id="s-signature_data">
@@ -269,18 +269,6 @@
         <div class="form-group">
           <label>MSG91 Sender ID</label>
           <input type="text" id="s-msg91_sender_id" placeholder="e.g. ACMESM">
-        </div>
-      </div>
-
-      <h3 style="border-top: 1px solid var(--color-border); padding-top: 24px; margin-bottom: 16px; font-size: 15px;">n8n Webhook Integration</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
-        <div class="form-group">
-          <label>n8n Base URL</label>
-          <input type="text" id="s-n8n_base_url" placeholder="e.g. http://localhost:5678">
-        </div>
-        <div class="form-group">
-          <label>n8n Secret Auth Key</label>
-          <input type="text" id="s-n8n_secret" placeholder="Secret matching n8n headers">
         </div>
       </div>
 

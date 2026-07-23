@@ -339,25 +339,22 @@ async function deleteBill(id) {
 
 async function getBillCountByStatus() {
   var ctx = await getClientAndUser();
-  var statuses = ['draft', 'sent', 'paid', 'overdue', 'cancelled'];
-  var result = { draft: 0, sent: 0, paid: 0, overdue: 0, cancelled: 0, total: 0 };
-  
-  // CQ-09 Fix: Use Supabase exact count (head: true) to avoid downloading entire table data
-  var promises = statuses.map(async function(st) {
-    var res = await ctx.client
-      .from('bills')
-      .select('id', { count: 'exact', head: true })
-      .eq('owner_id', ctx.userId)
-      .eq('status', st)
-      .is('deleted_at', null);
-    
-    if (!res.error && res.count !== null) {
-      result[st] = res.count;
-      result.total += res.count;
-    }
-  });
+  var res = await ctx.client
+    .from('bills')
+    .select('status')
+    .eq('owner_id', ctx.userId)
+    .is('deleted_at', null);
 
-  await Promise.all(promises);
+  var result = { draft: 0, sent: 0, paid: 0, partial: 0, overdue: 0, cancelled: 0, total: 0 };
+  if (!res.error && res.data) {
+    result.total = res.data.length;
+    res.data.forEach(function(b) {
+      var st = (b.status || 'draft').toLowerCase();
+      if (result.hasOwnProperty(st)) {
+        result[st]++;
+      }
+    });
+  }
   return result;
 }
 
@@ -370,9 +367,9 @@ async function getMonthlyRevenue(months) {
 
   var res = await ctx.client
     .from('bills')
-    .select('bill_date, grand_total')
+    .select('bill_date, grand_total, amount_paid, status')
     .eq('owner_id', ctx.userId)
-    .eq('status', 'paid')
+    .in('status', ['paid', 'partial'])
     .gte('bill_date', minDate)
     .is('deleted_at', null);
 
@@ -382,7 +379,8 @@ async function getMonthlyRevenue(months) {
   res.data.forEach(function(r) {
     var m = r.bill_date ? r.bill_date.substring(0, 7) : 'Unknown';
     if (!map[m]) map[m] = { month: m, total: 0, count: 0 };
-    map[m].total += parseFloat(r.grand_total) || 0;
+    var amt = r.status === 'paid' ? (parseFloat(r.grand_total) || 0) : (parseFloat(r.amount_paid) || 0);
+    map[m].total += amt;
     map[m].count += 1;
   });
 
@@ -396,34 +394,40 @@ async function getDashboardSummary() {
 
   var ctx = await getClientAndUser();
 
-  // Month revenue
-  var resRev = await ctx.client
+  var allBillsRes = await ctx.client
     .from('bills')
-    .select('grand_total')
+    .select('id, grand_total, amount_due, amount_paid, status, bill_date')
     .eq('owner_id', ctx.userId)
-    .eq('status', 'paid')
-    .gte('bill_date', monthStart)
     .is('deleted_at', null);
+
+  var allBills = (allBillsRes && allBillsRes.data) ? allBillsRes.data : [];
 
   var monthRev = 0;
-  if (!resRev.error && resRev.data) {
-    resRev.data.forEach(function(r) { monthRev += parseFloat(r.grand_total) || 0; });
-  }
-
-  // Unpaid total
-  var resUnpaid = await ctx.client
-    .from('bills')
-    .select('grand_total')
-    .eq('owner_id', ctx.userId)
-    .in('status', ['sent', 'overdue'])
-    .is('deleted_at', null);
-
   var unpaidTotal = 0;
-  if (!resUnpaid.error && resUnpaid.data) {
-    resUnpaid.data.forEach(function(r) { unpaidTotal += parseFloat(r.grand_total) || 0; });
-  }
+  var counts = { draft: 0, sent: 0, paid: 0, partial: 0, overdue: 0, cancelled: 0, total: allBills.length };
 
-  var counts = await getBillCountByStatus();
+  allBills.forEach(function(b) {
+    var st = (b.status || 'draft').toLowerCase();
+    if (counts.hasOwnProperty(st)) {
+      counts[st]++;
+    } else {
+      counts.draft++;
+    }
+
+    if ((st === 'paid' || st === 'partial') && b.bill_date && b.bill_date >= monthStart) {
+      if (st === 'paid') {
+        monthRev += parseFloat(b.grand_total) || 0;
+      } else {
+        monthRev += parseFloat(b.amount_paid) || 0;
+      }
+    }
+
+    if (st !== 'paid' && st !== 'cancelled') {
+      var due = (b.amount_due !== undefined && b.amount_due !== null) ? parseFloat(b.amount_due) : parseFloat(b.grand_total);
+      unpaidTotal += (isNaN(due) ? 0 : due);
+    }
+  });
+
   var recent = await listBills({ limit: 10 });
 
   return {

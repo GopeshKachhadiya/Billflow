@@ -484,7 +484,7 @@ window.PageControllers['bill-view'] = {
 
         var promiseChain = Promise.resolve();
 
-        if (sendLocalWa) {
+        if (sendLocalWa || openWaRedirect) {
           var customerPhone = (self._data.customer && self._data.customer.phone) || b.party_phone;
           var businessName = self._settings ? self._settings.business_name : '';
           var text = "Dear Customer,\n\n" +
@@ -493,20 +493,15 @@ window.PageControllers['bill-view'] = {
                      "Thank you!";
           var filename = 'Invoice_' + b.bill_number + '.pdf';
           
-          Toast.show('Sending invoice PDF via local WhatsApp...', 'info');
+          Toast.show('Sending invoice PDF via WhatsApp...', 'info');
           promiseChain = promiseChain.then(function() {
             return window.api.waSendBill(customerPhone, text, pdfBase64, filename).then(function() {
               Toast.show('WhatsApp invoice sent automatically!', 'success');
             }).catch(function(waErr) {
               console.error('[wa] auto-send failed:', waErr.message);
-              Toast.show('Auto-send failed. Falling back to WhatsApp Web redirect...', 'warning');
-              self.openWhatsAppRedirect(customerPhone, b.bill_number, b.grand_total, businessName);
+              Toast.show('WhatsApp send failed: ' + (waErr.message || waErr) + '. Please connect WhatsApp in Settings -> Integrations.', 'error');
             });
           });
-        } else if (openWaRedirect) {
-          var customerPhone = (self._data.customer && self._data.customer.phone) || b.party_phone;
-          var businessName = self._settings ? self._settings.business_name : '';
-          self.openWhatsAppRedirect(customerPhone, b.bill_number, b.grand_total, businessName);
         }
 
         if (sendToN8n.length > 0) {

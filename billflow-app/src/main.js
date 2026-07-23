@@ -62,7 +62,20 @@ async function loadBaileys() {
   pino = require('pino');
 }
 
-var waSessionPath = path.join(app.getPath('userData'), 'wa-session');
+function getWaSessionPath() {
+  try {
+    if (app && app.getPath) {
+      try {
+        return path.join(app.getPath('userData'), 'wa-session');
+      } catch (err) {
+        var baseDir = process.env.APPDATA || (process.platform === 'darwin' ? path.join(process.env.HOME || '', 'Library', 'Application Support') : path.join(process.env.HOME || '', '.config'));
+        return path.join(baseDir, app.name || 'billflow', 'wa-session');
+      }
+    }
+  } catch(e) {}
+  var fallbackDir = process.env.APPDATA || (process.platform === 'darwin' ? path.join(process.env.HOME || '', 'Library', 'Application Support') : path.join(process.env.HOME || '', '.config'));
+  return path.join(fallbackDir, 'billflow', 'wa-session');
+}
 
 
 function getModules() {
@@ -180,18 +193,15 @@ app.on('ready', function() {
       console.log('[OTA Updater] Initial check exception:', err ? err.message : err);
     }
 
-    // Auto-connect WhatsApp if credentials exist and are linked
-    var credsPath = path.join(waSessionPath, 'creds.json');
+    // Auto-connect WhatsApp if credentials exist
+    var credsPath = path.join(getWaSessionPath(), 'creds.json');
     if (fs.existsSync(credsPath)) {
       try {
-        var creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
-        if (creds && creds.me) {
-          initWhatsApp(function(channel, arg) {
-            if (mainWindow) mainWindow.webContents.send(channel, arg);
-          });
-        }
+        initWhatsApp(function(channel, arg) {
+          if (mainWindow) mainWindow.webContents.send(channel, arg);
+        });
       } catch (e) {
-        console.error('[wa] failed to read creds.json on startup:', e);
+        console.error('[wa] failed to auto-connect WhatsApp on startup:', e);
       }
     }
   });
@@ -209,7 +219,7 @@ async function initWhatsApp(eventToSend) {
   if (eventToSend) eventToSend('wa:status-change', { status: waStatus });
 
   try {
-    var auth = await useMultiFileAuthState(waSessionPath);
+    var auth = await useMultiFileAuthState(getWaSessionPath());
     var state = auth.state;
     var saveCreds = auth.saveCreds;
 
@@ -236,7 +246,8 @@ async function initWhatsApp(eventToSend) {
         var statusCode = lastDisconnect && lastDisconnect.error && lastDisconnect.error.output && lastDisconnect.error.output.statusCode;
         var isLoggedOut = statusCode === DisconnectReason.loggedOut;
         var isBadSession = statusCode === DisconnectReason.badSession;
-        var shouldReconnect = !isLoggedOut && !isBadSession;
+        var isConflict = statusCode === 440; // Stream Errored (conflict) / connectionReplaced
+        var shouldReconnect = !isLoggedOut && !isBadSession && !isConflict;
         
         console.log('[wa] connection closed due to ', lastDisconnect && lastDisconnect.error, ', reconnecting ', shouldReconnect);
         waSock = null;
@@ -246,19 +257,22 @@ async function initWhatsApp(eventToSend) {
         if (shouldReconnect) {
           waStatus = 'connecting';
           if (eventToSend) eventToSend('wa:status-change', { status: waStatus });
-          // Throttled reconnect to avoid infinite loop CPU spikes during network outages
           setTimeout(function() {
             initWhatsApp(eventToSend);
           }, 5000);
         } else {
           waStatus = 'disconnected';
           if (eventToSend) eventToSend('wa:status-change', { status: waStatus });
-          // Clear session files if explicitly logged out or session is bad/corrupted
-          if (fs.existsSync(waSessionPath)) {
-            try {
-              fs.rmSync(waSessionPath, { recursive: true, force: true });
-            } catch (e) {
-              console.error('[wa] failed to delete session path on close:', e.message);
+          // ONLY delete session files if explicitly logged out by user/WhatsApp
+          if (isLoggedOut || isBadSession) {
+            var currentWaPath = getWaSessionPath();
+            if (fs.existsSync(currentWaPath)) {
+              try {
+                fs.rmSync(currentWaPath, { recursive: true, force: true });
+                console.log('[wa] session files cleared after explicit logout.');
+              } catch (e) {
+                console.error('[wa] failed to delete session path on logout:', e.message);
+              }
             }
           }
         }
@@ -292,9 +306,10 @@ async function waDisconnect() {
   waQR = '';
   waUser = '';
   
-  if (fs.existsSync(waSessionPath)) {
+  var currentWaPath = getWaSessionPath();
+  if (fs.existsSync(currentWaPath)) {
     try {
-      fs.rmSync(waSessionPath, { recursive: true, force: true });
+      fs.rmSync(currentWaPath, { recursive: true, force: true });
     } catch (e) {
       console.error('[wa] failed to delete session path:', e.message);
     }
@@ -374,8 +389,8 @@ ipcMain.handle('auth:updatePassword', function(e, a) {
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 ipcMain.handle('db:settings:get',    function(e, a) { return getModules().settings.getSetting(a.key); });
-ipcMain.handle('db:settings:set',    function(e, a) { 
-  getModules().settings.setSetting(a.key, a.value); 
+ipcMain.handle('db:settings:set',    async function(e, a) { 
+  await getModules().settings.setSetting(a.key, a.value); 
   try {
     var session = require('./supabase/auth').getSession();
     if (session && session.id) {
@@ -385,8 +400,8 @@ ipcMain.handle('db:settings:set',    function(e, a) {
   return { ok:true }; 
 });
 ipcMain.handle('db:settings:getAll', function()     { return getModules().settings.getAllSettings(); });
-ipcMain.handle('db:settings:setMultiple', function(e, a) { 
-  getModules().settings.setMultiple(a); 
+ipcMain.handle('db:settings:setMultiple', async function(e, a) { 
+  await getModules().settings.setMultiple(a); 
   try {
     var session = require('./supabase/auth').getSession();
     if (session && session.id) {
@@ -543,7 +558,7 @@ ipcMain.handle('pdf:generate', function(e, a) {
 
 // ── BILL NUMBER ───────────────────────────────────────────────────────────────
 ipcMain.handle('bills:nextNumber',   function() { return getModules().billNum.getNextBillNumber(); });
-ipcMain.handle('bills:incrementNum', function() { getModules().billNum.incrementBillNumber(); return { ok:true }; });
+ipcMain.handle('bills:incrementNum', async function() { await getModules().billNum.incrementBillNumber(); return { ok:true }; });
 
 // ── WEBHOOKS ──────────────────────────────────────────────────────────────────
 ipcMain.handle('webhook:billSent', function(e, a) {

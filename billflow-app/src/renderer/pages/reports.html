@@ -5,10 +5,10 @@
 <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
   <!-- Tab navigation -->
   <div class="tab-nav" style="display: flex; border-bottom: 1px solid var(--color-border); background: #F9FAFB;">
-    <button class="tab-link active" onclick="switchReportsTab(event, 'tab-revenue')" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;">Revenue Report</button>
-    <button class="tab-link" onclick="switchReportsTab(event, 'tab-gst')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">GST Tax Collected</button>
-    <button class="tab-link" onclick="switchReportsTab(event, 'tab-ledger')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Customer Ledger</button>
-    <button class="tab-link" onclick="switchReportsTab(event, 'tab-overdue')" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Overdue & Ageing</button>
+    <button class="tab-link active" data-tab="tab-revenue" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;">Revenue Report</button>
+    <button class="tab-link" data-tab="tab-gst" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">GST Tax Collected</button>
+    <button class="tab-link" data-tab="tab-ledger" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Customer Ledger</button>
+    <button class="tab-link" data-tab="tab-overdue" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Overdue & Ageing</button>
   </div>
 
   <!-- Tab Content Container -->

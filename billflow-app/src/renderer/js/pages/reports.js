@@ -14,6 +14,9 @@ window.switchReportsTab = function(evt, tabId) {
   var target = document.getElementById(tabId);
   if (target) target.style.display = "block";
   var btn = (evt && (evt.currentTarget || evt.target)) ? (evt.currentTarget || evt.target).closest('.tab-link') : null;
+  if (!btn && tabId) {
+    btn = document.querySelector('.tab-link[data-tab="' + tabId + '"]');
+  }
   if (btn) {
     btn.classList.add("active");
     btn.style.color = "var(--color-primary)";
@@ -32,6 +35,20 @@ window.PageControllers['reports'] = {
   init: function() {
     var self = this;
     
+    // Tab event listener for CSP compatibility
+    var tabNav = document.querySelector('.tab-nav');
+    if (tabNav) {
+      tabNav.addEventListener('click', function(e) {
+        var btn = e.target.closest ? e.target.closest('.tab-link') : null;
+        if (btn) {
+          var tabId = btn.getAttribute('data-tab');
+          if (tabId) {
+            window.switchReportsTab(e, tabId);
+          }
+        }
+      });
+    }
+
     // Set default dates for revenue report
     var todayStr = DateUtils.today();
     var firstOfMonth = todayStr.substring(0, 8) + '01';
