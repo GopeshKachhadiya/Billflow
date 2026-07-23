@@ -34,9 +34,9 @@ export default function Sidebar({ isOpen }) {
         {/* Logo */}
         <div className={`mb-8 ${isOpen ? 'px-2' : 'flex justify-center'}`}>
           {isOpen ? (
-            <div className="flex flex-col select-none" style={{ lineHeight: '0.95' }}>
-              <span className="font-serif font-black text-[18px] text-zinc-900 dark:text-white uppercase tracking-[0.05em] leading-none block">SATYA</span>
-              <span className="font-serif font-bold text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.01em] leading-none block mt-1">BILLFLOW</span>
+            <div className="flex flex-col select-none" style={{ lineHeight: '0.95', fontFamily: "'Cinzel Decorative', 'Bodoni Moda', 'Cormorant Garamond', 'Cinzel', serif" }}>
+              <span className="font-black text-[18px] text-zinc-900 dark:text-white uppercase tracking-[0.05em] leading-none block">SATYA</span>
+              <span className="font-bold text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.01em] leading-none block mt-1">BILLFLOW</span>
               <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono font-semibold uppercase tracking-wider mt-1.5">Manager Panel</p>
             </div>
           ) : (
