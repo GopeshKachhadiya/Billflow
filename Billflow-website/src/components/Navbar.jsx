@@ -79,18 +79,18 @@ export function Navbar() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <a href="#/" className="flex items-center gap-2.5 group" aria-label="BillFlow Home">
+              <a href="#/" className="flex items-center gap-2.5 group" aria-label="Satya BillFlow Home">
                 <div className="relative w-10 h-10 rounded-paper flex items-start justify-start pt-0.5 pl-1.5 overflow-hidden bg-surface-elevated border-[1.5px] border-brand-primary shadow-paper group-hover:border-brand-accent transition-colors">
-                  <span className="font-serif font-black text-[23px] text-brand-primary select-none group-hover:scale-110 transition-transform leading-none">B</span>
+                  <span className="font-sans font-extrabold text-[21px] text-brand-primary select-none group-hover:scale-110 transition-transform leading-none">स</span>
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-br from-transparent via-brand-accent/15 to-transparent"
                     whileHover={{ rotate: 180 }}
                     transition={{ duration: 0.6 }}
                   />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-serif text-xl font-bold tracking-tight text-text-primary group-hover:text-brand-accent transition-colors">BillFlow</span>
-                  <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest -mt-1">The Digital Ledger</span>
+                <div className="brand-satya-billflow group-hover:text-brand-accent transition-colors">
+                  <span className="brand-satya text-text-primary group-hover:text-brand-accent transition-colors">SATYA</span>
+                  <span className="brand-billflow text-brand-primary group-hover:text-brand-accent transition-colors">BILLFLOW</span>
                 </div>
               </a>
             </motion.div>

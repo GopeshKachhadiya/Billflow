@@ -97,7 +97,7 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
             >
-              BillFlow brings the comfort of your traditional ledger to the digital world. Create GST-compliant invoices, send via WhatsApp, automate reminders — all with the familiar feel of pen on paper.
+              Satya BillFlow brings the comfort of your traditional ledger to the digital world. Create GST-compliant invoices, send via WhatsApp, automate reminders — all with the familiar feel of pen on paper.
             </motion.p>
 
             {/* CTA Buttons */}

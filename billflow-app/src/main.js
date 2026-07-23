@@ -94,15 +94,28 @@ app.on('ready', function() {
     console.error('[env-sync] Startup sync failed:', e.message);
   }
 
+  var nativeImage = electron.nativeImage;
+  var iconPath = path.join(__dirname, 'renderer/assets/icon.png');
+  if (!fs.existsSync(iconPath)) {
+    iconPath = path.join(__dirname, 'renderer/assets/logo.svg');
+  }
+  var appIcon = nativeImage.createFromPath(iconPath);
+
   mainWindow = new BrowserWindow({
     width: 1280, height: 800, minWidth: 800, minHeight: 600,
-    title: 'BillFlow', show: false,
+    title: 'Satya BillFlow',
+    icon: appIcon,
+    show: false,
     webPreferences: {
       preload:          path.join(__dirname, 'preload.js'),
       nodeIntegration:  false,
       contextIsolation: true
     }
   });
+
+  if (app.dock && app.dock.setIcon) {
+    app.dock.setIcon(appIcon);
+  }
   mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
   mainWindow.once('ready-to-show', function() {
     mainWindow.show();
@@ -512,7 +525,7 @@ function setupAutoUpdater() {
   });
 
   autoUpdater.on('update-not-available', function(info) {
-    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'not-available', info: info, message: 'BillFlow is up to date.' });
+    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'not-available', info: info, message: 'Satya BillFlow is up to date.' });
   });
 
   autoUpdater.on('error', function(err) {

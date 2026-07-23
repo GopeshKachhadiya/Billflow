@@ -37,18 +37,18 @@ function sendOTPEmail(recipientEmail, otpCode) {
       var senderEmail = process.env.SMTP_USER || 'gopeshkachhadiya00005@gmail.com';
 
       var mailOptions = {
-        from: '"BillFlow Security" <' + senderEmail + '>',
+        from: '"Satya BillFlow Security" <' + senderEmail + '>',
         to: recipientEmail,
-        subject: 'Your BillFlow Password Reset Verification Code: ' + otpCode,
+        subject: 'Your Satya BillFlow Password Reset Verification Code: ' + otpCode,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #ffffff;">
             <div style="text-align: center; margin-bottom: 20px;">
-              <div style="display: inline-block; background-color: #5046e6; color: white; width: 44px; height: 44px; line-height: 44px; border-radius: 10px; font-size: 24px; font-weight: bold;">B</div>
+              <div style="display: inline-block; background-color: #302b24; color: white; width: 44px; height: 44px; line-height: 44px; border-radius: 10px; font-size: 24px; font-weight: bold;">स</div>
               <h2 style="color: #1f2937; margin-top: 12px; font-size: 20px;">Password Reset Request</h2>
             </div>
             
             <p style="color: #4b5563; font-size: 14px; line-height: 1.5;">
-              We received a request to reset the password for your BillFlow account (<strong>${recipientEmail}</strong>).
+              We received a request to reset the password for your Satya BillFlow account (<strong>${recipientEmail}</strong>).
             </p>
             
             <p style="color: #4b5563; font-size: 14px; margin-top: 16px;">
@@ -65,7 +65,7 @@ function sendOTPEmail(recipientEmail, otpCode) {
             
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
             <p style="color: #9ca3af; font-size: 11px; text-align: center;">
-              BillFlow Digital Ledger System &bull; Secure Cloud Authentication
+              Satya BillFlow Digital Ledger System &bull; Secure Cloud Authentication
             </p>
           </div>
         `

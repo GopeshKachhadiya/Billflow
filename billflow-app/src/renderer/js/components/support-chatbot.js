@@ -18,7 +18,7 @@ var SupportChatbot = (function() {
   var messages = [
     {
       role: 'assistant',
-      content: 'Hello! Welcome to BillFlow Support 🤖. I am your AI assistant. How can I help you today? You can ask me questions about GST, offline billing, or printer configuration. If you need a phone callback, click the "Request Callback" button.'
+      content: 'Hello! Welcome to Satya BillFlow Support 🤖. I am your AI assistant. How can I help you today? You can ask me questions about GST, offline billing, or printer configuration. If you need a phone callback, click the "Request Callback" button.'
     }
   ];
 
@@ -191,17 +191,17 @@ var SupportChatbot = (function() {
         "Content-Type": "application/json",
         "Authorization": "Bearer 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",
         "HTTP-Referer": "https://billflow.in",
-        "X-Title": "BillFlow Desktop Support Chatbot"
+        "X-Title": "Satya BillFlow Desktop Support Chatbot"
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "system",
-            content: "You are a helpful, professional customer support assistant for BillFlow, a local-first billing and GST management desktop app built for Indian SMBs.\n" +
+            content: "You are a helpful, professional customer support assistant for Satya BillFlow, a local-first billing and GST management desktop app built for Indian SMBs.\n" +
               "Your goals:\n" +
-              "1. Answer customer queries about BillFlow, GST compliance (CGST, SGST, IGST), invoicing, printer setup, Tally/Excel imports, data backups, and reports.\n" +
-              "2. BillFlow runs as a local-first desktop application using better-sqlite3 for local database operations and syncs data to Supabase cloud via n8n workflows.\n" +
+              "1. Answer customer queries about Satya BillFlow, GST compliance (CGST, SGST, IGST), invoicing, printer setup, Tally/Excel imports, data backups, and reports.\n" +
+              "2. Satya BillFlow runs as a local-first desktop application using better-sqlite3 for local database operations and syncs data to Supabase cloud via n8n workflows.\n" +
               "3. Be concise, polite, and format your text cleanly. Use bullet points for steps where appropriate.\n" +
               "4. If the user indicates they want to talk to a human, raise a ticket, schedule a call back, or has a complex technical issue that requires manual intervention, invite them to click the 'Request Callback' button at the top/bottom to register their ticket directly in our support system."
           }

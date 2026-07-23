@@ -3,7 +3,7 @@
 
 module.exports = {
   appId: 'com.billflow.app',
-  productName: 'BillFlow',
+  productName: 'Satya BillFlow',
   publish: [
     {
       provider: 'github',
@@ -25,6 +25,7 @@ module.exports = {
     '**/*.node'
   ],
   win: {
+    icon: 'build/icon.png',
     target: [
       {
         target: 'nsis',
@@ -37,6 +38,6 @@ module.exports = {
     allowToChangeInstallationDirectory: true,
     createDesktopShortcut: true,
     createStartMenuShortcut: true,
-    shortcutName: 'BillFlow'
+    shortcutName: 'Satya BillFlow'
   }
 };

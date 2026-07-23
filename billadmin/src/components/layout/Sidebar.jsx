@@ -34,13 +34,14 @@ export default function Sidebar({ isOpen }) {
         {/* Logo */}
         <div className={`mb-8 ${isOpen ? 'px-2' : 'flex justify-center'}`}>
           {isOpen ? (
-            <>
-              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">BillFlow</h1>
-              <p className="text-xs text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Manager Panel</p>
-            </>
+            <div className="flex flex-col select-none" style={{ lineHeight: '0.95' }}>
+              <span className="font-serif font-black text-[18px] text-zinc-900 dark:text-white uppercase tracking-[0.05em] leading-none block">SATYA</span>
+              <span className="font-serif font-bold text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.01em] leading-none block mt-1">BILLFLOW</span>
+              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono font-semibold uppercase tracking-wider mt-1.5">Manager Panel</p>
+            </div>
           ) : (
-            <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 relative select-none shrink-0 shadow-sm transition-all duration-300">
-              <span className="absolute text-[19px] font-black text-zinc-900 dark:text-white top-[1px] left-[5px]">B</span>
+            <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 relative select-none shrink-0 shadow-sm transition-all duration-300 flex items-start justify-start pt-0.5 pl-1">
+              <span className="text-[17px] font-bold text-zinc-900 dark:text-white leading-none">स</span>
             </div>
           )}
         </div>

@@ -171,7 +171,7 @@ export default function Login() {
 
   return (
     <HeroSection
-      title="BillFlow Manager Dashboard"
+      title="Satya BillFlow Manager Dashboard"
       subtitle={{
         regular: "Secure access to ",
         gradient: "SaaS admin control center"

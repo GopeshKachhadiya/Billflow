@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Dancing+Script:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Cinzel:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Dancing+Script:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -63,7 +63,7 @@
   --color-cream-950: #3d2e10;
 
   --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-  --font-serif: 'Playfair Display', 'Lora', 'Crimson Pro', Georgia, serif;
+  --font-serif: 'Bodoni Moda', 'Cormorant Garamond', 'Cinzel', 'Playfair Display', 'Lora', Georgia, serif;
   --font-lora: 'Lora', Georgia, serif;
   --font-handwriting: 'Dancing Script', cursive;
   --font-mono: 'DM Mono', 'JetBrains Mono', monospace;
@@ -100,6 +100,32 @@
   --animate-gradient-shift: gradientShift 15s ease infinite;
   --animate-accordion-down: accordionDown 0.3s ease-out;
   --animate-accordion-up: accordionUp 0.3s ease-out;
+}
+
+.brand-satya-billflow {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 0.95;
+  user-select: none;
+}
+
+.brand-satya-billflow .brand-satya {
+  font-family: var(--font-serif);
+  font-size: 16.5px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  display: block;
+}
+
+.brand-satya-billflow .brand-billflow {
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  display: block;
+  margin-top: 1px;
 }
 
 @keyframes fadeIn {

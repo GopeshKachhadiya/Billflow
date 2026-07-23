@@ -13,7 +13,7 @@
   --color-text-muted: #6b614d;       /* Ink Muted/Secondary Text */
   
   --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: 'Playfair Display', 'Lora', Georgia, serif;
+  --font-serif: 'Bodoni Moda', 'Cormorant Garamond', 'Cinzel', 'Playfair Display', 'Lora', Georgia, serif;
   --font-mono: 'DM Mono', 'JetBrains Mono', monospace;
 
   --shadow-paper: 0 1px 3px 0 rgba(24, 19, 14, 0.08), 0 1px 2px -1px rgba(24, 19, 14, 0.08);
@@ -60,6 +60,34 @@ body {
   font-weight: 700;
   color: var(--color-primary);
   letter-spacing: -0.5px;
+}
+
+.brand-satya-billflow {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 0.95;
+  user-select: none;
+}
+
+.brand-satya-billflow .brand-satya {
+  font-family: var(--font-serif);
+  font-size: 16.5px;
+  font-weight: 900;
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  display: block;
+}
+
+.brand-satya-billflow .brand-billflow {
+  font-family: var(--font-serif);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.01em;
+  line-height: 1;
+  display: block;
+  margin-top: 1px;
 }
 
 #topbar-right {
