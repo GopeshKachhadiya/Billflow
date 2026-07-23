@@ -23,9 +23,9 @@ export function DownloadPage() {
   const handleDownload = () => {
     setDownloading(true);
     
-    // Direct same-page download from static public/downloads/ directory (works for private repos without redirection)
-    const fileName = arch === "64" ? "BillFlow_Setup_v2.4_64bit.exe" : "BillFlow_Setup_v2.4_32bit.exe";
-    const downloadUrl = `/downloads/${fileName}`;
+    // Download signed v1.1.0 installer directly from GitHub Releases CDN
+    const fileName = "BillFlow_Setup_v2.4_64bit.exe";
+    const downloadUrl = `https://github.com/GopeshKachhadiya/Billflow/releases/download/v1.1.0/${fileName}`;
 
     const link = document.createElement("a");
     link.href = downloadUrl;
