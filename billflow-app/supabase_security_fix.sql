@@ -19,6 +19,7 @@ ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE SET N
 
 -- Step 2: Drop old over-permissive SELECT policy
 DROP POLICY IF EXISTS "Allow select for authenticated users" ON public.support_tickets;
+DROP POLICY IF EXISTS "Users can view their own tickets" ON public.support_tickets;
 
 -- Step 3: Create new restrictive SELECT policy
 CREATE POLICY "Users can view their own tickets" ON public.support_tickets
