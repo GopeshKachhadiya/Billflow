@@ -26,6 +26,32 @@ function stopSessionRefresh() {
 }
 
 function loadPage(pageName, params) {
+  // Authentication Guard: Prevent unauthorized navigation to protected pages
+  if (pageName !== 'login') {
+    if (!window.api || typeof window.api.isLoggedIn !== 'function') {
+      return loadPage('login');
+    }
+    window.api.isLoggedIn().then(function(loggedIn) {
+      if (!loggedIn) {
+        showSidebar(false);
+        updateTopbar('');
+        if (currentPage !== 'login') {
+          loadPage('login');
+        }
+        return;
+      }
+      _doLoadPage(pageName, params);
+    }).catch(function() {
+      showSidebar(false);
+      updateTopbar('');
+      loadPage('login');
+    });
+    return;
+  }
+  _doLoadPage(pageName, params);
+}
+
+function _doLoadPage(pageName, params) {
   if (currentPage === pageName && !params) return;
   currentPage = pageName;
 
@@ -134,7 +160,17 @@ document.addEventListener('DOMContentLoaded', function() {
   var logoWrapper = document.getElementById('topbar-logo-wrapper');
   if (logoWrapper) {
     logoWrapper.addEventListener('click', function() {
-      loadPage('dashboard');
+      if (window.api && window.api.isLoggedIn) {
+        window.api.isLoggedIn().then(function(loggedIn) {
+          if (loggedIn) {
+            loadPage('dashboard');
+          } else {
+            loadPage('login');
+          }
+        });
+      } else {
+        loadPage('login');
+      }
     });
   }
 
