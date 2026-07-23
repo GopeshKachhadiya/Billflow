@@ -97,6 +97,7 @@
       if (b.source === 'email') sourceIcon = '✉️';
       else if (b.source === 'whatsapp') sourceIcon = '💬';
       else if (b.source === 'webhook') sourceIcon = '⚡';
+      else if (b.source === 'b2b_network') sourceIcon = '🔗 Satya B2B';
 
       html += `
         <div class="inbox-card-item ${isSelected ? 'active' : ''} ${isUnread ? 'unread' : ''}" 

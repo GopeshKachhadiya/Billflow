@@ -420,6 +420,25 @@ safeHandle('db:customers:update', async function(e, a) { ensureAuthenticated(); 
 safeHandle('db:customers:delete', async function(e, a) { ensureAuthenticated(); await getModules().customers.deleteCustomer(a.id); triggerPushToCloud(); return { ok:true }; });
 safeHandle('db:customers:summary',async function(e, a) { ensureAuthenticated(); return await getModules().customers.getCustomerBillSummary(a.id); });
 
+// ── B2B NETWORK BUSINESS LOOKUP ────────────────────────────────────────────────
+safeHandle('b2b:lookupBusiness', async function(e, a) {
+  ensureAuthenticated();
+  var phone = a.phone || '';
+  if (!phone || phone.trim().length < 10) return { ok: false, error: 'Enter a valid 10-digit mobile number' };
+  
+  try {
+    var ctx = await require('./supabase/client').ensureAuthenticatedClient();
+    var res = await ctx.client.rpc('lookup_billflow_business', { search_phone: phone });
+    if (res.error) return { ok: false, error: res.error.message };
+    if (res.data && res.data.length > 0) {
+      return { ok: true, found: true, business: res.data[0] };
+    }
+    return { ok: true, found: false };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
 // ── ITEMS ─────────────────────────────────────────────────────────────────────
 safeHandle('db:items:list',   async function(e, a) { ensureAuthenticated(); return await getModules().items.listItems(a); });
 safeHandle('db:items:create', async function(e, a) { ensureAuthenticated(); var r = await getModules().items.createItem(a); triggerPushToCloud(); return r; });

@@ -185,6 +185,11 @@ DROP POLICY IF EXISTS "Users can manage their own inbox bills" ON public.inbox_b
 CREATE POLICY "Users can manage their own inbox bills" ON public.inbox_bills
     FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
 
+-- Inter-Business B2B Bill Routing: Allow sending bills to another user's inbox
+DROP POLICY IF EXISTS "Allow authenticated B2B bill delivery to inbox" ON public.inbox_bills;
+CREATE POLICY "Allow authenticated B2B bill delivery to inbox" ON public.inbox_bills
+    FOR INSERT TO authenticated WITH CHECK (true);
+
 DROP POLICY IF EXISTS "Users can manage their own expenses" ON public.expenses;
 CREATE POLICY "Users can manage their own expenses" ON public.expenses
     FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
@@ -192,4 +197,49 @@ CREATE POLICY "Users can manage their own expenses" ON public.expenses
 DROP POLICY IF EXISTS "Users can manage their own credit notes" ON public.credit_notes;
 CREATE POLICY "Users can manage their own credit notes" ON public.credit_notes
     FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
+
+-- ─── B2B NETWORK: Phone Lookup RPC Function ────────────────────────────────
+CREATE OR REPLACE FUNCTION public.lookup_billflow_business(search_phone TEXT)
+RETURNS TABLE (
+    owner_id UUID,
+    business_name TEXT,
+    phone TEXT,
+    gstin TEXT,
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    pin TEXT
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    matched_owner UUID;
+    clean_phone TEXT;
+BEGIN
+    clean_phone := RIGHT(REGEXP_REPLACE(search_phone, '\D', '', 'g'), 10);
+    IF LENGTH(clean_phone) < 10 THEN
+        RETURN;
+    END IF;
+
+    SELECT s.owner_id INTO matched_owner
+    FROM public.settings s
+    WHERE s.key IN ('business_phone', 'notify_owner_phone')
+      AND RIGHT(REGEXP_REPLACE(s.value, '\D', '', 'g'), 10) = clean_phone
+    LIMIT 1;
+
+    IF matched_owner IS NOT NULL THEN
+        RETURN QUERY
+        SELECT 
+            matched_owner AS owner_id,
+            COALESCE((SELECT value FROM public.settings WHERE settings.owner_id = matched_owner AND key = 'business_name'), 'Satya BillFlow Verified Business') AS business_name,
+            COALESCE((SELECT value FROM public.settings WHERE settings.owner_id = matched_owner AND key = 'business_phone'), search_phone) AS phone,
+            COALESCE((SELECT value FROM public.settings WHERE settings.owner_id = matched_owner AND key = 'gstin'), '') AS gstin,
+            COALESCE((SELECT value FROM public.settings WHERE settings.owner_id = matched_owner AND key = 'business_address'), '') AS address,
+            COALESCE((SELECT value FROM public.settings WHERE settings.owner_id = matched_owner AND key = 'business_city'), '') AS city,
+            COALESCE((SELECT value FROM public.settings WHERE settings.owner_id = matched_owner AND key = 'business_state'), '') AS state,
+            COALESCE((SELECT value FROM public.settings WHERE settings.owner_id = matched_owner AND key = 'business_pin'), '') AS pin;
+    END IF;
+END;
+$$;
 

@@ -63,6 +63,36 @@ window.PageControllers['customer-edit'] = {
       FormValidator.attachLiveValidation('c-phone', 'phone');
       FormValidator.attachLiveValidation('c-email', 'email');
     }
+
+    // Auto B2B Network lookup when customer mobile number is entered
+    var phoneInput = document.getElementById('c-phone');
+    if (phoneInput) {
+      phoneInput.addEventListener('blur', function() {
+        var phone = (this.value || '').trim();
+        if (phone.length >= 10 && window.api.lookupBillflowBusiness) {
+          window.api.lookupBillflowBusiness(phone).then(function(res) {
+            if (res && res.found && res.business) {
+              var b = res.business;
+              if (b.business_name && !document.getElementById('c-name').value) {
+                document.getElementById('c-name').value = b.business_name;
+              }
+              if (b.gstin && !document.getElementById('c-gstin').value) {
+                document.getElementById('c-gstin').value = b.gstin;
+              }
+              if (b.address && !document.getElementById('c-address').value) {
+                document.getElementById('c-address').value = b.address;
+              }
+              if (b.state && !document.getElementById('c-state').value) {
+                document.getElementById('c-state').value = b.state;
+              }
+              if (window.Toast) {
+                Toast.show('✓ Satya BillFlow Registered Business: ' + (b.business_name || 'Verified User'), 'success');
+              }
+            }
+          }).catch(function() {});
+        }
+      });
+    }
     
     if (self._mode === 'edit' && self._customerId) {
       document.getElementById('page-title').textContent = 'Edit Customer';

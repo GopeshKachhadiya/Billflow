@@ -183,6 +183,43 @@ async function createBill(data) {
     }
   }
 
+  // ── B2B Inter-App Routing to Recipient Inbox ──────────────────────────────
+  try {
+    var customerPhone = data.customer_phone || '';
+    if (!customerPhone && data.customer_id) {
+      var cust = await require('./customers').getCustomer(data.customer_id);
+      if (cust) customerPhone = cust.phone || '';
+    }
+    if (customerPhone && customerPhone.length >= 10) {
+      var lookupRes = await ctx.client.rpc('lookup_billflow_business', { search_phone: customerPhone });
+      if (lookupRes.data && lookupRes.data.length > 0 && lookupRes.data[0].owner_id) {
+        var recipientId = lookupRes.data[0].owner_id;
+        if (recipientId !== ctx.userId) {
+          var senderSettings = require('./settings').getAllSettings();
+          await ctx.client.from('inbox_bills').insert({
+            id: crypto.randomUUID(),
+            owner_id: recipientId,
+            sender_name: senderSettings.business_name || 'Satya BillFlow Business',
+            sender_phone: senderSettings.business_phone || senderSettings.notify_owner_phone || '',
+            sender_email: senderSettings.business_email || '',
+            sender_gstin: senderSettings.gstin || '',
+            bill_number: payload.bill_number,
+            bill_date: payload.bill_date,
+            due_date: payload.due_date,
+            amount: payload.grand_total,
+            tax_amount: (data.taxRecord ? data.taxRecord.total_tax : 0),
+            status: 'unread',
+            source: 'b2b_network',
+            notes: 'Incoming B2B Invoice from ' + (senderSettings.business_name || 'BillFlow Vendor')
+          });
+          console.log('[b2b] Successfully routed B2B bill to recipient inbox:', recipientId);
+        }
+      }
+    }
+  } catch(b2bErr) {
+    console.warn('[b2b] B2B inbox routing notice:', b2bErr.message);
+  }
+
   if (data.items && data.items.length > 0) {
     await require('./bill-items').replaceItemsForBill(newId, data.items);
   }

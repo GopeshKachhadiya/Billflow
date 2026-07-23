@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld('api', {
   updateCustomer:         function(id, d)   { return ipc('db:customers:update',  { id:id, data:d }); },
   deleteCustomer:         function(id)      { return ipc('db:customers:delete',  { id:id }); },
   getCustomerBillSummary: function(id)      { return ipc('db:customers:summary', { id:id }); },
+  lookupBillflowBusiness: function(phone)   { return ipc('b2b:lookupBusiness',   { phone:phone }); },
 
   // Items
   listItems:   function(f)       { return ipc('db:items:list',    f || {}); },
