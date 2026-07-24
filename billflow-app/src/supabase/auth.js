@@ -22,7 +22,7 @@ function isRateLimited(ipOrEmail, attemptsMap, maxAttempts, windowMs) {
   return false;
 }
 
-function saveSessionToDisk(session, user, profile) {
+function saveSessionToDisk(session, user, profile, derivedKeyHex) {
   _currentSession = session;
   _currentUser    = user;
   _currentProfile = profile;
@@ -31,10 +31,18 @@ function saveSessionToDisk(session, user, profile) {
     var dir = path.dirname(p);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     
+    var existingKey = null;
+    try {
+      var enc = require('../crypto/data-encryptor');
+      var k = enc.getKey();
+      if (k) existingKey = k.toString('hex');
+    } catch(e) {}
+
     var rawText = JSON.stringify({
       session: session,
       user: user,
       profile: profile,
+      enc_key: derivedKeyHex || existingKey || null,
       saved_at: Date.now()
     }, null, 2);
 
@@ -71,22 +79,43 @@ function loadSessionFromDisk() {
 
       var data = JSON.parse(text);
       if (data && data.session && data.user) {
-        var now = Math.floor(Date.now() / 1000);
-        if (data.session.expires_at && data.session.expires_at < now) {
-          console.log('[auth] Cached session expired on disk.');
-        } else {
-          _currentSession = data.session;
-          _currentUser    = data.user;
-          _currentProfile = data.profile || null;
-          var client = require('./client').getSupabaseClient();
-          if (client && _currentSession.access_token && _currentSession.refresh_token) {
-            client.auth.setSession({
-              access_token: _currentSession.access_token,
-              refresh_token: _currentSession.refresh_token
-            }).catch(function() {});
+        _currentSession = data.session;
+        _currentUser    = data.user;
+        _currentProfile = data.profile || null;
+
+        // Restore E2EE Key if saved
+        if (data.enc_key) {
+          try {
+            var enc = require('../crypto/data-encryptor');
+            enc.setKey(Buffer.from(data.enc_key, 'hex'));
+            console.log('[auth] E2EE encryption key restored from secure storage.');
+          } catch(err) {
+            console.error('[auth] Failed to restore E2EE key:', err.message);
           }
-          return data;
         }
+
+        // Auto-refresh Supabase token seamlessly in background
+        var client = require('./client').getSupabaseClient();
+        if (client && _currentSession.access_token && _currentSession.refresh_token) {
+          client.auth.setSession({
+            access_token: _currentSession.access_token,
+            refresh_token: _currentSession.refresh_token
+          }).then(function(res) {
+            if (res.data && res.data.session) {
+              _currentSession = res.data.session;
+              saveSessionToDisk(res.data.session, res.data.user || _currentUser, _currentProfile, data.enc_key);
+            }
+          }).catch(function() {
+            client.auth.refreshSession({ refresh_token: _currentSession.refresh_token })
+              .then(function(res) {
+                if (res.data && res.data.session) {
+                  _currentSession = res.data.session;
+                  saveSessionToDisk(res.data.session, res.data.user || _currentUser, _currentProfile, data.enc_key);
+                }
+              }).catch(function() {});
+          });
+        }
+        return data;
       }
     }
   } catch(e) {
@@ -238,10 +267,6 @@ function isLoggedIn() {
   var loaded = loadSessionFromDisk();
   if (!loaded || !loaded.session || !loaded.user) return false;
 
-  var now = Math.floor(Date.now() / 1000);
-  if (loaded.session.expires_at && loaded.session.expires_at < now) {
-    return false;
-  }
   if (loaded.profile) {
     var status = loaded.profile.status;
     if (status === 'suspended' || status === 'cancelled' || status === 'expired') return false;
