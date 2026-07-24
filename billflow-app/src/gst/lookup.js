@@ -68,24 +68,28 @@ function authenticate() {
 function saveToCloudCache(gstin, data) {
   var client = sbClient.getSupabaseClient();
   if (!client) return Promise.resolve();
+  var cleanGstin = String(gstin || '').trim().toUpperCase();
+  if (cleanGstin.length !== 15) return Promise.resolve();
 
   return client
     .from('gstin_cache')
     .upsert({
-      gstin:           gstin,
-      name:            data.name,
+      gstin:           cleanGstin,
+      name:            data.name || 'GST Registered Business',
       type:            data.type || 'Business',
       state:           data.state || '',
-      state_code:      data.state_code || '',
-      billing_address: data.billing_address || '',
-      billing_city:    data.billing_city || '',
-      billing_pin:     data.billing_pin || '',
+      state_code:      data.state_code || cleanGstin.substring(0, 2),
+      billing_address: data.billing_address || data.address || '',
+      billing_city:    data.billing_city || data.city || '',
+      billing_pin:     data.billing_pin || data.pin || '',
       status:          data.status || 'Active',
       updated_at:      new Date().toISOString()
-    })
+    }, { onConflict: 'gstin' })
     .then(function(res) {
       if (res.error) {
         console.error('[lookup] Failed to write to cloud Supabase cache:', res.error.message);
+      } else {
+        console.log('[lookup] Successfully saved GSTIN to global database:', cleanGstin);
       }
     })
     .catch(function(err) {
@@ -235,17 +239,49 @@ function fetchDetails(gstin) {
   });
 }
 
-// Bulk cache multiple GSTINs (used during imports)
+// Bulk cache multiple GSTINs (used during CSV imports)
 function cacheBulk(records) {
-  if (!records || !Array.isArray(records)) return Promise.resolve({ success: false });
+  if (!records || !Array.isArray(records)) return Promise.resolve({ success: false, count: 0 });
 
+  var validPayloads = [];
   records.forEach(function(rec) {
-    if (rec.gstin && rec.name) {
-      saveToCloudCache(rec.gstin, rec);
+    var g = String(rec.gstin || '').trim().toUpperCase();
+    if (g.length === 15) {
+      validPayloads.push({
+        gstin:           g,
+        name:            rec.name || 'GST Registered Business',
+        type:            rec.type || 'Business',
+        state:           rec.state || '',
+        state_code:      rec.state_code || g.substring(0, 2),
+        billing_address: rec.billing_address || rec.address || '',
+        billing_city:    rec.billing_city || rec.city || '',
+        billing_pin:     rec.billing_pin || rec.pin || '',
+        status:          rec.status || 'Active',
+        updated_at:      new Date().toISOString()
+      });
     }
   });
 
-  return Promise.resolve({ success: true, count: records.length });
+  if (validPayloads.length === 0) return Promise.resolve({ success: true, count: 0 });
+
+  var client = sbClient.getSupabaseClient();
+  if (!client) return Promise.resolve({ success: false, count: 0 });
+
+  return client
+    .from('gstin_cache')
+    .upsert(validPayloads, { onConflict: 'gstin' })
+    .then(function(res) {
+      if (res.error) {
+        console.error('[lookup] Bulk GSTIN cache failed:', res.error.message);
+        return { success: false, error: res.error.message };
+      }
+      console.log('[lookup] Successfully cached ' + validPayloads.length + ' GSTINs to global database!');
+      return { success: true, count: validPayloads.length };
+    })
+    .catch(function(err) {
+      console.error('[lookup] Bulk GSTIN cache exception:', err.message);
+      return { success: false, error: err.message };
+    });
 }
 
 module.exports = {

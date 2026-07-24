@@ -7,7 +7,21 @@
 -- ─── SEC-05 FIX: GSTIN Cache — Remove UPDATE policy ─────────────────────────
 -- BEFORE: Any user could overwrite ANY GSTIN record (data poisoning)
 -- AFTER:  Users can only READ and INSERT (updates require service_role/admin)
+-- ─── GSTIN CACHE RLS POLICIES ────────────────────────────────────────────────
+-- Enable shared GST master database cache across all BillFlow instances
+ALTER TABLE public.gstin_cache ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow select for authenticated users" ON public.gstin_cache;
+CREATE POLICY "Allow select for authenticated users" ON public.gstin_cache
+    FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow insert for authenticated users" ON public.gstin_cache;
+CREATE POLICY "Allow insert for authenticated users" ON public.gstin_cache
+    FOR INSERT TO authenticated WITH CHECK (true);
+
 DROP POLICY IF EXISTS "Allow update for authenticated users" ON public.gstin_cache;
+CREATE POLICY "Allow update for authenticated users" ON public.gstin_cache
+    FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
 
 -- ─── SEC-04 FIX: Support Tickets — Add owner tracking ──────────────────────
 -- BEFORE: Any authenticated user could read ALL support tickets

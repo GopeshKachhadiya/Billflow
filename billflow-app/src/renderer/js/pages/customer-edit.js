@@ -286,6 +286,18 @@ window.PageControllers['customer-edit'] = {
     }
     
     promise.then(function() {
+      // Auto-register GSTIN in global GST database cache if provided
+      if (gstin && gstin.length === 15 && window.api && window.api.cacheGSTINBulk) {
+        window.api.cacheGSTINBulk([{
+          gstin: gstin,
+          name: name,
+          type: type,
+          state: state,
+          state_code: stateCode,
+          billing_address: address,
+          status: 'Active'
+        }]).catch(function() {});
+      }
       Toast.show('Customer saved successfully', 'success');
       window.loadPage('customers-list');
     }).catch(function(err) {
