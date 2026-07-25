@@ -4,6 +4,7 @@
 module.exports = {
   appId: 'com.billflow.app',
   productName: 'Satya BillFlow',
+  artifactName: 'BillFlow_Setup_v2.4_64bit.${ext}',
   publish: [
     {
       provider: 'github',
@@ -34,7 +35,7 @@ module.exports = {
     target: [
       {
         target: 'nsis',
-        arch: ['x64', 'ia32']
+        arch: ['x64']
       }
     ]
   },
@@ -43,6 +44,7 @@ module.exports = {
     allowToChangeInstallationDirectory: true,
     createDesktopShortcut: true,
     createStartMenuShortcut: true,
-    shortcutName: 'Satya BillFlow'
+    shortcutName: 'Satya BillFlow',
+    artifactName: 'BillFlow_Setup_v2.4_64bit.exe'
   }
 };
