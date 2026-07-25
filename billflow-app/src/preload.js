@@ -104,6 +104,7 @@ contextBridge.exposeInMainWorld('api', {
     return ipc('webhook:paymentReminder', { bill:b, customer:c, items:items, taxRecord:tax, pdfBase64:pdf, channels:channels });
   },
   settingsUpdated:  function(s) { return ipc('webhook:settingsUpdated', s); },
+  testN8nWebhook:   function(url) { return ipc('n8n:testWebhook', { url: url }); },
   openExternal:     function(url) { return ipc('shell:openExternal', { url:url }); },
   
   // Local WhatsApp

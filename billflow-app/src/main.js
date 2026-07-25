@@ -584,6 +584,9 @@ ipcMain.handle('webhook:settingsUpdated', function(e, a) {
   getModules().webhooks.settingsUpdated(a);
   return { ok: true };
 });
+ipcMain.handle('n8n:testWebhook', function(e, a) {
+  return getModules().webhooks.testWebhook(a.url);
+});
 
 ipcMain.handle('shell:openExternal', function(e, a) {
   if (a.url && (a.url.startsWith('http://') || a.url.startsWith('https://') || a.url.startsWith('whatsapp://'))) {
