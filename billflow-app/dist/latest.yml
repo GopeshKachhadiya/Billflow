@@ -1,0 +1,8 @@
+version: 2.4.0
+files:
+  - url: billflow-Setup-2.4.0.exe
+    sha512: JHO2VOOb5tItVMy0iWGKBUC0YSkkfiUxJ1cgn52544SL2YeS6GoUv7JlfRl5sf7e/j5xj9Vaw1n351tEEHbNyA==
+    size: 82256525
+path: billflow-Setup-2.4.0.exe
+sha512: JHO2VOOb5tItVMy0iWGKBUC0YSkkfiUxJ1cgn52544SL2YeS6GoUv7JlfRl5sf7e/j5xj9Vaw1n351tEEHbNyA==
+releaseDate: '2026-07-25T05:15:31.957Z'

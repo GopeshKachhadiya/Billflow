@@ -1,4 +1,7 @@
 node_modules/
-dist/
 .env
 build/*.pfx
+dist/win-unpacked/
+dist/.icon-ico/
+dist/.cache/
+dist/builder-debug.yml
