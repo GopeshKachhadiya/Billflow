@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Download, 
   ShieldCheck, 
@@ -19,16 +19,44 @@ export function DownloadPage() {
   const [arch, setArch] = useState("64");
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [latestRelease, setLatestRelease] = useState({
+    version: "2.4.0",
+    downloadUrl: "https://github.com/GopeshKachhadiya/Billflow/releases/latest",
+    fileName: "BillFlow_Setup_v2.4_64bit.exe"
+  });
+
+  useEffect(() => {
+    fetch("https://api.github.com/repos/GopeshKachhadiya/Billflow/releases/latest")
+      .then((res) => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.assets && data.assets.length > 0) {
+          const exeAsset = data.assets.find((a) => a.name.endsWith(".exe")) || data.assets[0];
+          if (exeAsset) {
+            setLatestRelease({
+              version: data.tag_name ? data.tag_name.replace(/^v/, "") : "2.4.0",
+              downloadUrl: exeAsset.browser_download_url,
+              fileName: exeAsset.name
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch latest release from GitHub API:", err);
+      });
+  }, []);
 
   const handleDownload = () => {
     setDownloading(true);
     
-    // Download signed v1.1.0 installer directly from GitHub Releases CDN
-    const fileName = "BillFlow_Setup_v2.4_64bit.exe";
-    const downloadUrl = `https://github.com/GopeshKachhadiya/Billflow/releases/download/v1.1.0/${fileName}`;
+    const downloadUrl = latestRelease.downloadUrl || "https://github.com/GopeshKachhadiya/Billflow/releases/latest";
+    const fileName = latestRelease.fileName || `BillFlow_Setup_${arch}bit.exe`;
 
     const link = document.createElement("a");
     link.href = downloadUrl;
+    link.target = "_blank";
     link.setAttribute("download", fileName);
     document.body.appendChild(link);
     link.click();
@@ -80,7 +108,7 @@ export function DownloadPage() {
         <div className="section-container max-w-4xl mx-auto">
           <div className="paper-card p-8 sm:p-12 rounded-paper-xl bg-gradient-to-br from-surface via-background to-surface border-2 border-fountain shadow-paper-xl relative overflow-hidden">
             <div className="absolute top-4 right-4 stamp-badge stamp-badge-green text-xs">
-              ✦ VERSION 2.4.1 (STABLE)
+              ✦ VERSION {latestRelease.version} (STABLE)
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 items-center">
@@ -132,7 +160,7 @@ export function DownloadPage() {
                   className="w-full py-4 rounded-paper bg-fountain text-white font-serif font-bold text-base shadow-lg hover:bg-fountain-light transition-all flex items-center justify-center gap-3"
                 >
                   {downloading ? (
-                    <span>Downloading BillFlow_{arch}bit.exe...</span>
+                    <span>Downloading {latestRelease.fileName || `BillFlow_Setup_${arch}bit.exe`}...</span>
                   ) : downloaded ? (
                     <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5" /> Download Started! Check Downloads Folder</span>
                   ) : (
@@ -152,7 +180,7 @@ export function DownloadPage() {
                 <div className="space-y-2 text-text-secondary">
                   <div className="flex justify-between">
                     <span>File Name:</span>
-                    <span className="font-mono text-text-primary">BillFlow_Setup_v2.4_{arch}bit.exe</span>
+                    <span className="font-mono text-text-primary">{latestRelease.fileName || `BillFlow_Setup_v${latestRelease.version}_${arch}bit.exe`}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>File Size:</span>
