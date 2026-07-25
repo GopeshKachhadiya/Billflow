@@ -13,7 +13,8 @@ window.switchSettingsTab = function(evt, tabId) {
   }
   var target = document.getElementById(tabId);
   if (target) target.style.display = "block";
-  var btn = (evt && (evt.currentTarget || evt.target)) ? (evt.currentTarget || evt.target).closest('.tab-link') : null;
+  var elem = evt && (evt.currentTarget || evt.target);
+  var btn = (elem && typeof elem.closest === 'function') ? elem.closest('.tab-link') : null;
   if (!btn && tabId) {
     btn = document.querySelector('.tab-link[data-tab="' + tabId + '"]');
   }

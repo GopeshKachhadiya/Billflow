@@ -365,6 +365,7 @@ window.PageControllers['reports'] = {
       });
       
       var tbody = document.getElementById('overdue-tbody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       
       if (self._overdueBills.length === 0) {
