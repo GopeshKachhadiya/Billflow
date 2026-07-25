@@ -1,32 +1,32 @@
 <div class="bill-edit-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-  <h1 id="page-title">New Invoice</h1>
+  <h1 id="page-title" data-i18n="bill_details">New Invoice</h1>
   <div style="display: flex; gap: 12px; align-items: center;">
-    <button id="btn-cancel" class="btn">Cancel</button>
-    <button id="btn-save-draft" class="btn">Save Draft</button>
-    <button id="btn-send-whatsapp" class="btn" style="background-color: #25D366; color: white; border-color: #25D366;">Send (WhatsApp)</button>
-    <button id="btn-print-send" class="btn btn-primary">Print & Send</button>
+    <button id="btn-cancel" class="btn" data-i18n="btn_cancel">Cancel</button>
+    <button id="btn-save-draft" class="btn" data-i18n="btn_save">Save Draft</button>
+    <button id="btn-send-whatsapp" class="btn" style="background-color: #25D366; color: white; border-color: #25D366;" data-i18n="btn_whatsapp">Send (WhatsApp)</button>
+    <button id="btn-print-send" class="btn btn-primary" data-i18n="btn_print">Print & Send</button>
   </div>
 </div>
 
 <div class="card" style="margin-bottom: 24px;">
   <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
     <div class="form-group">
-      <label>Invoice Number *</label>
+      <label data-i18n="invoice_no">Invoice Number *</label>
       <input type="text" id="bill-number" placeholder="e.g. INV-2026-0001">
     </div>
     <div class="form-group">
-      <label>Invoice Date *</label>
+      <label data-i18n="bill_date">Invoice Date *</label>
       <input type="date" id="bill-date">
     </div>
     <div class="form-group">
-      <label>Due Date</label>
+      <label data-i18n="due_date">Due Date</label>
       <input type="date" id="due-date">
     </div>
     <div class="form-group">
-      <label>Customer *</label>
+      <label data-i18n="customer">Customer *</label>
       <div style="display: flex; gap: 8px;">
         <select id="bill-customer-select" style="flex: 1;">
-          <option value="">Select a customer...</option>
+          <option value="" data-i18n="select_customer">Select a customer...</option>
         </select>
         <button id="btn-new-customer" class="btn" style="padding: 0 12px; font-weight: bold;">+</button>
       </div>
@@ -35,7 +35,7 @@
 
   <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 16px; margin-top: 16px;">
     <div>
-      <span style="font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase;">Selected Customer: </span>
+      <span style="font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase;" data-i18n="customer_details">Selected Customer: </span>
       <span id="customer-display" style="font-weight: 600;">No customer selected</span>
     </div>
     <div>
@@ -64,11 +64,11 @@
         <input type="number" id="due-days" placeholder="e.g. 24">
       </div>
       <div class="form-group">
-        <label>Party Name</label>
+        <label data-i18n="customer_name">Party Name</label>
         <input type="text" id="party-name" placeholder="e.g. Rajesh Sharma">
       </div>
       <div class="form-group">
-        <label>Party Phone</label>
+        <label data-i18n="phone">Party Phone</label>
         <input type="text" id="party-phone" placeholder="e.g. 9876543210">
       </div>
     </div>
@@ -81,15 +81,15 @@
         <input type="text" id="consignee-name" placeholder="Leave blank to default to Billed To">
       </div>
       <div class="form-group">
-        <label>Consignee Address</label>
+        <label data-i18n="address">Consignee Address</label>
         <textarea id="consignee-address" rows="2" placeholder="Leave blank to default to Billed To" style="width: 100%; border: 1px solid var(--color-border); border-radius: 4px; padding: 8px; font-family: inherit; font-size: inherit;"></textarea>
       </div>
       <div class="form-group">
-        <label>Consignee GSTIN</label>
+        <label data-i18n="gstin">Consignee GSTIN</label>
         <input type="text" id="consignee-gstin" placeholder="Leave blank to default to Billed To">
       </div>
       <div class="form-group">
-        <label>Consignee State</label>
+        <label data-i18n="state">Consignee State</label>
         <input type="text" id="consignee-state" placeholder="e.g. 24-GUJARAT">
       </div>
     </div>
@@ -153,20 +153,20 @@
     <table style="margin-bottom: 0;">
       <thead>
         <tr>
-          <th>Description</th>
-          <th style="width: 80px;">HSN/SAC</th>
+          <th data-i18n="item_name">Description</th>
+          <th style="width: 80px;" data-i18n="hsn_sac">HSN/SAC</th>
           <th style="width: 90px;">Lot No</th>
           <th style="width: 80px;">Grade</th>
           <th style="width: 70px;">Cartons</th>
-          <th style="width: 85px;">Weight</th>
-          <th style="width: 70px;">Unit</th>
-          <th style="width: 90px;">Rate</th>
+          <th style="width: 85px;" data-i18n="quantity">Weight</th>
+          <th style="width: 70px;" data-i18n="unit">Unit</th>
+          <th style="width: 90px;" data-i18n="rate">Rate</th>
           <th style="width: 60px;">Disc%</th>
-          <th style="width: 85px;">GST Rate</th>
-          <th style="width: 80px; text-align: right;" id="th-cgst">CGST</th>
-          <th style="width: 80px; text-align: right;" id="th-sgst">SGST</th>
-          <th style="width: 80px; text-align: right;" id="th-igst" style="display: none;">IGST</th>
-          <th style="width: 90px; text-align: right;">Total</th>
+          <th style="width: 85px;" data-i18n="tax_rate">GST Rate</th>
+          <th style="width: 80px; text-align: right;" id="th-cgst" data-i18n="cgst">CGST</th>
+          <th style="width: 80px; text-align: right;" id="th-sgst" data-i18n="sgst">SGST</th>
+          <th style="width: 80px; text-align: right;" id="th-igst" style="display: none;" data-i18n="igst">IGST</th>
+          <th style="width: 90px; text-align: right;" data-i18n="total">Total</th>
           <th style="width: 40px; text-align: center;"></th>
         </tr>
       </thead>
@@ -176,7 +176,7 @@
     </table>
   </div>
   <div style="padding: 16px; border-top: 1px solid var(--color-border); background: #F9FAFB;">
-    <button id="btn-add-item" class="btn">+ Add Item Row</button>
+    <button id="btn-add-item" class="btn" data-i18n="add_item">+ Add Item Row</button>
   </div>
 </div>
 

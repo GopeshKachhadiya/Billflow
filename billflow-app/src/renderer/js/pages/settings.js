@@ -220,11 +220,28 @@ window.PageControllers['settings'] = {
         setToggle('s-notify-daily-summary',  'notify_daily_summary');
         setToggle('s-notify-weekly-report',  'notify_weekly_report');
         setToggle('s-notify-monthly-gst',    'notify_monthly_gst');
+
+        var langEls = document.querySelectorAll('[id="s-app_language"]');
+        if (window.i18n) {
+          for (var l1 = 0; l1 < langEls.length; l1++) {
+            langEls[l1].value = window.i18n.getLanguage();
+          }
+        }
         return s;
       });
     };
 
     self.populateFields();
+
+    var langEls = document.querySelectorAll('[id="s-app_language"]');
+    if (window.i18n) {
+      for (var l2 = 0; l2 < langEls.length; l2++) {
+        langEls[l2].value = window.i18n.getLanguage();
+        langEls[l2].addEventListener('change', function(e) {
+          window.i18n.setLanguage(e.target.value);
+        });
+      }
+    }
 
     // Attach live validation on blur for key fields
     if (window.FormValidator) {
@@ -275,7 +292,7 @@ window.PageControllers['settings'] = {
                   'wati_api_url','wati_api_token','msg91_auth_key','msg91_sender_id',
                   'logo_data', 'signature_data',
                   'business_phone', 'business_email', 'business_udyam',
-                  'business_category', 'business_status', 'upi_id'];
+                  'business_category', 'business_status', 'upi_id', 'app_language'];
     var toggles = [
       { el: 's-wati-enabled',         key: 'wati_enabled' },
       { el: 's-sms-enabled',          key: 'sms_enabled' },

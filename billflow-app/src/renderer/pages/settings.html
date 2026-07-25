@@ -1,14 +1,15 @@
 <div class="settings-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-  <h1>Settings</h1>
-  <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
+  <h1 data-i18n="settings_title">Settings</h1>
+  <button id="btn-save-settings" class="btn btn-primary" data-i18n="save_settings">Save Settings</button>
 </div>
 
 <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
   <!-- Tab navigation -->
   <div class="tab-nav" style="display: flex; border-bottom: 1px solid var(--color-border); background: #F9FAFB;">
-    <button class="tab-link active" data-tab="tab-business" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;">Business Profile</button>
-    <button class="tab-link" data-tab="tab-template" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Bill Template</button>
-    <button class="tab-link" data-tab="tab-integrations" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Integrations</button>
+    <button class="tab-link active" data-tab="tab-business" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;" data-i18n="tab_business">Business Profile</button>
+    <button class="tab-link" data-tab="tab-template" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;" data-i18n="tab_template">Bill Template</button>
+    <button class="tab-link" data-tab="tab-integrations" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;" data-i18n="tab_integrations">Integrations</button>
+    <button class="tab-link" data-tab="tab-language" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;" data-i18n="tab_language">Language Preference</button>
   </div>
 
   <!-- Tab Content -->
@@ -18,11 +19,19 @@
     <div id="tab-business" class="settings-tab-pane" style="display: block;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         <div class="form-group">
-          <label>Business Name *</label>
+          <label style="font-weight: 600;" data-i18n="app_language_setting">App Display Language</label>
+          <select id="s-app_language" class="lang-select" style="width: 100%; padding: 8px 12px; font-size: 13px; height: 38px;">
+            <option value="en">English (English)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="gu">ગુજરાતી (Gujarati)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="business_name">Business Name *</label>
           <input type="text" id="s-business_name" placeholder="e.g. Acme Corporation">
         </div>
         <div class="form-group">
-          <label>Business Mobile / Phone *</label>
+          <label data-i18n="business_phone">Business Mobile / Phone *</label>
           <input type="tel" id="s-business_phone" placeholder="e.g. 9876543210">
         </div>
         <div class="form-group">
@@ -285,6 +294,25 @@
         <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
           <input type="checkbox" id="s-notify-monthly-gst" style="width: auto;">
           <label for="s-notify-monthly-gst" style="margin-bottom: 0; cursor: pointer;">Receive Monthly GST Aggregate Summary</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Language Preference -->
+    <div id="tab-language" class="settings-tab-pane" style="display: none;">
+      <h3 style="margin-bottom: 16px; font-size: 15px;" data-i18n="tab_language">Language Preference</h3>
+      <p style="color: var(--color-text-muted); font-size: 13px; margin-bottom: 20px;">
+        Choose your preferred interface language. (Note: Bills & Invoices remain in English for GST compliance).
+      </p>
+
+      <div style="max-width: 400px;">
+        <div class="form-group">
+          <label style="font-weight: 600;" data-i18n="app_language_setting">App Display Language</label>
+          <select id="s-app_language" class="lang-select" style="width: 100%; padding: 10px 14px; font-size: 14px; height: auto;">
+            <option value="en">English (English)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="gu">ગુજરાતી (Gujarati)</option>
+          </select>
         </div>
       </div>
     </div>

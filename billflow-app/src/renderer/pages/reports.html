@@ -1,14 +1,14 @@
 <div class="reports-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-  <h1>Reports & Analytics</h1>
+  <h1 data-i18n="reports_title">Reports & Analytics</h1>
 </div>
 
 <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
   <!-- Tab navigation -->
   <div class="tab-nav" style="display: flex; border-bottom: 1px solid var(--color-border); background: #F9FAFB;">
-    <button class="tab-link active" data-tab="tab-revenue" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;">Revenue Report</button>
-    <button class="tab-link" data-tab="tab-gst" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">GST Tax Collected</button>
-    <button class="tab-link" data-tab="tab-ledger" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Customer Ledger</button>
-    <button class="tab-link" data-tab="tab-overdue" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">Overdue & Ageing</button>
+    <button class="tab-link active" data-tab="tab-revenue" style="padding: 14px 20px; font-weight: 600; border: none; background: none; border-bottom: 2px solid var(--color-primary); color: var(--color-primary); cursor: pointer;" data-i18n="sales_report">Revenue Report</button>
+    <button class="tab-link" data-tab="tab-gst" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;" data-i18n="tax_summary">GST Tax Collected</button>
+    <button class="tab-link" data-tab="tab-ledger" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;" data-i18n="nav_customers">Customer Ledger</button>
+    <button class="tab-link" data-tab="tab-overdue" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;" data-i18n="status_overdue">Overdue & Ageing</button>
   </div>
 
   <!-- Tab Content Container -->
@@ -18,33 +18,33 @@
     <div id="tab-revenue" class="reports-tab-pane" style="display: block;">
       <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-end; flex-wrap: wrap;">
         <div class="form-group" style="margin-bottom: 0; width: 150px;">
-          <label>From Date</label>
+          <label data-i18n="date">From Date</label>
           <input type="date" id="rev-from">
         </div>
         <div class="form-group" style="margin-bottom: 0; width: 150px;">
-          <label>To Date</label>
+          <label data-i18n="due_date">To Date</label>
           <input type="date" id="rev-to">
         </div>
-        <button id="btn-rev-filter" class="btn btn-primary">Run Report</button>
-        <button id="btn-rev-csv" class="btn">Export CSV</button>
+        <button id="btn-rev-filter" class="btn btn-primary" data-i18n="btn_filter">Run Report</button>
+        <button id="btn-rev-csv" class="btn" data-i18n="btn_export">Export CSV</button>
       </div>
 
       <!-- Stats Summary -->
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
         <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
-          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Invoices Count</div>
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;" data-i18n="bills_title">Invoices Count</div>
           <div id="rev-stat-count" style="font-size: 20px; font-weight: 700;">0</div>
         </div>
         <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
-          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Billed</div>
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;" data-i18n="total_amount">Total Billed</div>
           <div id="rev-stat-total" style="font-size: 20px; font-weight: 700; color: var(--color-primary);">₹0.00</div>
         </div>
         <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
-          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Total Paid</div>
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;" data-i18n="total_revenue">Total Paid</div>
           <div id="rev-stat-paid" style="font-size: 20px; font-weight: 700; color: var(--color-success);">₹0.00</div>
         </div>
         <div style="background: #F9FAFB; padding: 16px; border-radius: 6px; border: 1px solid var(--color-border);">
-          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Outstanding</div>
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;" data-i18n="outstanding_bills">Outstanding</div>
           <div id="rev-stat-unpaid" style="font-size: 20px; font-weight: 700; color: var(--color-warning);">₹0.00</div>
         </div>
       </div>
@@ -53,11 +53,11 @@
         <table>
           <thead>
             <tr>
-              <th>Bill No</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th style="text-align: right;">Amount</th>
-              <th style="text-align: right;">Paid</th>
+              <th data-i18n="invoice_no">Bill No</th>
+              <th data-i18n="customer">Customer</th>
+              <th data-i18n="date">Date</th>
+              <th style="text-align: right;" data-i18n="amount">Amount</th>
+              <th style="text-align: right;" data-i18n="status_paid">Paid</th>
               <th style="text-align: right;">Outstanding</th>
               <th>Status</th>
             </tr>

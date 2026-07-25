@@ -89,6 +89,9 @@ function _doLoadPage(pageName, params) {
 function renderPage(pageName, html, params) {
   var content = document.getElementById('content');
   content.innerHTML = html;
+  if (window.i18n) {
+    window.i18n.applyTranslations(content);
+  }
   window._pageParams = params || {};
 
   function triggerInit() {
@@ -134,6 +137,17 @@ function updateTopbar(email) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  if (window.i18n) {
+    window.i18n.init();
+  }
+
+  var langSelect = document.getElementById('topbar-lang-select');
+  if (langSelect && window.i18n) {
+    langSelect.value = window.i18n.getLanguage();
+    langSelect.addEventListener('change', function(e) {
+      window.i18n.setLanguage(e.target.value);
+    });
+  }
   // Global Event Delegation for [data-page] and [data-tab] navigation links and buttons
   document.addEventListener('click', function(e) {
     var pageTarget = e.target.closest ? e.target.closest('[data-page]') : null;

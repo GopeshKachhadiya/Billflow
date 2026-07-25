@@ -2,11 +2,11 @@
   <!-- Header Bar -->
   <div style="display: flex; justify-content: space-between; align-items: center; background-color: var(--color-surface); padding: 16px 20px; border-radius: 8px; border: 1px solid var(--color-border); box-shadow: var(--shadow-paper);">
     <div>
-      <h1 style="font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--color-primary); margin-bottom: 2px;">Incoming Bills Inbox</h1>
+      <h1 style="font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--color-primary); margin-bottom: 2px;" data-i18n="inbox_title">Incoming Bills Inbox</h1>
       <p style="font-size: 12px; color: var(--color-text-muted);">Central repository for supplier invoices, client receipts, and vendor dispatches from Email, WhatsApp, or Webhooks.</p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
-      <button id="btn-receive-bill" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px;">
+      <button id="btn-receive-bill" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px;" data-i18n="btn_add">
         <span style="font-size: 16px;">📥</span> + Receive / Log Bill
       </button>
     </div>
@@ -23,7 +23,7 @@
       <button class="btn btn-sm tab-filter" data-status="rejected">Rejected</button>
     </div>
     <div style="display: flex; gap: 8px; flex: 1; max-width: 320px;">
-      <input type="text" id="inbox-search-input" placeholder="Search by vendor, bill #, email..." style="width: 100%; padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px; background-color: #fff; color: var(--color-text);" />
+      <input type="text" id="inbox-search-input" placeholder="Search by vendor, bill #, email..." data-i18n-placeholder="search_inbox_ph" style="width: 100%; padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 13px; background-color: #fff; color: var(--color-text);" />
     </div>
   </div>
 
@@ -32,11 +32,11 @@
     <!-- Left Master List (40% width) -->
     <div style="width: 40%; background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-paper);">
       <div style="padding: 10px 14px; background-color: var(--color-surface-elevated); border-bottom: 1px solid var(--color-border); font-weight: 600; font-size: 12px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between;">
-        <span>INBOX MESSAGES</span>
+        <span data-i18n="nav_inbox">INBOX MESSAGES</span>
         <span id="inbox-total-count">0 items</span>
       </div>
       <div id="inbox-master-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
-        <div style="padding: 40px 20px; text-align: center; color: var(--color-text-muted); font-size: 13px;">Loading incoming bills...</div>
+        <div style="padding: 40px 20px; text-align: center; color: var(--color-text-muted); font-size: 13px;" data-i18n="loading">Loading incoming bills...</div>
       </div>
     </div>
 

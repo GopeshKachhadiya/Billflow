@@ -1,17 +1,17 @@
 <div class="catalog-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-  <h1>Items Catalog</h1>
-  <button id="btn-add-item" class="btn btn-primary">+ Add Item</button>
+  <h1 data-i18n="catalog_title">Items Catalog</h1>
+  <button id="btn-add-item" class="btn btn-primary" data-i18n="new_item">+ Add Item</button>
 </div>
 
 <!-- Filter and Search -->
 <div class="card" style="padding: 16px; margin-bottom: 20px;">
   <div style="display: flex; gap: 16px; align-items: center;">
     <div style="flex: 1;">
-      <input type="text" id="catalog-search" placeholder="Search by name or HSN/SAC..." style="width: 100%;">
+      <input type="text" id="catalog-search" placeholder="Search by name or HSN/SAC..." data-i18n-placeholder="search_items_ph" style="width: 100%;">
     </div>
     <div style="width: 150px;">
       <select id="catalog-filter-active">
-        <option value="all">All Items</option>
+        <option value="all" data-i18n="total_items">All Items</option>
         <option value="active" selected>Active Only</option>
         <option value="inactive">Inactive Only</option>
       </select>
@@ -25,14 +25,14 @@
     <table style="margin-bottom: 0;">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th>HSN/SAC</th>
-          <th>Unit</th>
-          <th style="text-align: right;">Unit Price</th>
-          <th style="text-align: right;">GST Rate</th>
-          <th style="text-align: center;">Status</th>
-          <th style="text-align: right; width: 120px;">Actions</th>
+          <th data-i18n="item_name">Name</th>
+          <th data-i18n="notes">Description</th>
+          <th data-i18n="hsn_sac">HSN/SAC</th>
+          <th data-i18n="unit">Unit</th>
+          <th style="text-align: right;" data-i18n="unit_price">Unit Price</th>
+          <th style="text-align: right;" data-i18n="tax_rate">GST Rate</th>
+          <th style="text-align: center;" data-i18n="status">Status</th>
+          <th style="text-align: right; width: 120px;" data-i18n="btn_actions">Actions</th>
         </tr>
       </thead>
       <tbody id="catalog-tbody">
@@ -45,27 +45,27 @@
 <!-- Modal for Create/Edit Item -->
 <div id="item-modal" class="modal-overlay" style="display: none;">
   <div class="modal-box" style="width: 480px; text-align: left;">
-    <h2 id="modal-title" style="margin-bottom: 20px; font-size: 16px; font-weight: 700; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">Add New Item</h2>
+    <h2 id="modal-title" style="margin-bottom: 20px; font-size: 16px; font-weight: 700; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;" data-i18n="new_item">Add New Item</h2>
     
     <input type="hidden" id="m-item-id">
     
     <div class="form-group">
-      <label>Item Name *</label>
+      <label data-i18n="item_name">Item Name *</label>
       <input type="text" id="m-item-name" placeholder="e.g. Wireless Mouse">
     </div>
     
     <div class="form-group">
-      <label>Description</label>
+      <label data-i18n="notes">Description</label>
       <textarea id="m-item-desc" rows="2" placeholder="e.g. USB Wireless Mouse 2.4Ghz"></textarea>
     </div>
     
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
       <div class="form-group">
-        <label>HSN/SAC</label>
+        <label data-i18n="hsn_sac">HSN/SAC</label>
         <input type="text" id="m-item-hsn" placeholder="e.g. 8471">
       </div>
       <div class="form-group">
-        <label>Unit</label>
+        <label data-i18n="unit">Unit</label>
         <select id="m-item-unit">
           <option value="Nos" selected>Nos (Numbers)</option>
           <option value="Kg">Kg (Kilograms)</option>
@@ -79,11 +79,11 @@
     
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
       <div class="form-group">
-        <label>Unit Price (Excl. GST) *</label>
+        <label data-i18n="unit_price">Unit Price (Excl. GST) *</label>
         <input type="number" id="m-item-price" step="any" value="0.00">
       </div>
       <div class="form-group">
-        <label>GST Rate (%) *</label>
+        <label data-i18n="tax_rate">GST Rate (%) *</label>
         <select id="m-item-gst">
           <option value="0">0%</option>
           <option value="5">5%</option>
@@ -93,7 +93,7 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Selling Price (Incl. GST)</label>
+        <label data-i18n="total">Selling Price (Incl. GST)</label>
         <input type="number" id="m-item-price-incl" step="any" value="0.00">
       </div>
     </div>
@@ -104,8 +104,8 @@
     </div>
     
     <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 16px;">
-      <button id="btn-modal-cancel" class="btn">Cancel</button>
-      <button id="btn-modal-save" class="btn btn-primary">Save Item</button>
+      <button id="btn-modal-cancel" class="btn" data-i18n="btn_cancel">Cancel</button>
+      <button id="btn-modal-save" class="btn btn-primary" data-i18n="btn_save">Save Item</button>
     </div>
   </div>
 </div>

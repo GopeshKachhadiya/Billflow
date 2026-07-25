@@ -1,8 +1,8 @@
 <div class="bills-list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-  <h1>Bills</h1>
+  <h1 data-i18n="bills_title">Bills</h1>
   <div style="display: flex; gap: 12px;">
-    <button id="btn-import-bills" class="btn">Import Bills</button>
-    <button id="btn-new-bill" class="btn btn-primary">+ New Bill</button>
+    <button id="btn-import-bills" class="btn" data-i18n="btn_import">Import Bills</button>
+    <button id="btn-new-bill" class="btn btn-primary" data-i18n="new_bill">+ New Bill</button>
   </div>
 </div>
 
@@ -10,30 +10,30 @@
 <div class="card" style="padding: 16px; margin-bottom: 20px;">
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: end;">
     <div class="form-group" style="margin-bottom: 0;">
-      <label for="filter-search">Search Bill No / Customer</label>
-      <input type="text" id="filter-search" placeholder="Search...">
+      <label for="filter-search" data-i18n="search_bills_ph">Search Bill No / Customer</label>
+      <input type="text" id="filter-search" placeholder="Search..." data-i18n-placeholder="search_bills_ph">
     </div>
     <div class="form-group" style="margin-bottom: 0;">
-      <label for="filter-status">Status</label>
+      <label for="filter-status" data-i18n="status">Status</label>
       <select id="filter-status">
-        <option value="all">All Statuses</option>
+        <option value="all" data-i18n="all_statuses">All Statuses</option>
         <option value="draft">Draft</option>
         <option value="sent">Sent</option>
-        <option value="paid">Paid</option>
-        <option value="overdue">Overdue</option>
-        <option value="cancelled">Cancelled</option>
+        <option value="paid" data-i18n="status_paid">Paid</option>
+        <option value="overdue" data-i18n="status_overdue">Overdue</option>
+        <option value="cancelled" data-i18n="status_cancelled">Cancelled</option>
       </select>
     </div>
     <div class="form-group" style="margin-bottom: 0;">
-      <label for="filter-date-from">Date From</label>
+      <label for="filter-date-from" data-i18n="date">Date From</label>
       <input type="date" id="filter-date-from">
     </div>
     <div class="form-group" style="margin-bottom: 0;">
-      <label for="filter-date-to">Date To</label>
+      <label for="filter-date-to" data-i18n="due_date">Date To</label>
       <input type="date" id="filter-date-to">
     </div>
     <div style="text-align: right;">
-      <button id="btn-export-csv" class="btn" style="width: 100%;">Export CSV</button>
+      <button id="btn-export-csv" class="btn" style="width: 100%;" data-i18n="btn_export">Export CSV</button>
     </div>
   </div>
 </div>
@@ -44,13 +44,13 @@
     <table>
       <thead>
         <tr>
-          <th>Bill Number</th>
-          <th>Customer</th>
-          <th>Bill Date</th>
-          <th>Due Date</th>
-          <th>Grand Total</th>
-          <th>Status</th>
-          <th style="text-align: right; padding-right: 24px;">Actions</th>
+          <th data-i18n="invoice_no">Bill Number</th>
+          <th data-i18n="customer">Customer</th>
+          <th data-i18n="bill_date">Bill Date</th>
+          <th data-i18n="due_date">Due Date</th>
+          <th data-i18n="total_amount">Grand Total</th>
+          <th data-i18n="status">Status</th>
+          <th style="text-align: right; padding-right: 24px;" data-i18n="btn_actions">Actions</th>
         </tr>
       </thead>
       <tbody id="bills-table-body">
