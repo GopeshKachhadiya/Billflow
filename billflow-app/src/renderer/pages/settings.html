@@ -10,6 +10,7 @@
     <button class="tab-link" data-tab="tab-template" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;" data-i18n="tab_template">Bill Template</button>
     <button class="tab-link" data-tab="tab-integrations" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;" data-i18n="tab_integrations">Integrations</button>
     <button class="tab-link" data-tab="tab-language" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;" data-i18n="tab_language">Language Preference</button>
+    <button class="tab-link" data-tab="tab-updates" style="padding: 14px 20px; font-weight: 500; border: none; background: none; color: var(--color-text-muted); cursor: pointer;">App Updates & About</button>
   </div>
 
   <!-- Tab Content -->
@@ -315,6 +316,53 @@
           </select>
         </div>
       </div>
+    <!-- Tab 5: App Updates & About -->
+    <div id="tab-updates" class="settings-tab-pane" style="display: none;">
+      <h3 style="margin-bottom: 16px; font-size: 15px;">App Updates & Software Information</h3>
+      <p style="color: var(--color-text-muted); font-size: 13px; margin-bottom: 20px;">
+        Satya BillFlow automatically checks for over-the-air (OTA) updates on startup via GitHub Releases. You can also manually check for updates here.
+      </p>
+
+      <div style="background: #F9FAFB; border: 1px solid var(--color-border); border-radius: 8px; padding: 20px; max-width: 600px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--color-text-main);">Satya BillFlow</div>
+            <div style="font-size: 13px; color: var(--color-text-muted); margin-top: 2px;">
+              Current Installed Version: <strong id="app-current-version" style="color: var(--color-primary);">v2.4.0</strong>
+            </div>
+          </div>
+          <div>
+            <button type="button" id="btn-check-updates" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px;">
+              <span>🔄</span> <span>Check for Updates</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="update-status-box" style="padding: 12px 16px; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 6px; font-size: 13px;">
+          <div id="update-status-text" style="font-weight: 500; color: var(--color-text-main);">
+            Status: Ready to check for software updates.
+          </div>
+          <div id="update-progress-container" style="display: none; margin-top: 10px;">
+            <div style="background: #E5E7EB; border-radius: 4px; height: 8px; overflow: hidden; width: 100%;">
+              <div id="update-progress-bar" style="background: #2563EB; height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+            </div>
+            <div id="update-progress-text" style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px; text-align: right;">0%</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <button type="button" id="btn-restart-install" class="btn btn-success" style="display: none; width: 100%; padding: 12px; font-weight: 700; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer;">
+            🚀 Restart Satya BillFlow & Apply Update Now
+          </button>
+        </div>
+      </div>
+
+      <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--color-text-main);">Auto-Update System Architecture</h4>
+      <ul style="font-size: 13px; color: var(--color-text-muted); line-height: 1.6; padding-left: 20px; max-width: 600px;">
+        <li><strong>Provider:</strong> GitHub Releases (<code>GopeshKachhadiya/Billflow</code>)</li>
+        <li><strong>Background Updates:</strong> Automatically downloads in background when a new version tag &amp; <code>latest.yml</code> are published.</li>
+        <li><strong>Data Protection:</strong> Local SQLite database and Supabase cloud sync remain 100% intact during updates.</li>
+      </ul>
     </div>
 
   </div>

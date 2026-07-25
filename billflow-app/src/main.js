@@ -619,32 +619,44 @@ ipcMain.handle('wa:sendBill', function(e, a) {
 });
 
 // ── OTA AUTO-UPDATER ─────────────────────────────────────────────────────────
+autoUpdater.logger = console;
+
+function sendToWindow(channel, data) {
+  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+    mainWindow.webContents.send(channel, data);
+  }
+}
+
 function setupAutoUpdater() {
   autoUpdater.on('checking-for-update', function() {
-    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'checking', message: 'Checking for OTA updates...' });
+    sendToWindow('updater:status', { status: 'checking', message: 'Checking for OTA updates...' });
   });
 
   autoUpdater.on('update-available', function(info) {
-    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'available', info: info, message: 'New update (v' + (info && info.version) + ') available! Downloading in background...' });
+    sendToWindow('updater:status', { status: 'available', info: info, message: 'New update (v' + (info && info.version) + ') available! Downloading in background...' });
   });
 
   autoUpdater.on('update-not-available', function(info) {
-    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'not-available', info: info, message: 'Satya BillFlow is up to date.' });
+    sendToWindow('updater:status', { status: 'not-available', info: info, message: 'Satya BillFlow is up to date.' });
   });
 
   autoUpdater.on('error', function(err) {
     console.error('[OTA Updater] Error:', err);
-    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'error', error: err ? err.message : 'Update error', message: 'Update check completed.' });
+    sendToWindow('updater:status', { status: 'error', error: err ? err.message : 'Update error', message: 'Unable to check for updates right now.' });
   });
 
   autoUpdater.on('download-progress', function(progressObj) {
-    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'downloading', progress: progressObj, message: 'Downloading update (' + Math.round(progressObj.percent) + '%)...' });
+    sendToWindow('updater:status', { status: 'downloading', progress: progressObj, message: 'Downloading update (' + Math.round(progressObj.percent) + '%)...' });
   });
 
   autoUpdater.on('update-downloaded', function(info) {
-    if (mainWindow) mainWindow.webContents.send('updater:status', { status: 'downloaded', info: info, message: 'New update (v' + (info && info.version) + ') ready! Click to restart & apply.' });
+    sendToWindow('updater:status', { status: 'downloaded', info: info, message: 'New update (v' + (info && info.version) + ') ready! Click to restart & apply.' });
   });
 }
+
+ipcMain.handle('app:getVersion', function() {
+  return app.getVersion();
+});
 
 ipcMain.handle('updater:check', function() {
   return autoUpdater.checkForUpdatesAndNotify().then(function(res) {
@@ -658,6 +670,7 @@ ipcMain.handle('updater:quitAndInstall', function() {
   autoUpdater.quitAndInstall();
   return { ok: true };
 });
+
 
 
 

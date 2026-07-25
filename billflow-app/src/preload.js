@@ -119,7 +119,8 @@ contextBridge.exposeInMainWorld('api', {
     };
   },
 
-  // OTA Auto-Updater
+  // OTA Auto-Updater & Version
+  getVersion:      function() { return ipc('app:getVersion', {}); },
   checkForUpdates: function() { return ipc('updater:check', {}); },
   quitAndInstall:  function() { return ipc('updater:quitAndInstall', {}); },
   onUpdateStatus:  function(callback) {

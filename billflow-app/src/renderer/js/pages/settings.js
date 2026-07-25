@@ -256,6 +256,87 @@ window.PageControllers['settings'] = {
       FormValidator.attachLiveValidation('s-accountant_email', 'email');
       FormValidator.attachLiveValidation('s-upi_id', 'upi');
     }
+
+    // Initialize Updates UI & Version Display
+    self.initUpdateUI();
+  },
+
+  initUpdateUI: function() {
+    var versionEl = document.getElementById('app-current-version');
+    if (versionEl && window.api && window.api.getVersion) {
+      window.api.getVersion().then(function(v) {
+        if (v) versionEl.textContent = 'v' + v;
+      }).catch(function() {});
+    }
+
+    var checkBtn = document.getElementById('btn-check-updates');
+    var restartBtn = document.getElementById('btn-restart-install');
+    var statusText = document.getElementById('update-status-text');
+    var progressContainer = document.getElementById('update-progress-container');
+    var progressBar = document.getElementById('update-progress-bar');
+    var progressText = document.getElementById('update-progress-text');
+
+    if (checkBtn) {
+      checkBtn.onclick = function() {
+        checkBtn.disabled = true;
+        if (statusText) statusText.textContent = 'Status: Checking GitHub Releases for updates...';
+        if (progressContainer) progressContainer.style.display = 'none';
+
+        window.api.checkForUpdates().then(function(res) {
+          checkBtn.disabled = false;
+          if (!res || !res.ok) {
+            if (statusText) statusText.textContent = 'Status: ' + (res && res.error ? res.error : 'Failed to connect to update server.');
+          }
+        }).catch(function(err) {
+          checkBtn.disabled = false;
+          if (statusText) statusText.textContent = 'Status: ' + (err.message || 'Error checking for updates.');
+        });
+      };
+    }
+
+    if (restartBtn) {
+      restartBtn.onclick = function() {
+        if (window.api && window.api.quitAndInstall) {
+          window.api.quitAndInstall();
+        }
+      };
+    }
+
+    if (window._updateStatusUnsubscribe) {
+      window._updateStatusUnsubscribe();
+    }
+
+    if (window.api && window.api.onUpdateStatus) {
+      window._updateStatusUnsubscribe = window.api.onUpdateStatus(function(data) {
+        if (!statusText) return;
+        if (data.status === 'checking') {
+          statusText.textContent = 'Status: Checking for new updates...';
+          if (progressContainer) progressContainer.style.display = 'none';
+        } else if (data.status === 'available') {
+          statusText.textContent = 'Status: New update (v' + (data.info && data.info.version || '') + ') available! Downloading in background...';
+          if (progressContainer) progressContainer.style.display = 'block';
+        } else if (data.status === 'not-available') {
+          statusText.textContent = 'Status: 🎉 Satya BillFlow is up to date! (Latest version installed)';
+          if (progressContainer) progressContainer.style.display = 'none';
+          if (checkBtn) checkBtn.disabled = false;
+        } else if (data.status === 'downloading') {
+          var pct = Math.round(data.progress ? data.progress.percent : 0);
+          statusText.textContent = 'Status: Downloading update (' + pct + '%)...';
+          if (progressContainer) progressContainer.style.display = 'block';
+          if (progressBar) progressBar.style.width = pct + '%';
+          if (progressText) progressText.textContent = pct + '%';
+        } else if (data.status === 'downloaded') {
+          statusText.textContent = 'Status: ✅ Update (v' + (data.info && data.info.version || '') + ') ready to install!';
+          if (progressContainer) progressContainer.style.display = 'none';
+          if (restartBtn) restartBtn.style.display = 'block';
+          if (checkBtn) checkBtn.disabled = false;
+        } else if (data.status === 'error') {
+          statusText.textContent = 'Status: ' + (data.message || 'Update check completed.');
+          if (progressContainer) progressContainer.style.display = 'none';
+          if (checkBtn) checkBtn.disabled = false;
+        }
+      });
+    }
   },
 
   saveSettings: function() {
