@@ -15,12 +15,12 @@ export default function Users({ userRole = 'super_admin' }) {
   const [page,   setPage  ] = useState(0)
   const PER_PAGE = 50
 
-  const { users: rawUsers, total: rawTotal, loading, refetch } = useUsers({
+  const { users: rawUsers = [], total: rawTotal = 0, loading, refetch } = useUsers({
     search, status, plan, limit: PER_PAGE, offset: page * PER_PAGE
   })
 
-  // Date filtering logic
-  const users = rawUsers.filter(u => {
+  // Date filtering logic with safe array fallback
+  const users = (rawUsers || []).filter(u => {
     if (timeRange === 'all' && !startDate && !endDate) return true
     const uDate = u.created_at ? new Date(u.created_at) : null
     if (!uDate) return true
@@ -247,11 +247,11 @@ export default function Users({ userRole = 'super_admin' }) {
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-4 py-3 border-t border-outline-variant/15 text-xs font-semibold text-on-surface-variant bg-surface-container-low/40">
-          <span>Showing {Math.min(page * PER_PAGE + 1, total)}–{Math.min((page + 1) * PER_PAGE, total)} of {total}</span>
+          <span>Showing {users.length > 0 ? Math.min(page * PER_PAGE + 1, rawTotal || users.length) : 0}–{Math.min((page + 1) * PER_PAGE, rawTotal || users.length)} of {rawTotal || users.length}</span>
           <div className="flex gap-2">
             <button disabled={page === 0} onClick={() => setPage(p => p - 1)}
               className="px-3 py-1.5 border border-outline-variant/30 rounded-lg disabled:opacity-40 hover:bg-surface-container-high bg-surface-container-low text-on-surface transition-colors">← Prev</button>
-            <button disabled={(page + 1) * PER_PAGE >= total} onClick={() => setPage(p => p + 1)}
+            <button disabled={(page + 1) * PER_PAGE >= (rawTotal || users.length)} onClick={() => setPage(p => p + 1)}
               className="px-3 py-1.5 border border-outline-variant/30 rounded-lg disabled:opacity-40 hover:bg-surface-container-high bg-surface-container-low text-on-surface transition-colors">Next →</button>
           </div>
         </div>
