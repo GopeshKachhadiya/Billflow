@@ -16,14 +16,14 @@ function generateBoxyPDF(doc, bill, items, customer, s, W) {
   doc.rect(40, 40, W, 762).stroke('#000000');
   
   // 1. Top centering red text (40 to 57)
-  // Configurable header tagline (from settings, falls back to business name)
-  var headerTagline = s.invoice_tagline || '';
-  if (headerTagline) {
+  // Configurable header tagline (God Name / Tagline from settings)
+  var headerTagline = (s.invoice_tagline !== undefined && s.invoice_tagline !== null) ? s.invoice_tagline : (s.god_name || '');
+  if (headerTagline && headerTagline.trim()) {
     doc.fillColor('red');
     doc.font('Helvetica-Bold').fontSize(8.5);
-    doc.text(headerTagline, 40, 46, { align: 'center', width: W });
+    doc.text(headerTagline.trim(), 40, 46, { align: 'center', width: W });
+    doc.moveTo(40, 57).lineTo(40 + W, 57).stroke('#000000');
   }
-  doc.moveTo(40, 57).lineTo(40 + W, 57).stroke('#000000');
 
   // 2. Header Business Name & Details (57 to 112)
   doc.fillColor('#0f3080');
@@ -213,18 +213,9 @@ function generateBoxyPDF(doc, bill, items, customer, s, W) {
   doc.text(lastUnit, cols[7], tableBottomY + 5, { width: cols[8]-cols[7], align: 'center' });
   doc.text(Number(bill.subtotal || 0).toFixed(2), cols[9] - 4, tableBottomY + 5, { width: cols[10]-cols[9], align: 'right' });
 
-  // 9. Below Table Message & Net Rate bar (564 to 579)
-  var messageY = 564;
-  doc.rect(40, messageY, W, 15).fillAndStroke('#ffffff', '#000000');
-  var disclaimerText = s.invoice_disclaimer || 'Subject to terms and conditions.';
-  doc.fillColor('red').font('Helvetica-Bold').fontSize(7.5).text(disclaimerText, 46, messageY + 4);
-  
-  var netRate = totalQty > 0 ? (bill.grand_total / totalQty) : 0;
-  doc.fillColor('#0f3080').font('Helvetica-Bold').fontSize(8.5).text('Net Rate : ' + netRate.toFixed(2), 40, messageY + 3, { align: 'right', width: W - 8 });
-
-  // 10. Bottom Section (579 to 802)
-  var bottomY = 579;
-  var bottomHeight = 223;
+  // 10. Bottom Section (564 to 802)
+  var bottomY = 564;
+  var bottomHeight = 238;
   var bottomSplitX = 365;
   doc.moveTo(bottomSplitX, bottomY).lineTo(bottomSplitX, bottomY + bottomHeight).stroke('#000000');
 
@@ -253,7 +244,17 @@ function generateBoxyPDF(doc, bill, items, customer, s, W) {
   doc.text('Branch : ' + (s.bank_branch || '—'), 48, bottomY + 132);
 
   // UPI QR Code
-  if (s.upi_id) {
+  if (s.upi_qr_data) {
+    try {
+      var upiQrBuffer = Buffer.from(s.upi_qr_data.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+      doc.image(upiQrBuffer, 275, bottomY + 88, { fit: [55, 55], align: 'center', valign: 'center' });
+      if (s.upi_id) {
+        doc.fontSize(6).font('Helvetica-Bold').text('UPI ID: ' + s.upi_id, 260, bottomY + 148, { align: 'center', width: 95 });
+      }
+    } catch (e) {
+      console.error("Uploaded UPI QR Code render failed in PDF:", e);
+    }
+  } else if (s.upi_id) {
     try {
       var upiStr = 'upi://pay?pa=' + encodeURIComponent(s.upi_id) +
                    '&pn=' + encodeURIComponent(s.business_name || 'Business') +

@@ -95,6 +95,18 @@ window.PageControllers['bill-view'] = {
       }
     }
 
+    // God Name / Invoice Tagline
+    var taglineEl = document.getElementById('bill-header-tagline');
+    if (taglineEl) {
+      var tagline = (s.invoice_tagline !== undefined && s.invoice_tagline !== null) ? s.invoice_tagline : (s.god_name || '');
+      if (tagline && tagline.trim()) {
+        taglineEl.textContent = tagline.trim();
+        taglineEl.style.display = 'block';
+      } else {
+        taglineEl.style.display = 'none';
+      }
+    }
+
     // Business Profile
     document.getElementById('biz-name').textContent = s.business_name || 'Your Business Name';
     
@@ -243,8 +255,11 @@ window.PageControllers['bill-view'] = {
     document.getElementById('total-subtotal').textContent = (b.subtotal || 0).toFixed(2);
     
     // Dynamic Net Rate display
-    var netRateVal = totalQty > 0 ? (b.grand_total / totalQty) : 0;
-    document.getElementById('net-rate').textContent = netRateVal.toFixed(2);
+    var netRateEl = document.getElementById('net-rate');
+    if (netRateEl) {
+      var netRateVal = totalQty > 0 ? (b.grand_total / totalQty) : 0;
+      netRateEl.textContent = netRateVal.toFixed(2);
+    }
     
     // Summary & Amounts
     var summarySubtotalEl = document.getElementById('summary-subtotal');
@@ -376,23 +391,33 @@ window.PageControllers['bill-view'] = {
     
     // UPI QR Code
     var upiContainer = document.getElementById('upi-qrcode');
-    upiContainer.innerHTML = '';
-    if (s.upi_id && typeof QRCode !== 'undefined') {
-      var upiStr = 'upi://pay?pa=' + encodeURIComponent(s.upi_id) +
-                   '&pn=' + encodeURIComponent(s.business_name || 'Business') +
-                   '&am=' + (dueAmount > 0 ? dueAmount : grandTotal).toFixed(2) +
-                   '&cu=INR';
-      new QRCode(upiContainer, {
-        text: upiStr,
-        width: 76,
-        height: 76,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.M
-      });
-      upiContainer.style.display = 'flex';
-    } else {
-      upiContainer.style.display = 'none';
+    if (upiContainer) {
+      upiContainer.innerHTML = '';
+      if (s.upi_qr_data) {
+        var qrImg = document.createElement('img');
+        qrImg.src = s.upi_qr_data;
+        qrImg.style.maxWidth = '76px';
+        qrImg.style.maxHeight = '76px';
+        qrImg.style.objectFit = 'contain';
+        upiContainer.appendChild(qrImg);
+        upiContainer.style.display = 'flex';
+      } else if (s.upi_id && typeof QRCode !== 'undefined') {
+        var upiStr = 'upi://pay?pa=' + encodeURIComponent(s.upi_id) +
+                     '&pn=' + encodeURIComponent(s.business_name || 'Business') +
+                     '&am=' + (dueAmount > 0 ? dueAmount : grandTotal).toFixed(2) +
+                     '&cu=INR';
+        new QRCode(upiContainer, {
+          text: upiStr,
+          width: 76,
+          height: 76,
+          colorDark : "#000000",
+          colorLight : "#ffffff",
+          correctLevel : QRCode.CorrectLevel.M
+        });
+        upiContainer.style.display = 'flex';
+      } else {
+        upiContainer.style.display = 'none';
+      }
     }
   },
   
@@ -680,7 +705,7 @@ window.PageControllers['bill-view'] = {
         }
 
         if (sendToN8n.length > 0) {
-          Toast.show('Triggering payment reminder via n8n...', 'info');
+          Toast.show('Sending payment reminder...', 'info');
           promiseChain = promiseChain.then(function() {
             return window.api.paymentReminder(
               b,

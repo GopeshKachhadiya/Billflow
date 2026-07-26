@@ -18,6 +18,7 @@ var _cache = {
   upi_id: '',
   logo_data: '',
   signature_data: '',
+  upi_qr_data: '',
   business_phone: '',
   business_email: '',
   business_udyam: '',

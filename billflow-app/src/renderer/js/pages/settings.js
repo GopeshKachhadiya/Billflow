@@ -68,42 +68,15 @@ window.PageControllers['settings'] = {
       });
     }
 
-    // n8n Automation Engine Button Handlers
-    var autoFillBtn = document.getElementById('btn-autofill-n8n');
-    if (autoFillBtn) {
-      autoFillBtn.onclick = function() {
-        var baseInput = document.getElementById('s-n8n_base_url');
-        var base = (baseInput && baseInput.value) ? baseInput.value.trim() : 'http://localhost:5678';
-        self.autoFillN8nUrls(base);
-      };
+    var btnChooseUpiQr = document.getElementById('btn-choose-upi-qr');
+    if (btnChooseUpiQr) {
+      btnChooseUpiQr.addEventListener('click', function() {
+        var upiQrInput = document.getElementById('upi-qr-upload');
+        if (upiQrInput) upiQrInput.click();
+      });
     }
 
-    var testN8nBtn = document.getElementById('btn-test-n8n');
-    if (testN8nBtn) {
-      testN8nBtn.onclick = function() {
-        testN8nBtn.disabled = true;
-        testN8nBtn.textContent = 'Testing...';
-        var baseInput = document.getElementById('s-n8n_base_url');
-        var url = (baseInput && baseInput.value) ? baseInput.value.trim() : 'http://localhost:5678';
 
-        if (window.api && window.api.testN8nWebhook) {
-          window.api.testN8nWebhook(url).then(function(res) {
-            testN8nBtn.disabled = false;
-            testN8nBtn.textContent = '⚡ Test Connection';
-            if (res && res.ok) {
-              if (window.Toast) window.Toast.show('n8n Webhook Connected Successfully! (HTTP ' + res.status + ')', 'success');
-            } else {
-              var err = (res && res.error) ? res.error : ('HTTP ' + (res && res.status));
-              if (window.Toast) window.Toast.show('n8n Connection Notice: ' + err + '. Ensure n8n is running and workflow active.', 'error');
-            }
-          }).catch(function(e) {
-            testN8nBtn.disabled = false;
-            testN8nBtn.textContent = '⚡ Test Connection';
-            if (window.Toast) window.Toast.show('n8n Connection Error: ' + (e.message || e), 'error');
-          });
-        }
-      };
-    }
 
     // WhatsApp Local Link Setup
     var connectBtn = document.getElementById('btn-wa-connect');
@@ -183,6 +156,27 @@ window.PageControllers['settings'] = {
       });
     }
 
+    var upiQrUpload = document.getElementById('upi-qr-upload');
+    if (upiQrUpload) {
+      upiQrUpload.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+          var reader = new FileReader();
+          reader.onload = function(evt) {
+            var base64 = evt.target.result;
+            document.getElementById('s-upi_qr_data').value = base64;
+            document.getElementById('upi-qr-preview-name').textContent = file.name;
+            var preview = document.getElementById('upi-qr-preview-img');
+            if (preview) {
+              preview.src = base64;
+              preview.style.display = 'block';
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
     if (window.StateCodes) {
       var selectState = document.getElementById('s-business_state');
       if (selectState) {
@@ -208,12 +202,9 @@ window.PageControllers['settings'] = {
                       'email_from_name','email_from_address','smtp_host','smtp_port',
                       'smtp_user','smtp_pass','accountant_email',
                       'notify_owner_phone','wati_api_url','wati_api_token','msg91_auth_key','msg91_sender_id',
-                      'logo_data', 'signature_data',
+                      'logo_data', 'signature_data', 'upi_qr_data',
                       'business_phone', 'business_email', 'business_udyam',
-                      'business_category', 'business_status', 'upi_id',
-                      'n8n_base_url', 'n8n_secret',
-                      'n8n_wh_bill_created', 'n8n_wh_bill_sent', 'n8n_wh_bill_paid',
-                      'n8n_wh_bill_cancelled', 'n8n_wh_customer_saved', 'n8n_wh_item_saved'];
+                      'business_category', 'business_status', 'upi_id', 'invoice_tagline'];
         for (var i = 0; i < fields.length; i++) {
           var key = fields[i];
           var val = s[key] || '';
@@ -245,6 +236,15 @@ window.PageControllers['settings'] = {
             sigPreview.style.display = 'block';
             var sigNameEl = document.getElementById('signature-preview-name');
             if (sigNameEl) sigNameEl.textContent = 'Saved signature';
+          }
+        }
+        if (s.upi_qr_data) {
+          var upiQrPreview = document.getElementById('upi-qr-preview-img');
+          if (upiQrPreview) {
+            upiQrPreview.src = s.upi_qr_data;
+            upiQrPreview.style.display = 'block';
+            var upiQrNameEl = document.getElementById('upi-qr-preview-name');
+            if (upiQrNameEl) upiQrNameEl.textContent = 'Saved QR code';
           }
         }
 
@@ -412,12 +412,9 @@ window.PageControllers['settings'] = {
                   'smtp_user','smtp_pass','accountant_email',
                   'notify_owner_phone',
                   'wati_api_url','wati_api_token','msg91_auth_key','msg91_sender_id',
-                  'logo_data', 'signature_data',
+                  'logo_data', 'signature_data', 'upi_qr_data',
                   'business_phone', 'business_email', 'business_udyam',
-                  'business_category', 'business_status', 'upi_id', 'app_language',
-                  'n8n_base_url', 'n8n_secret',
-                  'n8n_wh_bill_created', 'n8n_wh_bill_sent', 'n8n_wh_bill_paid',
-                  'n8n_wh_bill_cancelled', 'n8n_wh_customer_saved', 'n8n_wh_item_saved'];
+                  'business_category', 'business_status', 'upi_id', 'app_language', 'invoice_tagline'];
     var toggles = [
       { el: 's-wati-enabled',         key: 'wati_enabled' },
       { el: 's-sms-enabled',          key: 'sms_enabled' },
@@ -471,27 +468,7 @@ window.PageControllers['settings'] = {
     });
   },
 
-  autoFillN8nUrls: function(base) {
-    base = (base || 'http://localhost:5678').trim().replace(/\/$/, '');
-    var paths = {
-      'n8n_wh_bill_created':  base + '/webhook/bill-created',
-      'n8n_wh_bill_sent':     base + '/webhook/bill-send',
-      'n8n_wh_bill_paid':     base + '/webhook/bill-paid',
-      'n8n_wh_bill_cancelled':base + '/webhook/bill-cancelled',
-      'n8n_wh_customer_saved':base + '/webhook/customer-saved',
-      'n8n_wh_item_saved':    base + '/webhook/item-saved',
-      'n8n_wh_sync_push':     base + '/webhook/sync-push',
-      'n8n_wh_report_request':base + '/webhook/report-request',
-      'n8n_wh_settings':      base + '/webhook/settings-updated'
-    };
-    for (var key in paths) {
-      if (paths.hasOwnProperty(key)) {
-        var el = document.getElementById('s-' + key);
-        if (el) el.value = paths[key];
-      }
-    }
-    if (window.Toast) window.Toast.show('n8n webhook endpoints auto-filled! Click Save Settings to persist.', 'info');
-  },
+
 
   updateWaUI: function(res) {
     var statusEl = document.getElementById('wa-link-status');

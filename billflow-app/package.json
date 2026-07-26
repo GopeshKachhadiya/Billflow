@@ -10,7 +10,7 @@
   "main": "src/main.js",
   "scripts": {
     "dev": "electron .",
-    "build:modern": "electron-builder",
+    "build:modern": "electron-builder --config electron-builder.config.js",
     "test:gst": "node src/gst/test-calculator.js",
     "test": "jest"
   },

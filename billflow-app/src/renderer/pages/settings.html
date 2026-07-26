@@ -143,10 +143,14 @@
           <label>UPI ID (for dynamic QR Code)</label>
           <input type="text" id="s-upi_id" placeholder="e.g. business@okaxis">
         </div>
+        <div class="form-group">
+          <label>God Name / Header Tagline</label>
+          <input type="text" id="s-invoice_tagline" placeholder="e.g. !! SHREE GANESHAI NAMAH !! or OM NAMAH SHIVAYA">
+        </div>
       </div>
 
       <h3 style="margin: 24px 0 16px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 8px; font-size: 15px;">Business Branding (Invoice)</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
         <div class="form-group">
           <label>Business Logo</label>
           <input type="file" id="logo-upload" accept="image/*" style="display: none;">
@@ -169,6 +173,18 @@
           <input type="hidden" id="s-signature_data">
           <div style="margin-top: 8px;">
             <img id="signature-preview-img" style="max-height: 50px; display: none; border: 1px solid var(--color-border); padding: 4px; border-radius: 4px;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>UPI QR Code</label>
+          <input type="file" id="upi-qr-upload" accept="image/*" style="display: none;">
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <button type="button" class="btn" id="btn-choose-upi-qr">Choose QR Code</button>
+            <span id="upi-qr-preview-name" style="font-size: 12px; color: var(--color-text-muted);">No image selected</span>
+          </div>
+          <input type="hidden" id="s-upi_qr_data">
+          <div style="margin-top: 8px;">
+            <img id="upi-qr-preview-img" style="max-height: 50px; display: none; border: 1px solid var(--color-border); padding: 4px; border-radius: 4px;">
           </div>
         </div>
       </div>
@@ -295,55 +311,6 @@
         <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
           <input type="checkbox" id="s-notify-monthly-gst" style="width: auto;">
           <label for="s-notify-monthly-gst" style="margin-bottom: 0; cursor: pointer;">Receive Monthly GST Aggregate Summary</label>
-        </div>
-      </div>
-
-      <h3 style="border-top: 1px solid var(--color-border); padding-top: 24px; margin-bottom: 16px; font-size: 15px;">n8n Automation Engine Settings</h3>
-      <p style="color: var(--color-text-muted); font-size: 13px; margin-bottom: 16px;">
-        Connect Satya BillFlow to your local or cloud n8n instance to trigger automated WhatsApp messages, email receipts, and webhook events.
-      </p>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-        <div class="form-group">
-          <label>n8n Instance Base URL</label>
-          <input type="text" id="s-n8n_base_url" placeholder="http://localhost:5678">
-        </div>
-        <div class="form-group">
-          <label>X-BillFlow-Secret Token</label>
-          <input type="password" id="s-n8n_secret" placeholder="Optional security token">
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <button type="button" id="btn-autofill-n8n" class="btn" style="font-size: 12px;">Auto-Fill Endpoints</button>
-        <button type="button" id="btn-test-n8n" class="btn btn-primary" style="font-size: 12px;">⚡ Test Connection</button>
-      </div>
-
-      <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--color-text-muted);">Event Webhook Endpoints (Optional Overrides)</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
-        <div class="form-group">
-          <label style="font-size: 11px;">Bill Created</label>
-          <input type="text" id="s-n8n_wh_bill_created" placeholder="/webhook/bill-created" style="font-size: 12px;">
-        </div>
-        <div class="form-group">
-          <label style="font-size: 11px;">Bill Sent</label>
-          <input type="text" id="s-n8n_wh_bill_sent" placeholder="/webhook/bill-send" style="font-size: 12px;">
-        </div>
-        <div class="form-group">
-          <label style="font-size: 11px;">Bill Paid</label>
-          <input type="text" id="s-n8n_wh_bill_paid" placeholder="/webhook/bill-paid" style="font-size: 12px;">
-        </div>
-        <div class="form-group">
-          <label style="font-size: 11px;">Bill Cancelled</label>
-          <input type="text" id="s-n8n_wh_bill_cancelled" placeholder="/webhook/bill-cancelled" style="font-size: 12px;">
-        </div>
-        <div class="form-group">
-          <label style="font-size: 11px;">Customer Saved</label>
-          <input type="text" id="s-n8n_wh_customer_saved" placeholder="/webhook/customer-saved" style="font-size: 12px;">
-        </div>
-        <div class="form-group">
-          <label style="font-size: 11px;">Item Saved</label>
-          <input type="text" id="s-n8n_wh_item_saved" placeholder="/webhook/item-saved" style="font-size: 12px;">
         </div>
       </div>
     </div>

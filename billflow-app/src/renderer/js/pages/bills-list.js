@@ -251,21 +251,21 @@ window.PageControllers['bills-list'] = {
           return window.api.waGetStatus().then(function(waState) {
             var isLocalWaLinked = (waState && waState.status === 'linked');
 
-            var sendToN8n = [];
+            var remoteChannels = [];
             var sendLocalWa = false;
             var openWaRedirect = false;
 
             for (var i = 0; i < channels.length; i++) {
               if (channels[i] === 'whatsapp') {
                 if (settings && settings.wati_enabled === '1') {
-                  sendToN8n.push('whatsapp');
+                  remoteChannels.push('whatsapp');
                 } else if (isLocalWaLinked) {
                   sendLocalWa = true;
                 } else {
                   openWaRedirect = true;
                 }
               } else {
-                sendToN8n.push(channels[i]);
+                remoteChannels.push(channels[i]);
               }
             }
 
@@ -297,16 +297,16 @@ window.PageControllers['bills-list'] = {
               self.openWhatsAppReminderRedirect(customerPhone, bill.bill_number, bill.amount_due, businessName);
             }
 
-            if (sendToN8n.length > 0) {
+            if (remoteChannels.length > 0) {
               promiseChain = promiseChain.then(function() {
-                Toast.show('Triggering payment reminder via n8n...', 'info');
+                Toast.show('Sending payment reminder...', 'info');
                 return window.api.paymentReminder(
                   bill,
                   customer,
                   items,
                   taxRecord,
                   base64,
-                  sendToN8n
+                  remoteChannels
                 );
               });
             }

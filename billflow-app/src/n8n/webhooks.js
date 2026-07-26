@@ -1,7 +1,8 @@
 var settings = require('../db/queries/settings');
 
 function resolveWebhookUrl(eventSettingKey, defaultPath) {
-  var specificUrl = settings.getSetting(eventSettingKey);
+  var envKey = eventSettingKey.toUpperCase();
+  var specificUrl = process.env[envKey] || settings.getSetting(eventSettingKey);
   if (specificUrl && typeof specificUrl === 'string' && specificUrl.trim().length > 0) {
     var trimmed = specificUrl.trim();
     if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
@@ -10,25 +11,28 @@ function resolveWebhookUrl(eventSettingKey, defaultPath) {
     return trimmed;
   }
 
-  var baseUrl = settings.getSetting('n8n_base_url') || 'http://localhost:5678';
-  if (typeof baseUrl === 'string') {
+  var baseUrl = process.env.N8N_BASE_URL || process.env.WEBHOOK_BASE_URL || settings.getSetting('n8n_base_url') || '';
+  if (typeof baseUrl === 'string' && baseUrl.trim().length > 0) {
     baseUrl = baseUrl.trim().replace(/\/$/, '');
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
       baseUrl = 'http://' + baseUrl;
     }
-  } else {
-    baseUrl = 'http://localhost:5678';
+    var path = defaultPath.startsWith('/') ? defaultPath : '/' + defaultPath;
+    return baseUrl + path;
   }
-  var path = defaultPath.startsWith('/') ? defaultPath : '/' + defaultPath;
-  return baseUrl + path;
+
+  return null;
 }
 
 function callWebhook(eventSettingKey, defaultPath, payload) {
   try {
     var url = resolveWebhookUrl(eventSettingKey, defaultPath);
-    var secret = settings.getSetting('n8n_secret') || '';
+    if (!url) {
+      return;
+    }
+    var secret = process.env.N8N_SECRET || process.env.WEBHOOK_SECRET || settings.getSetting('n8n_secret') || '';
 
-    console.log('[n8n Webhook] Triggering ' + eventSettingKey + ' -> ' + url);
+    console.log('[Backend Webhook] Triggering ' + eventSettingKey + ' -> ' + url);
 
     if (typeof process !== 'undefined' && process.versions && process.versions.electron) {
       try {
@@ -41,18 +45,18 @@ function callWebhook(eventSettingKey, defaultPath, payload) {
         if (secret) request.setHeader('X-BillFlow-Secret', secret);
 
         request.on('response', function(response) {
-          console.log('[n8n Webhook] ' + eventSettingKey + ' HTTP Status:', response.statusCode);
+          console.log('[Backend Webhook] ' + eventSettingKey + ' HTTP Status:', response.statusCode);
         });
 
         request.on('error', function(e) {
-          console.error('[n8n Webhook] Failed (net):', eventSettingKey, e.message);
+          console.error('[Backend Webhook] Failed (net):', eventSettingKey, e.message);
         });
 
         request.write(JSON.stringify(payload));
         request.end();
         return;
       } catch (e) {
-        console.error('[n8n Webhook] Net exception:', eventSettingKey, e.message);
+        console.error('[Backend Webhook] Net exception:', eventSettingKey, e.message);
       }
     }
 
@@ -65,13 +69,13 @@ function callWebhook(eventSettingKey, defaultPath, payload) {
         },
         body: JSON.stringify(payload)
       }).then(function(res) {
-        console.log('[n8n Webhook] ' + eventSettingKey + ' fetch HTTP Status:', res.status);
+        console.log('[Backend Webhook] ' + eventSettingKey + ' fetch HTTP Status:', res.status);
       }).catch(function(e) {
-        console.error('[n8n Webhook] Fetch failed:', eventSettingKey, e.message);
+        console.error('[Backend Webhook] Fetch failed:', eventSettingKey, e.message);
       });
     }
   } catch (err) {
-    console.error('[n8n Webhook] Critical Error:', err.message);
+    console.error('[Backend Webhook] Error:', err.message);
   }
 }
 

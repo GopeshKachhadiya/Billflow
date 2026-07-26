@@ -4,7 +4,7 @@
 module.exports = {
   appId: 'com.billflow.app',
   productName: 'Satya BillFlow',
-  artifactName: 'BillFlow_Setup_v${version}_64bit.${ext}',
+  artifactName: 'BillFlow_Setup_v2.4_64bit.${ext}',
   publish: [
     {
       provider: 'github',
@@ -29,7 +29,7 @@ module.exports = {
     icon: 'build/icon.png',
     publisherName: 'Satya Technologies',
     executableName: 'billflow',
-    artifactName: 'BillFlow_Setup_v${version}_64bit.exe',
+    artifactName: 'BillFlow_Setup_v2.4_64bit.exe',
     certificateFile: process.env.CSC_LINK || 'build/billflow-codesign.pfx',
     certificatePassword: process.env.CSC_KEY_PASSWORD || 'BillFlow2026!',
     target: [
@@ -45,6 +45,6 @@ module.exports = {
     createDesktopShortcut: true,
     createStartMenuShortcut: true,
     shortcutName: 'Satya BillFlow',
-    artifactName: 'BillFlow_Setup_v${version}_64bit.exe'
+    artifactName: 'BillFlow_Setup_v2.4_64bit.exe'
   }
 };
