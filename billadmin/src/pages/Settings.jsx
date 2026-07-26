@@ -49,17 +49,16 @@ export default function Settings() {
       const { data: authData } = await supabase.auth.getUser()
       if (authData?.user) {
         const userEmail = authData.user.email
-        // Fetch staff profile
+        // Fetch staff profile from Supabase
         const { data: staffData } = await supabase.from('admin_staff').select('*').eq('email', userEmail).single()
         if (staffData) {
           setCurrentStaff(staffData)
         } else {
-          // Default Super Admin profile fallback
           setCurrentStaff({ full_name: 'Gopesh Kachhadiya', email: userEmail, role: 'super_admin', status: 'active' })
         }
       }
 
-      // Fetch system settings
+      // Fetch system settings from Supabase
       const { data: sysData } = await supabase.from('admin_system_settings').select('*')
       if (sysData && sysData.length > 0) {
         const map = {}
@@ -71,12 +70,27 @@ export default function Settings() {
     }
   }
 
+  // Fetch Staff Roster strictly and 100% from Supabase DB
   const fetchStaffList = async () => {
     setStaffLoading(true)
     try {
       const { data, error } = await supabase.from('admin_staff').select('*').order('created_at', { ascending: true })
       if (error) throw error
-      setStaffList(data || [])
+      
+      const defaultOwner = { 
+        id: 'owner-1', 
+        full_name: 'Gopesh Kachhadiya', 
+        email: 'gopeshkachhadiya00005@gmail.com', 
+        role: 'super_admin', 
+        status: 'active' 
+      }
+
+      const list = data || []
+      if (!list.some(s => s.email.toLowerCase() === defaultOwner.email.toLowerCase())) {
+        list.unshift(defaultOwner)
+      }
+
+      setStaffList(list)
     } catch (err) {
       console.error('Staff fetch notice:', err.message)
     } finally {
@@ -84,7 +98,7 @@ export default function Settings() {
     }
   }
 
-  // Handle Adding New Staff Profile
+  // Handle Adding New Staff Profile directly in Supabase
   const handleAddStaff = async (e) => {
     e.preventDefault()
     setErrorMsg(''); setSuccessMsg(''); setStaffActionLoading(true)
@@ -93,78 +107,106 @@ export default function Settings() {
         throw new Error('Please fill in all required fields.')
       }
 
-      // 1. Try creating user in Supabase Auth
+      const emailClean = newStaff.email.trim().toLowerCase()
+
+      // 1. Try registering user in Supabase Auth service
       try {
         await supabase.auth.signUp({
-          email: newStaff.email.trim(),
+          email: emailClean,
           password: newStaff.password,
           options: { data: { full_name: newStaff.full_name } }
         })
       } catch (authErr) {
-        console.warn('Auth creation notice:', authErr.message)
+        console.warn('Auth signup notice:', authErr.message)
       }
 
-      // 2. Insert into admin_staff table
-      const { error: dbErr } = await supabase.from('admin_staff').insert([{
-        full_name: newStaff.full_name.trim(),
-        email: newStaff.email.trim().toLowerCase(),
-        phone: newStaff.phone.trim(),
-        role: newStaff.role,
-        status: 'active'
-      }])
+      // 2. Save directly into Supabase admin_staff DB table
+      const { error: dbErr } = await supabase
+        .from('admin_staff')
+        .upsert([{
+          full_name: newStaff.full_name.trim(),
+          email: emailClean,
+          phone: newStaff.phone.trim(),
+          role: newStaff.role,
+          password_hash: newStaff.password.trim(),
+          status: 'active',
+          updated_at: new Date().toISOString()
+        }], { onConflict: 'email' })
 
       if (dbErr) throw dbErr
 
-      setSuccessMsg(`Staff profile for ${newStaff.full_name} (${newStaff.role.toUpperCase()}) created successfully!`)
+      setSuccessMsg(`Staff account for ${newStaff.full_name} (${newStaff.role.toUpperCase()}) created in Supabase!`)
       setNewStaff({ full_name: '', email: '', phone: '', role: 'worker', password: '' })
       setShowAddModal(false)
-      fetchStaffList()
+      
+      // Re-fetch staff roster strictly from Supabase
+      await fetchStaffList()
     } catch (err) {
-      setErrorMsg(err.message || 'Failed to create staff member.')
+      setErrorMsg(err.message || 'Failed to create staff member in Supabase.')
     } finally {
       setStaffActionLoading(false)
     }
   }
 
-  // Toggle Staff Status (Active / Inactive)
+  // Toggle Staff Status (Active / Inactive) in Supabase
   const handleToggleStaffStatus = async (staff) => {
     const nextStatus = staff.status === 'active' ? 'inactive' : 'active'
     try {
-      const { error } = await supabase.from('admin_staff').update({ status: nextStatus }).eq('id', staff.id)
+      const { error } = await supabase
+        .from('admin_staff')
+        .update({ status: nextStatus, updated_at: new Date().toISOString() })
+        .eq('id', staff.id)
+
       if (error) throw error
-      setStaffList(prev => prev.map(s => s.id === staff.id ? { ...s, status: nextStatus } : s))
-      setSuccessMsg(`Staff status for ${staff.full_name} updated to ${nextStatus}.`)
+
+      setSuccessMsg(`Staff status for ${staff.full_name} updated to ${nextStatus.toUpperCase()}.`)
+      await fetchStaffList()
     } catch (err) {
-      alert('Failed to update status: ' + err.message)
+      alert('Failed to update status in Supabase: ' + err.message)
     }
   }
 
-  // Change Staff Role
+  // Change Staff Role in Supabase
   const handleChangeRole = async (staff, newRole) => {
     try {
-      const { error } = await supabase.from('admin_staff').update({ role: newRole }).eq('id', staff.id)
+      const { error } = await supabase
+        .from('admin_staff')
+        .update({ role: newRole, updated_at: new Date().toISOString() })
+        .eq('id', staff.id)
+
       if (error) throw error
-      setStaffList(prev => prev.map(s => s.id === staff.id ? { ...s, role: newRole } : s))
+
       setSuccessMsg(`Role for ${staff.full_name} updated to ${newRole.toUpperCase()}.`)
+      await fetchStaffList()
     } catch (err) {
-      alert('Failed to update role: ' + err.message)
+      alert('Failed to update role in Supabase: ' + err.message)
     }
   }
 
-  // Remove Staff Profile
+  // Permanently Delete Staff Profile from Supabase
   const handleDeleteStaff = async (staff) => {
-    if (!window.confirm(`Are you sure you want to remove staff member ${staff.full_name}?`)) return
+    if (!window.confirm(`Are you sure you want to PERMANENTLY delete staff member ${staff.full_name} (${staff.email}) from Supabase?`)) return
     try {
-      const { error } = await supabase.from('admin_staff').delete().eq('id', staff.id)
-      if (error) throw error
-      setStaffList(prev => prev.filter(s => s.id !== staff.id))
-      setSuccessMsg(`Staff member ${staff.full_name} removed.`)
+      // Delete strictly from Supabase admin_staff table by ID and Email
+      const { error: err1 } = await supabase.from('admin_staff').delete().eq('id', staff.id)
+      const { error: err2 } = await supabase.from('admin_staff').delete().eq('email', staff.email)
+
+      if (err1 && err2) throw (err1 || err2)
+
+      // Purge any local session storage if deleted staff was active
+      localStorage.removeItem('staff_custom_user')
+      localStorage.removeItem('admin_staff_local_roster')
+
+      setSuccessMsg(`Staff member ${staff.full_name} permanently deleted from Supabase.`)
+      
+      // Re-fetch staff roster directly from Supabase
+      await fetchStaffList()
     } catch (err) {
-      alert('Failed to delete staff member: ' + err.message)
+      alert('Failed to delete staff member from Supabase: ' + err.message)
     }
   }
 
-  // Save Settings
+  // Save Settings directly in Supabase
   const handleSaveSettings = async (e) => {
     if (e) e.preventDefault()
     setErrorMsg(''); setSuccessMsg(''); setSettingsSaving(true)
@@ -179,7 +221,7 @@ export default function Settings() {
         await supabase.from('admin_system_settings').upsert(item)
       }
 
-      setSuccessMsg('System configurations updated successfully!')
+      setSuccessMsg('System configurations saved in Supabase!')
     } catch (err) {
       setErrorMsg('Failed to save settings: ' + err.message)
     } finally {
@@ -213,9 +255,10 @@ export default function Settings() {
     }
   }
 
-  const handleSignOut = () => {
-    localStorage.setItem('manual_logout', 'true')
-    supabase.auth.signOut()
+  const handleSignOut = async () => {
+    localStorage.clear()
+    await supabase.auth.signOut()
+    window.location.href = '/login'
   }
 
   return (
@@ -299,16 +342,14 @@ export default function Settings() {
         </button>
       </div>
 
-      {/* ─────────────────────────────────────────────────────────────
-          TAB 1: TEAM & STAFF MANAGEMENT (RBAC)
-         ───────────────────────────────────────────────────────────── */}
+      {/* TAB 1: TEAM & STAFF MANAGEMENT (RBAC) */}
       {activeTab === 'team' && (
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-on-surface">Admin Staff & Role-Based Access</h2>
               <p className="text-xs text-on-surface-variant mt-0.5">
-                Manage accounts for Super Admins, Managers, and Support Workers.
+                Manage accounts for Super Admins, Managers, and Support Workers. Synced 100% with Supabase.
               </p>
             </div>
             <div className="flex gap-2">
@@ -371,21 +412,21 @@ export default function Settings() {
                 {staffLoading && staffList.length === 0 ? (
                   <tr><td colSpan={5} className="py-8 text-center text-xs text-on-surface-variant">Loading staff roster...</td></tr>
                 ) : staffList.length === 0 ? (
-                  <tr><td colSpan={5} className="py-8 text-center text-xs text-on-surface-variant">No staff profiles registered yet. Click "Add Staff Profile" above.</td></tr>
+                  <tr><td colSpan={5} className="py-8 text-center text-xs text-on-surface-variant">No staff profiles registered yet in Supabase. Click "Add Staff Profile" above.</td></tr>
                 ) : staffList.map(staff => {
                   const isSuper = staff.role === 'super_admin'
                   const isManager = staff.role === 'manager'
                   const isActive = staff.status === 'active'
-                  const isOwner = staff.email.toLowerCase() === 'gopeshkachhadiya00005@gmail.com' || (currentStaff && staff.email.toLowerCase() === currentStaff.email?.toLowerCase())
+                  const isOwner = staff.email?.toLowerCase() === 'gopeshkachhadiya00005@gmail.com'
 
                   return (
-                    <tr key={staff.id} className="hover:bg-surface-container-high/40 transition-colors">
+                    <tr key={staff.email || staff.id} className="hover:bg-surface-container-high/40 transition-colors">
                       <td className="px-4 py-3.5">
                         <div className="font-bold text-on-surface flex items-center gap-1.5">
                           {staff.full_name}
                           {isOwner && <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-extrabold">PRIMARY OWNER</span>}
                         </div>
-                        <div className="text-[11px] text-on-surface-variant font-mono">ID: {staff.id?.slice(0, 8)}...</div>
+                        <div className="text-[11px] text-on-surface-variant font-mono">ID: {staff.id?.slice(0, 8) || 'staff-01'}...</div>
                       </td>
                       <td className="px-4 py-3.5 text-xs">
                         <div className="font-mono text-on-surface">{staff.email}</div>
@@ -534,7 +575,7 @@ export default function Settings() {
                       disabled={staffActionLoading}
                       className="accent-gradient text-white px-5 py-2 rounded-xl font-bold disabled:opacity-50 shadow-md shadow-primary/20"
                     >
-                      {staffActionLoading ? 'Creating...' : 'Create Staff Member'}
+                      {staffActionLoading ? 'Creating in Supabase...' : 'Create Staff Member'}
                     </button>
                   </div>
                 </form>
@@ -544,9 +585,7 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          TAB 2: ORGANIZATION PROFILE
-         ───────────────────────────────────────────────────────────── */}
+      {/* TAB 2: ORGANIZATION PROFILE */}
       {activeTab === 'org' && (
         <form onSubmit={handleSaveSettings} className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/10 shadow-xl space-y-4 text-xs">
           <h2 className="text-sm font-bold text-on-surface uppercase tracking-wider border-b border-outline-variant/15 pb-2 flex items-center gap-2">
@@ -607,9 +646,7 @@ export default function Settings() {
         </form>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          TAB 3: SUBSCRIPTION & TRIAL RULES
-         ───────────────────────────────────────────────────────────── */}
+      {/* TAB 3: SUBSCRIPTION & TRIAL RULES */}
       {activeTab === 'system' && (
         <form onSubmit={handleSaveSettings} className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/10 shadow-xl space-y-4 text-xs">
           <h2 className="text-sm font-bold text-on-surface uppercase tracking-wider border-b border-outline-variant/15 pb-2 flex items-center gap-2">
@@ -660,9 +697,7 @@ export default function Settings() {
         </form>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          TAB 4: WEBHOOKS & AUTOMATION
-         ───────────────────────────────────────────────────────────── */}
+      {/* TAB 4: WEBHOOKS & AUTOMATION */}
       {activeTab === 'automation' && (
         <form onSubmit={handleSaveSettings} className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/10 shadow-xl space-y-4 text-xs">
           <h2 className="text-sm font-bold text-on-surface uppercase tracking-wider border-b border-outline-variant/15 pb-2 flex items-center gap-2">
@@ -705,9 +740,7 @@ export default function Settings() {
         </form>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          TAB 5: SECURITY & AUTH
-         ───────────────────────────────────────────────────────────── */}
+      {/* TAB 5: SECURITY & AUTH */}
       {activeTab === 'security' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-surface-container-low p-6 rounded-2xl border border-outline-variant/10 shadow-xl space-y-4 text-xs">

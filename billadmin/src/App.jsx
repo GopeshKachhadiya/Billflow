@@ -45,17 +45,32 @@ export default function App() {
   const [userRole, setUserRole] = useState('super_admin')
   const [roleLoading, setRoleLoading] = useState(true)
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-      if (data.session?.user) {
-        fetchStaffRole(data.session.user.email)
-      } else {
+  const checkSessionAndRole = async () => {
+    const customUserStr = localStorage.getItem('staff_custom_user')
+    if (customUserStr) {
+      try {
+        const customUser = JSON.parse(customUserStr)
+        setSession({ user: { email: customUser.email, id: customUser.id, user_metadata: { full_name: customUser.full_name } } })
+        setUserRole(customUser.role || 'worker')
         setRoleLoading(false)
-      }
-    })
+        return
+      } catch (e) {}
+    }
+
+    const { data } = await supabase.auth.getSession()
+    setSession(data.session)
+    if (data.session?.user) {
+      await fetchStaffRole(data.session.user.email)
+    } else {
+      setRoleLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    checkSessionAndRole()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (localStorage.getItem('staff_custom_user')) return
       setSession(s)
       if (s?.user) {
         fetchStaffRole(s.user.email)
@@ -64,12 +79,26 @@ export default function App() {
       }
     })
 
-    return () => subscription.unsubscribe()
+    const handleCustomAuth = () => checkSessionAndRole()
+    window.addEventListener('staff-auth-change', handleCustomAuth)
+
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('staff-auth-change', handleCustomAuth)
+    }
   }, [])
 
   const fetchStaffRole = async (email) => {
     try {
-      const { data } = await supabase.from('admin_staff').select('role').eq('email', email).single()
+      const emailClean = email.toLowerCase()
+      const localRoster = JSON.parse(localStorage.getItem('admin_staff_local_roster') || '[]')
+      const localMatch = localRoster.find(s => s.email.toLowerCase() === emailClean)
+      if (localMatch?.role) {
+        setUserRole(localMatch.role)
+        return
+      }
+
+      const { data } = await supabase.from('admin_staff').select('role').eq('email', emailClean).single()
       if (data?.role) {
         setUserRole(data.role)
       } else {

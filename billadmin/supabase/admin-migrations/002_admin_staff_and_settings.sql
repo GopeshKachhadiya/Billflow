@@ -3,44 +3,34 @@
 -- Roles: 'super_admin', 'manager', 'worker'
 -- ═══════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS public.admin_staff (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  full_name   TEXT NOT NULL,
-  email       TEXT NOT NULL UNIQUE,
-  phone       TEXT DEFAULT '',
-  role        TEXT NOT NULL DEFAULT 'worker' CHECK (role IN ('super_admin', 'manager', 'worker')),
-  status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
-  last_login  TIMESTAMPTZ,
-  created_at  TIMESTAMPTZ DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ DEFAULT NOW()
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name     TEXT NOT NULL,
+  email         TEXT NOT NULL UNIQUE,
+  phone         TEXT DEFAULT '',
+  role          TEXT NOT NULL DEFAULT 'worker' CHECK (role IN ('super_admin', 'manager', 'worker')),
+  status        TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  password_hash TEXT DEFAULT '',
+  last_login    TIMESTAMPTZ,
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE public.admin_staff ADD COLUMN IF NOT EXISTS password_hash TEXT DEFAULT '';
 
 CREATE INDEX IF NOT EXISTS idx_admin_staff_email ON public.admin_staff(email);
 CREATE INDEX IF NOT EXISTS idx_admin_staff_role ON public.admin_staff(role);
 
--- Enable RLS
+-- Enable RLS & Allow Full Access for admin_staff
 ALTER TABLE public.admin_staff ENABLE ROW LEVEL SECURITY;
 
--- Allow authenticated users to view staff profiles
-DROP POLICY IF EXISTS "Allow select for authenticated staff" ON public.admin_staff;
-CREATE POLICY "Allow select for authenticated staff"
-  ON public.admin_staff FOR SELECT
-  TO authenticated USING (true);
-
--- Allow authenticated staff to update staff profiles
-DROP POLICY IF EXISTS "Allow update for authenticated staff" ON public.admin_staff;
-CREATE POLICY "Allow update for authenticated staff"
-  ON public.admin_staff FOR UPDATE
-  TO authenticated USING (true) WITH CHECK (true);
-
--- Allow authenticated staff to insert staff profiles
-DROP POLICY IF EXISTS "Allow insert for authenticated staff" ON public.admin_staff;
-CREATE POLICY "Allow insert for authenticated staff"
-  ON public.admin_staff FOR INSERT
-  TO authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow all for admin_staff" ON public.admin_staff;
+CREATE POLICY "Allow all for admin_staff"
+  ON public.admin_staff FOR ALL
+  USING (true) WITH CHECK (true);
 
 -- Seed Initial Super Admin
-INSERT INTO public.admin_staff (full_name, email, role, status)
-VALUES ('Gopesh Kachhadiya', 'gopeshkachhadiya00005@gmail.com', 'super_admin', 'active')
+INSERT INTO public.admin_staff (full_name, email, role, status, password_hash)
+VALUES ('Gopesh Kachhadiya', 'gopeshkachhadiya00005@gmail.com', 'super_admin', 'active', 'Gopesh@007')
 ON CONFLICT (email) DO UPDATE SET role = 'super_admin';
 
 -- ═══════════════════════════════════════════════════
