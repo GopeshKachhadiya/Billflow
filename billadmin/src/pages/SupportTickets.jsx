@@ -10,6 +10,9 @@ export default function SupportTickets() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
   const [assignedFilter, setAssignedFilter] = useState('all')
+  const [timeRange, setTimeRange] = useState('all')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [updatingId, setUpdatingId] = useState(null)
 
   const fetchTicketsAndStaff = async () => {
@@ -34,6 +37,41 @@ export default function SupportTickets() {
       if (error) throw error
 
       let list = data || []
+
+      // Date Range Timeline Filter
+      if (timeRange !== 'all' || startDate || endDate) {
+        const now = new Date()
+        list = list.filter(t => {
+          const tDate = t.created_at ? new Date(t.created_at) : null
+          if (!tDate) return true
+
+          if (timeRange === 'week') {
+            const d = new Date(now); d.setDate(d.getDate() - 7); d.setHours(0, 0, 0, 0)
+            return tDate >= d
+          }
+          if (timeRange === 'month') {
+            const d = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
+            return tDate >= d
+          }
+          if (timeRange === 'quarter') {
+            const qStart = Math.floor(now.getMonth() / 3) * 3
+            const d = new Date(now.getFullYear(), qStart, 1, 0, 0, 0, 0)
+            return tDate >= d
+          }
+          if (timeRange === 'year') {
+            const d = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0)
+            return tDate >= d
+          }
+          if (timeRange === 'custom') {
+            const s = startDate ? new Date(startDate) : new Date(0)
+            if (startDate) s.setHours(0, 0, 0, 0)
+            const e = endDate ? new Date(endDate) : new Date(2099, 11, 31)
+            if (endDate) e.setHours(23, 59, 59, 999)
+            return tDate >= s && tDate <= e
+          }
+          return true
+        })
+      }
 
       // Staff assignment filter
       if (assignedFilter !== 'all') {
@@ -61,7 +99,7 @@ export default function SupportTickets() {
 
   useEffect(() => {
     fetchTicketsAndStaff()
-  }, [status, assignedFilter, search])
+  }, [status, assignedFilter, timeRange, startDate, endDate, search])
 
   // Toggle Ticket Status (Open <-> Closed)
   const toggleStatus = async (ticket) => {
@@ -124,40 +162,97 @@ export default function SupportTickets() {
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 flex flex-wrap gap-3 shadow-sm transition-colors duration-200">
-        <div className="relative flex-1 min-w-48">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-          <input
-            value={search} 
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search by customer, phone, topic, message or assigned staff..."
-            className="w-full pl-9 pr-4 py-2 border-none rounded-xl text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
-          />
+      <div className="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 space-y-3 shadow-sm transition-colors duration-200">
+        <div className="flex flex-wrap gap-3 items-center justify-between">
+          <div className="relative flex-1 min-w-48">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+            <input
+              value={search} 
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by customer, phone, topic, message or assigned staff..."
+              className="w-full pl-9 pr-4 py-2 border-none rounded-xl text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
+            />
+          </div>
+
+          {/* Status Selector */}
+          <select 
+            value={status} 
+            onChange={e => setStatus(e.target.value)}
+            className="border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer font-medium"
+          >
+            <option value="all">All Statuses</option>
+            <option value="Open">Open Tickets</option>
+            <option value="Closed">Resolved / Closed</option>
+          </select>
+
+          {/* Assigned Staff Filter */}
+          <select
+            value={assignedFilter}
+            onChange={e => setAssignedFilter(e.target.value)}
+            className="border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer font-medium"
+          >
+            <option value="all">All Assigned Staff</option>
+            <option value="">Unassigned</option>
+            {staffList.map(s => (
+              <option key={s.id} value={s.full_name}>{s.full_name} ({s.role.toUpperCase()})</option>
+            ))}
+          </select>
         </div>
 
-        {/* Status Selector */}
-        <select 
-          value={status} 
-          onChange={e => setStatus(e.target.value)}
-          className="border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer font-medium"
-        >
-          <option value="all">All Statuses</option>
-          <option value="Open">Open Tickets</option>
-          <option value="Closed">Resolved / Closed</option>
-        </select>
+        {/* Timeline & Custom Date Filter Sub-Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-outline-variant/15 text-xs">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-on-surface-variant font-bold uppercase tracking-wider mr-1 text-[11px]">Ticket Created Timeline:</span>
+            {[
+              { id: 'all', label: 'All Time' },
+              { id: 'week', label: 'Last 7 Days' },
+              { id: 'month', label: 'This Month (1st-Now)' },
+              { id: 'quarter', label: 'This Quarter' },
+              { id: 'year', label: 'This Year (YTD)' },
+              { id: 'custom', label: 'Custom Range' },
+            ].map(r => (
+              <button
+                key={r.id}
+                onClick={() => setTimeRange(r.id)}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                  timeRange === r.id
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
 
-        {/* Assigned Staff Filter */}
-        <select
-          value={assignedFilter}
-          onChange={e => setAssignedFilter(e.target.value)}
-          className="border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer font-medium"
-        >
-          <option value="all">All Assigned Staff</option>
-          <option value="">Unassigned</option>
-          {staffList.map(s => (
-            <option key={s.id} value={s.full_name}>{s.full_name} ({s.role.toUpperCase()})</option>
-          ))}
-        </select>
+          {/* Custom Date Pickers */}
+          {timeRange === 'custom' && (
+            <div className="flex items-center gap-2 px-2.5 py-1 bg-input-bg rounded-xl border border-outline-variant/20 font-mono">
+              <span className="text-on-surface-variant font-bold font-sans text-[11px]">From:</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="bg-transparent text-on-surface focus:outline-none cursor-pointer"
+              />
+              <span className="text-on-surface-variant font-bold font-sans text-[11px]">To:</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                className="bg-transparent text-on-surface focus:outline-none cursor-pointer"
+              />
+              {(startDate || endDate) && (
+                <button
+                  onClick={() => { setStartDate(''); setEndDate('') }}
+                  className="text-on-surface-variant hover:text-on-surface font-bold text-[10px] ml-1 bg-surface-container px-1.5 py-0.5 rounded"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Tickets Table */}

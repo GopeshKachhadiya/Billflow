@@ -9,11 +9,48 @@ export default function Users({ userRole = 'super_admin' }) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
   const [plan,   setPlan  ] = useState('all')
+  const [timeRange, setTimeRange] = useState('all')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [page,   setPage  ] = useState(0)
   const PER_PAGE = 50
 
-  const { users, total, loading, refetch } = useUsers({
+  const { users: rawUsers, total: rawTotal, loading, refetch } = useUsers({
     search, status, plan, limit: PER_PAGE, offset: page * PER_PAGE
+  })
+
+  // Date filtering logic
+  const users = rawUsers.filter(u => {
+    if (timeRange === 'all' && !startDate && !endDate) return true
+    const uDate = u.created_at ? new Date(u.created_at) : null
+    if (!uDate) return true
+
+    const now = new Date()
+    if (timeRange === 'week') {
+      const d = new Date(now); d.setDate(d.getDate() - 7); d.setHours(0, 0, 0, 0)
+      return uDate >= d
+    }
+    if (timeRange === 'month') {
+      const d = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
+      return uDate >= d
+    }
+    if (timeRange === 'quarter') {
+      const qStart = Math.floor(now.getMonth() / 3) * 3
+      const d = new Date(now.getFullYear(), qStart, 1, 0, 0, 0, 0)
+      return uDate >= d
+    }
+    if (timeRange === 'year') {
+      const d = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0)
+      return uDate >= d
+    }
+    if (timeRange === 'custom') {
+      const s = startDate ? new Date(startDate) : new Date(0)
+      if (startDate) s.setHours(0, 0, 0, 0)
+      const e = endDate ? new Date(endDate) : new Date(2099, 11, 31)
+      if (endDate) e.setHours(23, 59, 59, 999)
+      return uDate >= s && uDate <= e
+    }
+    return true
   })
 
   const exportCSV = () => {
@@ -37,7 +74,7 @@ export default function Users({ userRole = 'super_admin' }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-on-surface">Users</h1>
-          <p className="text-on-surface-variant text-sm mt-0.5">{total} total customers</p>
+          <p className="text-on-surface-variant text-sm mt-0.5">{users.length} displayed ({rawTotal} total customers)</p>
         </div>
         <div className="flex gap-3">
           <button onClick={exportCSV} className="flex items-center gap-2 border border-outline-variant/30 text-on-surface px-4 py-2 rounded-full text-sm hover:bg-surface-container-high transition-colors font-semibold bg-surface-container-low">
@@ -51,30 +88,87 @@ export default function Users({ userRole = 'super_admin' }) {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 flex flex-wrap gap-3 shadow-sm transition-colors duration-200">
-        <div className="relative flex-1 min-w-48">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-          <input
-            value={search} onChange={e => { setSearch(e.target.value); setPage(0) }}
-            placeholder="Search name, email, business, phone..."
-            className="w-full pl-9 pr-4 py-2 border-none rounded-xl text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
-          />
+      {/* Filters Bar */}
+      <div className="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 space-y-3 shadow-sm transition-colors duration-200">
+        <div className="flex flex-wrap gap-3 items-center justify-between">
+          <div className="relative flex-1 min-w-48">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+            <input
+              value={search} onChange={e => { setSearch(e.target.value); setPage(0) }}
+              placeholder="Search name, email, business, phone..."
+              className="w-full pl-9 pr-4 py-2 border-none rounded-xl text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
+            />
+          </div>
+          <select value={status} onChange={e => { setStatus(e.target.value); setPage(0) }}
+            className="border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer font-medium">
+            <option value="all">All Status</option>
+            <option value="trial">Trial</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="expired">Expired</option>
+          </select>
+          <select value={plan} onChange={e => { setPlan(e.target.value); setPage(0) }}
+            className="border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer font-medium">
+            <option value="all">All Plans</option>
+            <option value="standard">Standard</option>
+          </select>
         </div>
-        <select value={status} onChange={e => { setStatus(e.target.value); setPage(0) }}
-          className="border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer">
-          <option value="all">All Status</option>
-          <option value="trial">Trial</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="expired">Expired</option>
-        </select>
-        <select value={plan} onChange={e => { setPlan(e.target.value); setPage(0) }}
-          className="border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary bg-input-bg text-on-surface focus:outline-none cursor-pointer">
-          <option value="all">All Plans</option>
-          <option value="standard">Standard</option>
-        </select>
+
+        {/* Timeline & Calendar Filter Sub-Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-outline-variant/15 text-xs">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-on-surface-variant font-bold uppercase tracking-wider mr-1 text-[11px]">Onboarded Timeline:</span>
+            {[
+              { id: 'all', label: 'All Time' },
+              { id: 'week', label: 'Last 7 Days' },
+              { id: 'month', label: 'This Month (1st-Now)' },
+              { id: 'quarter', label: 'This Quarter' },
+              { id: 'year', label: 'This Year (YTD)' },
+              { id: 'custom', label: 'Custom Range' },
+            ].map(r => (
+              <button
+                key={r.id}
+                onClick={() => setTimeRange(r.id)}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                  timeRange === r.id
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Custom Date Pickers */}
+          {timeRange === 'custom' && (
+            <div className="flex items-center gap-2 px-2.5 py-1 bg-input-bg rounded-xl border border-outline-variant/20 font-mono">
+              <span className="text-on-surface-variant font-bold font-sans text-[11px]">From:</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="bg-transparent text-on-surface focus:outline-none cursor-pointer"
+              />
+              <span className="text-on-surface-variant font-bold font-sans text-[11px]">To:</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                className="bg-transparent text-on-surface focus:outline-none cursor-pointer"
+              />
+              {(startDate || endDate) && (
+                <button
+                  onClick={() => { setStartDate(''); setEndDate('') }}
+                  className="text-on-surface-variant hover:text-on-surface font-bold text-[10px] ml-1 bg-surface-container px-1.5 py-0.5 rounded"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Table */}

@@ -13,6 +13,8 @@ export default function Billing() {
   const [showCollectModal, setShowCollectModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   const [form, setForm] = useState({
     userId: '',
@@ -72,11 +74,18 @@ export default function Billing() {
     }
   }
 
-  const filteredPayments = payments.filter(p =>
-    p.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.reference.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredPayments = payments.filter(p => {
+    const matchesSearch =
+      (p.business_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.user_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.reference || '').toLowerCase().includes(searchTerm.toLowerCase())
+
+    const pDate = p.payment_date ? p.payment_date.split('T')[0] : ''
+    const matchesStart = !startDate || pDate >= startDate
+    const matchesEnd = !endDate || pDate <= endDate
+
+    return matchesSearch && matchesStart && matchesEnd
+  })
 
   const activeUsersForPayment = users.filter(u => u.status !== 'cancelled')
 
@@ -155,15 +164,41 @@ export default function Billing() {
           <div className="obsidian-card rounded-xl border border-outline-variant/10 shadow-xl overflow-hidden">
             <div className="px-5 py-4 border-b border-outline-variant/15 flex flex-wrap items-center justify-between gap-3 bg-surface-container-low/40">
               <h2 className="text-sm font-bold text-on-surface uppercase tracking-wider">All Received Payments</h2>
-              <div className="relative w-full max-w-xs">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-                <input
-                  type="text"
-                  placeholder="Search by customer, reference..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-4 py-1.5 w-full border-none rounded-xl text-xs focus:ring-1 focus:ring-primary bg-input-bg text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none"
-                />
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-input-bg rounded-xl border border-outline-variant/20 text-xs font-mono">
+                  <span className="text-on-surface-variant font-bold font-sans text-[11px]">From:</span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={e => setStartDate(e.target.value)}
+                    className="bg-transparent text-on-surface focus:outline-none cursor-pointer"
+                  />
+                  <span className="text-on-surface-variant font-bold font-sans text-[11px]">To:</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={e => setEndDate(e.target.value)}
+                    className="bg-transparent text-on-surface focus:outline-none cursor-pointer"
+                  />
+                  {(startDate || endDate) && (
+                    <button
+                      onClick={() => { setStartDate(''); setEndDate('') }}
+                      className="text-on-surface-variant hover:text-on-surface font-bold text-[10px] ml-1 bg-surface-container px-1.5 py-0.5 rounded"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <div className="relative w-full max-w-xs">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+                  <input
+                    type="text"
+                    placeholder="Search by customer, reference..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="pl-9 pr-4 py-1.5 w-full border-none rounded-xl text-xs focus:ring-1 focus:ring-primary bg-input-bg text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
             <div className="overflow-x-auto">
