@@ -14,13 +14,48 @@ import {
 } from "lucide-react";
 import { CTASection } from "../components/CTASection";
 
+const SUPABASE_URL = "https://tdjwytrtmgsxbfvlqjtl.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_sg13WITxOmD5EMcPccuBXA_bu41qGJ3";
+
 export function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
-  const [formData, setFormData] = useState({ name: "", phone: "", email: "", topic: "setup", message: "" });
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({ name: "", phone: "", email: "", topic: "Setup & Installation", message: "" });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+
+    const payload = {
+      name: formData.name.trim(),
+      phone: formData.phone.trim(),
+      email: formData.email.trim() || null,
+      topic: formData.topic || "General Query",
+      message: formData.message.trim() || "No additional message provided",
+      status: "Open",
+      created_at: new Date().toISOString()
+    };
+
+    fetch(`${SUPABASE_URL}/rest/v1/support_tickets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(res => {
+      if (!res.ok) console.warn("Supabase ticket warning:", res.statusText);
+      setSubmitted(true);
+    })
+    .catch(err => {
+      console.error("Failed to post ticket:", err);
+      setSubmitted(true);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
   };
 
   return (

@@ -153,6 +153,7 @@ Key details about BillFlow:
   };
 
   const submitTicket = (data) => {
+    const payload = Object.assign({}, data, { status: "Open", created_at: new Date().toISOString() });
     fetch(`${SUPABASE_URL}/rest/v1/support_tickets`, {
       method: "POST",
       headers: {
@@ -160,15 +161,15 @@ Key details about BillFlow:
         "apikey": SUPABASE_ANON_KEY,
         "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(payload)
     })
     .then(res => {
       if (!res.ok) console.error("Supabase insert warning:", res.statusText);
       return fetch(N8N_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
+        body: JSON.stringify(payload)
+      }).catch(function() {});
     })
     .then(res => {
       setTicketMessages(prev => [...prev, { 

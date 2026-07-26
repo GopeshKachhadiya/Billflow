@@ -268,14 +268,17 @@ var SupportChatbot = (function() {
         status: 'unread'
       };
 
-      // 1. Try Desktop IPC if available
-      if (window.api && window.api.createInboxBill) {
-        return window.api.createInboxBill(inboxPayload).catch(function(e) {
-          console.warn('IPC createInboxBill notice:', e.message);
-        });
-      }
+      var ticketPayload = {
+        name: ticketData.name || 'App Customer',
+        phone: ticketData.phone || '',
+        email: (session && session.email) ? session.email : null,
+        topic: ticketData.topic || 'General Query',
+        message: ticketData.message || 'No details provided',
+        status: 'Open',
+        created_at: new Date().toISOString(),
+        owner_id: (session && session.id) ? session.id : null
+      };
 
-      // 2. Web fallback: Direct REST API insert to inbox_bills & support_tickets
       var headers = {
         "Content-Type": "application/json",
         "apikey": SUPABASE_ANON_KEY,
@@ -283,17 +286,15 @@ var SupportChatbot = (function() {
         "Prefer": "return=minimal"
       };
 
-      var p1 = fetch(SUPABASE_URL + "/rest/v1/inbox_bills", {
+      var p1 = fetch(SUPABASE_URL + "/rest/v1/support_tickets", {
         method: "POST",
         headers: headers,
-        body: JSON.stringify(Object.assign({}, inboxPayload, { id: 'INC-' + Date.now(), owner_id: ticketData.owner_id }))
-      }).catch(function() {});
+        body: JSON.stringify(ticketPayload)
+      }).catch(function(e) { console.warn('Supabase support_tickets insert error:', e); });
 
-      var p2 = fetch(SUPABASE_URL + "/rest/v1/support_tickets", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(ticketData)
-      }).catch(function() {});
+      var p2 = (window.api && window.api.createInboxBill) ? window.api.createInboxBill(inboxPayload).catch(function(e) {
+        console.warn('IPC createInboxBill notice:', e.message);
+      }) : Promise.resolve();
 
       return Promise.all([p1, p2]);
     })

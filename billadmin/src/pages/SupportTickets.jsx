@@ -19,25 +19,24 @@ export default function SupportTickets() {
         .order('created_at', { ascending: false })
 
       if (status !== 'all') {
-        query = query.eq('status', status)
+        query = query.ilike('status', status)
       }
 
       const { data, error } = await query
 
       if (error) throw error
 
-      // Local search filtering
+      let list = data || []
       if (search.trim()) {
         const s = search.toLowerCase()
-        setTickets(data.filter(t => 
+        list = list.filter(t => 
           (t.name && t.name.toLowerCase().includes(s)) ||
           (t.phone && t.phone.includes(s)) ||
           (t.topic && t.topic.toLowerCase().includes(s)) ||
           (t.message && t.message.toLowerCase().includes(s))
-        ))
-      } else {
-        setTickets(data || [])
+        )
       }
+      setTickets(list)
     } catch (e) {
       console.error('Error loading tickets:', e.message)
     } finally {
@@ -50,7 +49,8 @@ export default function SupportTickets() {
   }, [status, search])
 
   const toggleStatus = async (ticket) => {
-    const nextStatus = ticket.status === 'Open' ? 'Closed' : 'Open'
+    const isCurrentlyOpen = (ticket.status || '').toLowerCase() === 'open'
+    const nextStatus = isCurrentlyOpen ? 'Closed' : 'Open'
     setUpdatingId(ticket.id)
     try {
       const { error } = await supabase
@@ -60,7 +60,6 @@ export default function SupportTickets() {
 
       if (error) throw error
       
-      // Update local state
       setTickets(prev => prev.map(t => 
         t.id === ticket.id ? { ...t, status: nextStatus } : t
       ))
@@ -78,7 +77,7 @@ export default function SupportTickets() {
         <div>
           <h1 className="text-2xl font-bold text-on-surface">Support Tickets & Complaints</h1>
           <p className="text-on-surface-variant text-sm mt-0.5">
-            {tickets.filter(t => t.status === 'Open').length} open requests
+            {tickets.filter(t => (t.status || '').toLowerCase() === 'open').length} open requests
           </p>
         </div>
         <button 
@@ -128,49 +127,52 @@ export default function SupportTickets() {
                 <tr><td colSpan={6} className="text-center py-12 text-on-surface-variant">Loading support tickets...</td></tr>
               ) : tickets.length === 0 ? (
                 <tr><td colSpan={6} className="text-center py-12 text-on-surface-variant">No support tickets found</td></tr>
-              ) : tickets.map(t => (
-                <tr key={t.id} className="hover:bg-surface-container-high/40 transition-colors align-top">
-                  <td className="px-4 py-4 whitespace-nowrap text-xs text-on-surface-variant">
-                    {formatDate(t.created_at)}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="font-semibold text-on-surface">{t.name}</div>
-                    <div className="text-xs text-on-surface-variant font-mono mt-0.5">{t.phone}</div>
-                    {t.email && <div className="text-xs text-on-surface-variant mt-0.5">{t.email}</div>}
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20 font-sans">
-                      {t.topic}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-on-surface text-xs leading-relaxed max-w-md whitespace-pre-wrap">
-                    {t.message}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      t.status === 'Open' 
-                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' 
-                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
-                    }`}>
-                      {t.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => toggleStatus(t)}
-                      disabled={updatingId === t.id}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
-                        t.status === 'Open'
-                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm'
-                          : 'bg-amber-500 hover:bg-amber-600 text-white shadow-sm'
-                      }`}
-                    >
-                      <CheckCircle size={13} />
-                      {t.status === 'Open' ? 'Mark Resolved' : 'Reopen'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              ) : tickets.map(t => {
+                const isOpen = (t.status || '').toLowerCase() === 'open';
+                return (
+                  <tr key={t.id} className="hover:bg-surface-container-high/40 transition-colors align-top">
+                    <td className="px-4 py-4 whitespace-nowrap text-xs text-on-surface-variant">
+                      {formatDate(t.created_at)}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="font-semibold text-on-surface">{t.name}</div>
+                      <div className="text-xs text-on-surface-variant font-mono mt-0.5">{t.phone}</div>
+                      {t.email && <div className="text-xs text-on-surface-variant mt-0.5">{t.email}</div>}
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20 font-sans">
+                        {t.topic}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-on-surface text-xs leading-relaxed max-w-md whitespace-pre-wrap">
+                      {t.message}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                        isOpen 
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' 
+                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
+                      }`}>
+                        {isOpen ? 'Open' : 'Closed'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => toggleStatus(t)}
+                        disabled={updatingId === t.id}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                          isOpen
+                            ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm'
+                            : 'bg-amber-500 hover:bg-amber-600 text-white shadow-sm'
+                        }`}
+                      >
+                        <CheckCircle size={13} />
+                        {isOpen ? 'Mark Resolved' : 'Reopen'}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

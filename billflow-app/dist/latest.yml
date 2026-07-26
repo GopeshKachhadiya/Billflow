@@ -1,8 +1,8 @@
 version: 2.4.0
 files:
   - url: BillFlow_Setup_v2.4_64bit.exe
-    sha512: c3NiV2E+cfwhQtn4pXkCILJ198tb39HrxewAdY5yX4v387eTjOvunaN2bL5JCgkJTtggioJuaRrUhlrxJ5Yhow==
-    size: 82346896
+    sha512: nTaPjqj/Ua1pp6V1kz1jljIjSXqOoYeqXsZXFQeBMsUKivrXIhYsH1GAMwdFFnNKr4j4h7rGA6iFpf9slrB71A==
+    size: 82347256
 path: BillFlow_Setup_v2.4_64bit.exe
-sha512: c3NiV2E+cfwhQtn4pXkCILJ198tb39HrxewAdY5yX4v387eTjOvunaN2bL5JCgkJTtggioJuaRrUhlrxJ5Yhow==
-releaseDate: '2026-07-26T05:03:44.690Z'
+sha512: nTaPjqj/Ua1pp6V1kz1jljIjSXqOoYeqXsZXFQeBMsUKivrXIhYsH1GAMwdFFnNKr4j4h7rGA6iFpf9slrB71A==
+releaseDate: '2026-07-26T05:10:13.598Z'
