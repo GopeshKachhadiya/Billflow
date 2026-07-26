@@ -5,7 +5,7 @@ import { useUsers } from '../hooks/useUsers'
 import { StatusBadge, PlanBadge } from '../components/ui/StatusBadge'
 import { formatCurrency, formatDate, daysUntil } from '../lib/utils'
 
-export default function Users() {
+export default function Users({ userRole = 'super_admin' }) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
   const [plan,   setPlan  ] = useState('all')
@@ -43,9 +43,11 @@ export default function Users() {
           <button onClick={exportCSV} className="flex items-center gap-2 border border-outline-variant/30 text-on-surface px-4 py-2 rounded-full text-sm hover:bg-surface-container-high transition-colors font-semibold bg-surface-container-low">
             <Download size={15} /> Export CSV
           </button>
-          <Link to="/users/add" className="accent-gradient text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-md shadow-primary/10 hover:opacity-90 active:scale-95 transition-all teal-glow flex items-center gap-1.5">
-            <Plus size={15} /> Add User
-          </Link>
+          {userRole !== 'worker' && (
+            <Link to="/users/add" className="accent-gradient text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-md shadow-primary/10 hover:opacity-90 active:scale-95 transition-all teal-glow flex items-center gap-1.5">
+              <Plus size={15} /> Add User
+            </Link>
+          )}
         </div>
       </div>
 

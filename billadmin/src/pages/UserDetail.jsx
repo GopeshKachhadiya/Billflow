@@ -6,7 +6,7 @@ import { StatusBadge, PlanBadge } from '../components/ui/StatusBadge'
 import { formatCurrency, formatDate, formatDatetime, daysUntil, callAdminWebhook } from '../lib/utils'
 import { supabase } from '../lib/supabase'
 
-export default function UserDetail() {
+export default function UserDetail({ userRole = 'super_admin' }) {
   const { id }       = useParams()
   const navigate     = useNavigate()
   const { user, payments, notes, logs, loading, refetch } = useUser(id)
@@ -236,57 +236,67 @@ export default function UserDetail() {
           <div className="obsidian-card p-6 rounded-xl">
             <h2 className="text-sm font-semibold text-on-surface mb-3 border-b border-outline-variant/20 pb-2 uppercase tracking-wider">Quick Actions</h2>
             <div className="space-y-2">
-              <button onClick={() => handleSendEmail('welcome')}
-                className="w-full text-left text-xs px-3 py-2.5 rounded-xl bg-surface-container text-primary hover:bg-surface-container-high flex items-center gap-2 font-bold transition-colors">
-                <Send size={12} /> Send Welcome Email
-              </button>
-              <button onClick={() => handleSendEmail('trial_reminder')}
-                className="w-full text-left text-xs px-3 py-2.5 rounded-xl bg-surface-container text-secondary hover:bg-surface-container-high flex items-center gap-2 font-bold transition-colors">
-                <Send size={12} /> Send Trial Reminder
-              </button>
-              <button onClick={() => handleSendEmail('payment_reminder')}
-                className="w-full text-left text-xs px-3 py-2.5 rounded-xl bg-surface-container text-tertiary hover:bg-surface-container-high flex items-center gap-2 font-bold transition-colors">
-                <Send size={12} /> Send Payment Reminder
-              </button>
-              <hr className="my-3 border-outline-variant/20" />
-              {user.status !== 'active' && (
-                <button onClick={() => handleStatusChange('active')}
-                  className="w-full text-center text-xs px-3 py-2.5 rounded-xl accent-gradient text-white font-bold transition-colors shadow-md shadow-primary/10">
-                  ✓ Activate Account
-                </button>
+              {userRole === 'worker' ? (
+                <p className="text-xs text-on-surface-variant italic">
+                  Read-only view mode for Worker / Support role. You can view user contact details and add support notes below.
+                </p>
+              ) : (
+                <>
+                  <button onClick={() => handleSendEmail('welcome')}
+                    className="w-full text-left text-xs px-3 py-2.5 rounded-xl bg-surface-container text-primary hover:bg-surface-container-high flex items-center gap-2 font-bold transition-colors">
+                    <Send size={12} /> Send Welcome Email
+                  </button>
+                  <button onClick={() => handleSendEmail('trial_reminder')}
+                    className="w-full text-left text-xs px-3 py-2.5 rounded-xl bg-surface-container text-secondary hover:bg-surface-container-high flex items-center gap-2 font-bold transition-colors">
+                    <Send size={12} /> Send Trial Reminder
+                  </button>
+                  <button onClick={() => handleSendEmail('payment_reminder')}
+                    className="w-full text-left text-xs px-3 py-2.5 rounded-xl bg-surface-container text-tertiary hover:bg-surface-container-high flex items-center gap-2 font-bold transition-colors">
+                    <Send size={12} /> Send Payment Reminder
+                  </button>
+                  <hr className="my-3 border-outline-variant/20" />
+                  {user.status !== 'active' && (
+                    <button onClick={() => handleStatusChange('active')}
+                      className="w-full text-center text-xs px-3 py-2.5 rounded-xl accent-gradient text-white font-bold transition-colors shadow-md shadow-primary/10">
+                      ✓ Activate Account
+                    </button>
+                  )}
+                  {user.status === 'trial' && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Extend Trial</p>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => handleExtendTrial(7)}  className="flex-1 text-[11px] font-bold px-2 py-1.5 border border-outline-variant/30 rounded-lg hover:bg-surface-container-high text-on-surface transition-colors">+7d</button>
+                        <button onClick={() => handleExtendTrial(14)} className="flex-1 text-[11px] font-bold px-2 py-1.5 border border-outline-variant/30 rounded-lg hover:bg-surface-container-high text-on-surface transition-colors">+14d</button>
+                        <button onClick={() => handleExtendTrial(30)} className="flex-1 text-[11px] font-bold px-2 py-1.5 border border-outline-variant/30 rounded-lg hover:bg-surface-container-high text-on-surface transition-colors">+30d</button>
+                      </div>
+                    </div>
+                  )}
+                  {user.status === 'active' && (
+                    <button onClick={() => handleStatusChange('suspended')}
+                      className="w-full text-center text-xs px-3 py-2.5 rounded-xl bg-tertiary-dark hover:bg-tertiary text-white font-bold transition-colors">
+                      ⏸ Suspend Account
+                    </button>
+                  )}
+                  {user.status === 'suspended' && (
+                    <button onClick={() => handleStatusChange('active')}
+                      className="w-full text-center text-xs px-3 py-2.5 rounded-xl accent-gradient text-white font-bold transition-colors shadow-md shadow-primary/10">
+                      ▶ Reactivate Account
+                    </button>
+                  )}
+                  {user.status !== 'cancelled' && (
+                    <button onClick={() => handleStatusChange('cancelled')}
+                      className="w-full text-center text-xs px-3 py-2.5 rounded-xl bg-[#ffb4ab]/10 text-error hover:bg-[#ffb4ab]/20 font-bold transition-colors">
+                      ✕ Cancel Account
+                    </button>
+                  )}
+                  {userRole === 'super_admin' && (
+                    <button onClick={handleDeleteUser} disabled={saving}
+                      className="w-full text-center text-xs px-3 py-2.5 rounded-xl bg-error-container/20 hover:bg-error-container/30 border border-error-container/35 text-error font-bold transition-colors mt-2 flex items-center justify-center gap-1.5 shadow-sm">
+                      <Trash2 size={12} /> Delete User Permanently
+                    </button>
+                  )}
+                </>
               )}
-              {user.status === 'trial' && (
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Extend Trial</p>
-                  <div className="flex gap-1.5">
-                    <button onClick={() => handleExtendTrial(7)}  className="flex-1 text-[11px] font-bold px-2 py-1.5 border border-outline-variant/30 rounded-lg hover:bg-surface-container-high text-on-surface transition-colors">+7d</button>
-                    <button onClick={() => handleExtendTrial(14)} className="flex-1 text-[11px] font-bold px-2 py-1.5 border border-outline-variant/30 rounded-lg hover:bg-surface-container-high text-on-surface transition-colors">+14d</button>
-                    <button onClick={() => handleExtendTrial(30)} className="flex-1 text-[11px] font-bold px-2 py-1.5 border border-outline-variant/30 rounded-lg hover:bg-surface-container-high text-on-surface transition-colors">+30d</button>
-                  </div>
-                </div>
-              )}
-              {user.status === 'active' && (
-                <button onClick={() => handleStatusChange('suspended')}
-                  className="w-full text-center text-xs px-3 py-2.5 rounded-xl bg-tertiary-dark hover:bg-tertiary text-white font-bold transition-colors">
-                  ⏸ Suspend Account
-                </button>
-              )}
-              {user.status === 'suspended' && (
-                <button onClick={() => handleStatusChange('active')}
-                  className="w-full text-center text-xs px-3 py-2.5 rounded-xl accent-gradient text-white font-bold transition-colors shadow-md shadow-primary/10">
-                  ▶ Reactivate Account
-                </button>
-              )}
-              {user.status !== 'cancelled' && (
-                <button onClick={() => handleStatusChange('cancelled')}
-                  className="w-full text-center text-xs px-3 py-2.5 rounded-xl bg-[#ffb4ab]/10 text-error hover:bg-[#ffb4ab]/20 font-bold transition-colors">
-                  ✕ Cancel Account
-                </button>
-              )}
-              <button onClick={handleDeleteUser} disabled={saving}
-                className="w-full text-center text-xs px-3 py-2.5 rounded-xl bg-error-container/20 hover:bg-error-container/30 border border-error-container/35 text-error font-bold transition-colors mt-2 flex items-center justify-center gap-1.5 shadow-sm">
-                <Trash2 size={12} /> Delete User Permanently
-              </button>
             </div>
           </div>
 

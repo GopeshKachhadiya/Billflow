@@ -376,11 +376,15 @@ export default function Settings() {
                   const isSuper = staff.role === 'super_admin'
                   const isManager = staff.role === 'manager'
                   const isActive = staff.status === 'active'
+                  const isOwner = staff.email.toLowerCase() === 'gopeshkachhadiya00005@gmail.com' || (currentStaff && staff.email.toLowerCase() === currentStaff.email?.toLowerCase())
 
                   return (
                     <tr key={staff.id} className="hover:bg-surface-container-high/40 transition-colors">
                       <td className="px-4 py-3.5">
-                        <div className="font-bold text-on-surface">{staff.full_name}</div>
+                        <div className="font-bold text-on-surface flex items-center gap-1.5">
+                          {staff.full_name}
+                          {isOwner && <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-extrabold">PRIMARY OWNER</span>}
+                        </div>
                         <div className="text-[11px] text-on-surface-variant font-mono">ID: {staff.id?.slice(0, 8)}...</div>
                       </td>
                       <td className="px-4 py-3.5 text-xs">
@@ -388,17 +392,23 @@ export default function Settings() {
                         {staff.phone && <div className="text-on-surface-variant text-[11px] mt-0.5">{staff.phone}</div>}
                       </td>
                       <td className="px-4 py-3.5">
-                        <select
-                          value={staff.role}
-                          onChange={(e) => handleChangeRole(staff, e.target.value)}
-                          className={`text-xs font-bold px-2.5 py-1 rounded-lg border border-outline-variant/20 bg-input-bg focus:outline-none cursor-pointer ${
-                            isSuper ? 'text-purple-400 font-bold' : isManager ? 'text-blue-400' : 'text-emerald-400'
-                          }`}
-                        >
-                          <option value="super_admin">Super Admin</option>
-                          <option value="manager">Manager</option>
-                          <option value="worker">Worker / Support</option>
-                        </select>
+                        {isOwner ? (
+                          <span className="text-xs font-bold px-2.5 py-1 rounded-lg border border-purple-500/20 bg-purple-500/10 text-purple-400">
+                            Super Admin (Owner)
+                          </span>
+                        ) : (
+                          <select
+                            value={staff.role}
+                            onChange={(e) => handleChangeRole(staff, e.target.value)}
+                            className={`text-xs font-bold px-2.5 py-1 rounded-lg border border-outline-variant/20 bg-input-bg focus:outline-none cursor-pointer ${
+                              isSuper ? 'text-purple-400 font-bold' : isManager ? 'text-blue-400' : 'text-emerald-400'
+                            }`}
+                          >
+                            <option value="super_admin">Super Admin</option>
+                            <option value="manager">Manager</option>
+                            <option value="worker">Worker / Support</option>
+                          </select>
+                        )}
                       </td>
                       <td className="px-4 py-3.5">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
@@ -409,18 +419,26 @@ export default function Settings() {
                         </span>
                       </td>
                       <td className="px-4 py-3.5 text-right space-x-2">
-                        <button
-                          onClick={() => handleToggleStaffStatus(staff)}
-                          className="px-2.5 py-1 rounded-lg border border-outline-variant/30 text-xs font-semibold hover:bg-surface-container-high transition-colors"
-                        >
-                          {isActive ? 'Deactivate' : 'Activate'}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteStaff(staff)}
-                          className="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs font-semibold transition-colors"
-                        >
-                          Remove
-                        </button>
+                        {isOwner ? (
+                          <span className="text-[11px] font-bold text-amber-400/80 italic px-2 py-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                            Protected Account
+                          </span>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleToggleStaffStatus(staff)}
+                              className="px-2.5 py-1 rounded-lg border border-outline-variant/30 text-xs font-semibold hover:bg-surface-container-high transition-colors"
+                            >
+                              {isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteStaff(staff)}
+                              className="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs font-semibold transition-colors"
+                            >
+                              Remove
+                            </button>
+                          </>
+                        )}
                       </td>
                     </tr>
                   )
